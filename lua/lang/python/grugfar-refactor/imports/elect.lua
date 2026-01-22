@@ -4,13 +4,51 @@ local grug_inst = require("lang.python.grugfar-refactor.imports.grug_instance")
 
 local M = {}
 
---- docs: { {id=..., yaml=...}, ... }
---- returns winners via callback (async)
-function M.elect_rules(docs, done_cb)
+local function open_final_from_winners(winners, opts)
+  opts = opts or {}
   local grug_far = require("grug-far")
 
+  -- Don't open window if no matches
+  if #winners == 0 then
+    if opts.notify ~= false then
+      vim.notify(string.format("No %s import rules matched", opts.type or ""), vim.log.levels.INFO)
+    end
+    if opts.on_complete then
+      opts.on_complete()
+    end
+    return
+  end
+
+  local final_rules = yaml_docs.concat_yaml_docs(winners)
+
+  grug_far.open({
+    engine = "astgrep-rules",
+    prefills = {
+      rules = final_rules,
+      replacement = "",
+      paths = opts.paths,
+    },
+  })
+
+  if opts.notify ~= false then
+    local scope_msg = opts.paths and (" in " .. opts.paths) or ""
+    vim.notify(string.format("Elected %d %s import rules%s", #winners, opts.type or "", scope_msg), vim.log.levels.INFO)
+  end
+
+  if opts.on_complete then
+    opts.on_complete()
+  end
+end
+
+--- Elect rules that have matches
+--- @param docs table Array of {id=..., yaml=...}
+--- @param opts table {type="absolute"|"relative", paths=..., notify=...}
+function M.elect_rules(docs, opts)
+  local grug_far = require("grug-far")
+  opts = opts or {}
+
   if #docs == 0 then
-    done_cb({})
+    vim.notify(string.format("No %s import rules to elect from", opts.type or ""), vim.log.levels.WARN)
     return
   end
 
@@ -22,6 +60,7 @@ function M.elect_rules(docs, done_cb)
     prefills = {
       rules = docs[1].yaml,
       replacement = "",
+      paths = opts.paths,
     },
   })
   log.info("opened trial: " .. trial_name, "refactor.elect")
@@ -32,13 +71,13 @@ function M.elect_rules(docs, done_cb)
     local function run_next()
       log.debug("run_next i=" .. i, "refactor.elect")
       if not inst:is_valid() then
-        done_cb(winners)
+        open_final_from_winners(winners, opts)
         return
       end
 
       if i > #docs then
         inst:close()
-        done_cb(winners)
+        open_final_from_winners(winners, opts)
         return
       end
 
@@ -74,32 +113,6 @@ function M.elect_rules(docs, done_cb)
   end)
 
   return trial_name
-end
-
-function M.open_final_from_winners(winners, opts)
-  opts = opts or {}
-  local grug_far = require("grug-far")
-
-  if #winners == 0 then
-    if opts.notify ~= false then
-      vim.notify("No relevant rules matched", vim.log.levels.INFO)
-    end
-    return
-  end
-
-  local final_rules = yaml_docs.concat_yaml_docs(winners)
-
-  grug_far.open({
-    engine = "astgrep-rules",
-    prefills = {
-      rules = final_rules,
-      replacement = "",
-    },
-  })
-
-  if opts.notify ~= false then
-    vim.notify(("Elected %d rules"):format(#winners), vim.log.levels.INFO)
-  end
 end
 
 return M

@@ -145,7 +145,7 @@ local grug_far_refactor_imports = function(picker, item)
   local grug_far_astgrep = require("lang.python.grugfar-refactor.imports.init")
   --TODO:WIP
 
-  grug_far_astgrep.refactor_python_imports_absolute_elect(relative_path, is_directory)
+  grug_far_astgrep.grug_refactor_python_imports(relative_path, is_directory)
 end
 
 local focus_right_win = function()
