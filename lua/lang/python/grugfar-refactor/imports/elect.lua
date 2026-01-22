@@ -24,13 +24,13 @@ function M.elect_rules(docs, done_cb)
       replacement = "",
     },
   })
-  log.info("opened trial: " .. trial_name, "elect.lua")
+  log.info("opened trial: " .. trial_name, "refactor.elect")
 
   grug_inst.wait_for_instance(grug_far, trial_name, function(inst)
     local winners, i = {}, 1
 
     local function run_next()
-      log.debug("run_next i=" .. i, "elect.lua")
+      log.debug("run_next i=" .. i, "refactor.elect")
       if not inst:is_valid() then
         done_cb(winners)
         return
@@ -47,8 +47,8 @@ function M.elect_rules(docs, done_cb)
 
       vim.defer_fn(function()
         inst:search()
-        log.debug("calling search for rule: " .. (doc.id or "unknown"), "elect.lua")
-        log.debug("yaml:\n" .. (doc.yaml or "unknown"), "elect.lua")
+        log.debug("calling search for rule: " .. (doc.id or "unknown"), "refactor.elect")
+        log.debug("yaml:\n" .. (doc.yaml or "unknown"), "refactor.elect")
         grug_inst.wait_for_search_terminal(inst, function(ok, stats, terminal_status)
           log.debug(
             string.format(
@@ -58,11 +58,11 @@ function M.elect_rules(docs, done_cb)
               tostring((stats.matches or 0)),
               tostring((stats.files or 0))
             ),
-            "elect.lua"
+            "refactor.elect"
           )
           if ok and (stats.matches or 0) > 0 then
             table.insert(winners, doc)
-            log.info("rule " .. (doc.id or "unknown") .. " is a winner", "elect.lua")
+            log.info("rule " .. (doc.id or "unknown") .. " is a winner", "refactor.elect")
           end
           i = i + 1
           run_next()
