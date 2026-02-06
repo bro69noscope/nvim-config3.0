@@ -85,6 +85,7 @@ M.basedpyright = {
   },
   on_attach = function(client, bufnr)
     -- Disable capabilities that pyright handles better/faster
+    -- NOTE: now testing basedpyright for everything pyright used to do
     client.server_capabilities.completionProvider = false
     client.server_capabilities.hoverProvider = false
     client.server_capabilities.signatureHelpProvider = false -- pyright has better placement
