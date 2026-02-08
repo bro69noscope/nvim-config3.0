@@ -132,7 +132,7 @@ return {
           capabilities = capabilities,
           settings = config.settings,
           on_attach = function(client, bufnr)
-            -- config.on_attach(client, bufnr)
+            config.on_attach(client, bufnr)
             custom_attach(client, bufnr)
           end,
         })

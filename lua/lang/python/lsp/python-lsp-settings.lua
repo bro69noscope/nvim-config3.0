@@ -84,18 +84,19 @@ M.basedpyright = {
     },
   },
   on_attach = function(client, bufnr)
+    client.server_capabilities.renameProvider = false -- can't rename module symbols (pylsp can)
     -- Disable capabilities that pyright handles better/faster
     -- NOTE: now testing basedpyright for everything pyright used to do
-    client.server_capabilities.completionProvider = false
-    client.server_capabilities.hoverProvider = false
-    client.server_capabilities.signatureHelpProvider = false -- pyright has better placement
-    client.server_capabilities.renameProvider = false -- can't rename module symbols (pylsp can)
-    client.server_capabilities.documentHighlightProvider = false
-    client.server_capabilities.documentSymbolProvider = false
-    client.server_capabilities.workspaceSymbolProvider = false
-    client.server_capabilities.definitionProvider = nil
-    client.server_capabilities.declarationProvider = nil
-    client.server_capabilities.referencesProvider = nil
+
+    -- client.server_capabilities.completionProvider = false
+    -- client.server_capabilities.hoverProvider = false
+    -- client.server_capabilities.signatureHelpProvider = false -- pyright has better placement
+    -- client.server_capabilities.documentHighlightProvider = false
+    -- client.server_capabilities.documentSymbolProvider = false
+    -- client.server_capabilities.workspaceSymbolProvider = false
+    -- client.server_capabilities.definitionProvider = nil
+    -- client.server_capabilities.declarationProvider = nil
+    -- client.server_capabilities.referencesProvider = nil
   end,
 }
 
