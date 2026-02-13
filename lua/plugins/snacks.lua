@@ -128,7 +128,10 @@ return {
     { "<leader>gd", function() Snacks.picker.git_diff() end, desc = "Pick Diff (Hunks)" },
     { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
     { "<leader>s,", function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
-    { "<leader>sw", function() Snacks.picker.grep_word() end, desc = "Visual selection or word", mode = { "n", "x" } },
+    { "<leader>sw", function() Snacks.picker.grep_word({
+      regex = true,
+      args = {},
+    }) end, desc = "Visual selection or word", mode = { "n", "x" } },
     { '<leader>s"', function() Snacks.picker.registers() end, desc = "Registers" },
     { '<leader>s/', function() Snacks.picker.search_history() end, desc = "Search History" },
     { "<leader>sa", function() Snacks.picker.autocmds() end, desc = "Autocmds" },
