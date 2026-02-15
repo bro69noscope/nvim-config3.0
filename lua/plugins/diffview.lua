@@ -1,5 +1,6 @@
 return {
-  "sindrets/diffview.nvim",
+  -- "sindrets/diffview.nvim",
+  "dlyongemallo/diffview.nvim", -- fork of repo with some fixes over last 2 years
   enabled = true,
   keys = {
     { "<leader>gov", "<cmd>DiffviewOpen<cr>", desc = "DiffView" },
