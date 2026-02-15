@@ -150,6 +150,11 @@ return {
         end,
       },
       ehnanced_diff_hl = true,
+      view = {
+        merge_tool = {
+          layout = "diff3_mixed",
+        },
+      },
       keymaps = {
         view = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
