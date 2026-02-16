@@ -111,6 +111,14 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "ahk", "autohotkey" },
+  callback = function()
+    vim.bo.textwidth = 88
+    vim.opt_local.colorcolumn = "88"
+  end,
+})
+
 -- Set textwidth to 100 for Lua files (for longer comments in the config)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "lua",

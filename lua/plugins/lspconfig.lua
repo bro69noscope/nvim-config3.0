@@ -189,7 +189,6 @@ return {
       })
 
       -- AutoHotkey v2 LSP setup
-      -- TODO: set linelenght to 88
       vim.lsp.config("ahk2", {
         cmd = {
           "node",
@@ -204,6 +203,10 @@ return {
         init_options = {
           locale = "en-us",
           InterpreterPath = "C:/Users/ville/scoop/shims/autohotkey.exe",
+          FormatOptions = {
+            -- preserve_newlines = true,
+            wrap_line_length = 88,
+          },
         },
         capabilities = capabilities,
         on_attach = custom_attach,
