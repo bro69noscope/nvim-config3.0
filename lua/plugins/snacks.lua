@@ -158,7 +158,7 @@ return {
     { "<leader>sT", function () Snacks.picker.todo_comments({
       keywords = { "TODO", "FIX", "FIXME" } }) end, desc = "Todo/Fix/Fixme" },
     { "<leader>su", function() Snacks.picker.undo() end, desc = "Undo History" },
-    { "<leader>uC", function() Snacks.picker.colorschemes() end, desc = "Colorschemes" },
+    { "<leader>uS", function() Snacks.picker.colorschemes() end, desc = "Colorschemes" },
     { "zp", function() Snacks.picker.spelling() end, desc = "Spelling Picker" },
     -- LSP
     { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition" },

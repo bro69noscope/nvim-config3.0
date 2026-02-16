@@ -13,6 +13,14 @@ if OnWindows then
   end
 end
 
+Linelenght_by_ft = {
+  lua = 100,
+  python = 88,
+  autohotkey = 88,
+  markdown = "",
+  text = "",
+}
+
 vim.opt.undofile = true
 vim.opt.clipboard = ""
 vim.opt.swapfile = false -- Annoying as fuck so testing temporary disable

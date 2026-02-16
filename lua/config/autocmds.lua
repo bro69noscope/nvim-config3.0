@@ -103,27 +103,27 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
--- Set textwidth to 88 for Python files
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "python",
   callback = function()
-    vim.bo.textwidth = 88 -- Set textwidth to 88 for Python files (matching Black's default)
+    local l = Linelenght_by_ft["python"]
+    vim.bo.textwidth = l
   end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "ahk", "autohotkey" },
+  pattern = "autohotkey",
   callback = function()
-    vim.bo.textwidth = 88
-    vim.opt_local.colorcolumn = "88"
+    local l = Linelenght_by_ft["autohotkey"]
+    vim.bo.textwidth = l
   end,
 })
 
--- Set textwidth to 100 for Lua files (for longer comments in the config)
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "lua",
   callback = function()
-    vim.bo.textwidth = 100
+    local l = Linelenght_by_ft["lua"]
+    vim.bo.textwidth = l
   end,
 })
 
