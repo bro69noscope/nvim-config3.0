@@ -118,6 +118,7 @@ map("n", "<Up>", function()
   if not ok then
     vim.notify(err, vim.log.levels.ERROR)
   end
+  vim.cmd("normal! zz")
 end, { desc = "Previous Quickfix Item" })
 
 map("n", "<Down>", function()
@@ -125,6 +126,7 @@ map("n", "<Down>", function()
   if not ok then
     vim.notify(err, vim.log.levels.ERROR)
   end
+  vim.cmd("normal! zz")
 end, { desc = "Next Quickfix Item" })
 
 -- Format with custom width
