@@ -197,7 +197,14 @@ vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
     if filename == "" then
       filename = "NoName"
     end
-    local title = string.format("%seovim: %s", os_icon, filename)
+
+    local title
+    if vim.o.columns < 190 then
+      title = string.format("%s: %s", os_icon, filename)
+    else
+      title = string.format("%seovim: %s", os_icon, filename)
+    end
+
     vim.opt.title = true
     vim.opt.titlestring = title
   end,
