@@ -14,8 +14,17 @@ else
   left_girl_header = headers.left_girl_header
 end
 
-local height_limit = 40
-local top_padding = vim.o.lines > height_limit and 7 or -1
+local top_padding = 7
+local small_header = vim.o.lines < 40
+
+if _G.StreamingLayout.enabled then
+  top_padding = 1
+end
+
+if small_header then
+  top_padding = -1
+end
+
 local function get_panes()
   local fullscreen = vim.o.columns >= 190
   return {
@@ -157,7 +166,7 @@ return {
   ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝
                                   ..Btw 😎
 ]],
-      enabled = vim.o.lines > height_limit,
+      enabled = not small_header,
       padding = 0,
       width = 25,
     },
@@ -170,7 +179,7 @@ return {
     / / / /  __/ /_/ / |/ / / / / / / /
    /_/ /_/\___/\____/|___/_/_/ /_/ /_/ 
 ]],
-      enabled = vim.o.lines < 40,
+      enabled = small_header,
       padding = 0,
       width = 25,
     },
