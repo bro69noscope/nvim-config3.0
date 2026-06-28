@@ -19,7 +19,7 @@ return {
       vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)
       vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
       -- Hide terminal mapping
-      vim.api.nvim_set_keymap("t", "<C-t>", [[<Cmd>ToggleTermToggleAll<CR>]], { noremap = true, silent = true })
+      vim.api.nvim_set_keymap("t", "<C-x>", [[<Cmd>ToggleTermToggleAll<CR>]], { noremap = true, silent = true })
     end
 
     -- Function to create a new terminal
