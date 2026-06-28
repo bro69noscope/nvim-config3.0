@@ -10,13 +10,13 @@ local restore_wezmove_bindings = function(wezmove)
   end)
 end
 
-local restore_smart_splits_bindings = function(smsplit)
+local restore_smart_splits_bindings = function(smartsplits)
   vim.keymap.set("n", "<C-j>", function()
-    smsplit.move_cursor_down()
+    smartsplits.move_cursor_down()
   end)
 
   vim.keymap.set("n", "<C-k>", function()
-    smsplit.move_cursor_up()
+    smartsplits.move_cursor_up()
   end)
 end
 
@@ -27,9 +27,9 @@ function M.restore_gs_bindings()
   if has_wezmove then
     restore_wezmove_bindings(wezmove)
   end
-  local has_smsplit, smsplit = pcall(require, "smart-splits")
-  if has_smsplit then
-    restore_smart_splits_bindings(smsplit)
+  local has_smartsplits, smartsplits = pcall(require, "smart-splits")
+  if has_smartsplits then
+    restore_smart_splits_bindings(smartsplits)
   end
 end
 
