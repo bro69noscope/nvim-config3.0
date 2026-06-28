@@ -26,6 +26,14 @@ return {
       mode = { "i" },
       desc = "Open Yank History",
     },
+    {
+      "<c-p>",
+      function()
+        require("telescope").extensions.yank_history.yank_history({})
+      end,
+      mode = { "i" },
+      desc = "Open Yank History",
+    },
         -- stylua: ignore
     { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
     { "Y", "<Plug>(YankyYank)$", mode = { "n", "x" }, desc = "Yank Text to End of Line" },
