@@ -61,7 +61,7 @@ map("n", "n", "nzz", { desc = "Next search and center" })
 map("n", "N", "Nzz", { desc = "Previous search and center" })
 map("n", "*", "*zz", { desc = "Search word under cursor and center" })
 map("n", "#", "#zz", { desc = "Search word under cursor backward and center" })
-map("n", "%", "%zz", { desc = "Match bracket and center" })
+-- map("n", "%", "%zz", { desc = "Match bracket and center" })
 
 -- Open Lazy floating window
 map("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy", icon = "󰒲" })
