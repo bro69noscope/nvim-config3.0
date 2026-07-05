@@ -2,6 +2,7 @@ _G.OnWindows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
 _G.Logger = require("config.custom-logging")
 _G.RepeatablePairs = require("config.repeatable-pairs")
 _G.StreamingLayout = require("config.streaming_layout")
+_G.OnNeovide = require("config.neovide")
 
 Logger.init()
 Logger.set_level("DEBUG")

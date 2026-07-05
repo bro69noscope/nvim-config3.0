@@ -14,7 +14,8 @@ else
   left_girl_header = headers.left_girl_header
 end
 
-local tiny_header = vim.o.lines < 40
+-- local tiny_header = vim.o.lines < 40
+local tiny_header = false
 local fullscreen = vim.o.columns >= 190
 
 local function get_panes()
@@ -33,6 +34,10 @@ local top_padding = math.max(0, math.min(max_padding, (vim.o.columns - min_cols)
 
 if tiny_header then
   top_padding = -1
+end
+
+if OnNeovide then
+  top_padding = top_padding + 2
 end
 
 local panes = get_panes()
@@ -208,16 +213,16 @@ return {
         return Snacks.git.get_root() == nil
       end,
     },
-    {
-      pane = panes.center,
-      icon = "📂",
-      width = 25,
-      title = "Recent Files",
-      section = "recent_files",
-      cwd = true,
-      indent = 2,
-      padding = 1,
-    },
+    -- {
+    --   pane = panes.center,
+    --   icon = "📂",
+    --   width = 25,
+    --   title = "Recent Files",
+    --   section = "recent_files",
+    --   cwd = true,
+    --   indent = 2,
+    --   padding = 1,
+    -- },
     { pane = panes.center, section = "startup", padding = 900 },
     {
       pane = panes.right,
