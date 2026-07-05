@@ -106,11 +106,20 @@ map("n", "<leader>oP", function()
   os.execute(command)
 end, { desc = "Open line in PyCharm", icon = { icon = "", color = "yellow" } })
 
--- Focus main editing window
+-- Focus windows
+local focus_win = require("scripts.ui.focus-nvim-windows")
+
 map("n", "<leader>wi", function()
-  local focus = require("scripts.ui.focus-largest-window")
-  focus.focus()
+  focus_win.largest()
 end, { desc = "Focus largest window" })
+
+map("n", "<leader>wc", function()
+  focus_win.quickfix()
+end, { desc = "Focus quickfix window" })
+
+map("n", "<leader>wx", function()
+  focus_win.snacks_explorer()
+end, { desc = "Focus snacks explorer window" })
 
 -- Quickfix navigation
 map("n", "<Up>", function()
