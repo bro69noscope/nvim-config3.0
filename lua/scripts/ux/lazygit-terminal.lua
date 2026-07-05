@@ -43,12 +43,17 @@ local function lg_float_term(opts)
   end
 
   local buf = vim.api.nvim_create_buf(false, true)
+  local cols = vim.o.columns
+  local lines = vim.o.lines
+  local height = math.floor(lines * opts.size.height - (OnNeovide and 1.5 or 0))
+  local width = math.floor(cols * opts.size.width)
+
   local float = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
-    width = math.floor(vim.o.columns * opts.size.width),
-    height = math.floor(vim.o.lines * opts.size.height - 1),
-    row = math.floor(vim.o.lines * (1 - opts.size.height) / 2),
-    col = math.floor(vim.o.columns * (1 - opts.size.width) / 2),
+    width = width,
+    height = height,
+    row = math.floor(lines * (1 - opts.size.height) / 2),
+    col = math.floor(cols * (1 - opts.size.width) / 2),
     style = "minimal",
     border = "rounded",
   })
