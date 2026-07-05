@@ -32,7 +32,7 @@ return {
         enabled = true,
       },
       progress = {
-        enabled = true,
+        enabled = false,
       },
     },
   },
