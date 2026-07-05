@@ -166,6 +166,7 @@ return {
     end
 
     -- Configure telescope
+    local project_actions = require("telescope._extensions.project.actions")
     telescope.setup({
       defaults = {
         mappings = {
@@ -205,6 +206,14 @@ return {
           results_ts_hl = true,
           -- filename_hl = "EgrepifyFile", -- default, not required, links to `Title`
           filename_hl = "lualine_b_normal",
+        },
+        project = {
+          mappings = {
+            n = {
+              ["r"] = project_actions.recent_project_files,
+              ["R"] = project_actions.rename_project,
+            },
+          },
         },
       },
     })
