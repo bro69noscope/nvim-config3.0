@@ -46,7 +46,7 @@ local function lg_float_term(opts)
   local float = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = math.floor(vim.o.columns * opts.size.width),
-    height = math.floor(vim.o.lines * opts.size.height),
+    height = math.floor(vim.o.lines * opts.size.height - 1),
     row = math.floor(vim.o.lines * (1 - opts.size.height) / 2),
     col = math.floor(vim.o.columns * (1 - opts.size.width) / 2),
     style = "minimal",
