@@ -178,8 +178,6 @@ map("n", "<leader>ub", function()
   vim.fn.setreg("+", bufname .. "\n" .. raw_bufname)
 end, { desc = "Yank current buffer name to clipboard" })
 
-map("n", "<leader>li", "<cmd>checkhealth vim.lsp<cr>", { desc = "Show LSP info" })
-
 -- Path quick conversion
 map("n", "<leader>\\", function()
   require("scripts.edit.edit-path-separators").convert_path_separators()
