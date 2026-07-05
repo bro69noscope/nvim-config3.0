@@ -287,3 +287,8 @@ end, { desc = "Open custom log file", icon = "📄" })
 
 -- Open new tab
 map("n", "<leader>ot", "<cmd>tabnew<cr>", { desc = "new tab" })
+
+-- HACK: Did not manage to fit this in the snacks config
+map("i", "<C-h>", function()
+  Snacks.picker.smart()
+end)
