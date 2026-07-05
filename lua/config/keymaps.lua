@@ -288,6 +288,11 @@ end, { desc = "Open custom log file", icon = "📄" })
 -- Open new tab
 map("n", "<leader>ot", "<cmd>tabnew<cr>", { desc = "new tab" })
 
+-- Open new wezterm tab in current cwd
+map("n", "<leader>to", function()
+  require("scripts.ux.open-cwd-wezterm").new_cwd_wezterm_tab()
+end, { desc = "Open WezTerm tab in current cwd" })
+
 -- HACK: Did not manage to fit this in the snacks config
 map("i", "<C-h>", function()
   Snacks.picker.smart()
