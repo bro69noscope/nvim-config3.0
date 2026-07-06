@@ -6,7 +6,7 @@ else
 end
 return {
   "yetone/avante.nvim",
-  enabled = false,
+  enabled = true,
   event = { "BufReadPost", "BufNewFile" },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   -- ⚠️ must add this setting! ! !

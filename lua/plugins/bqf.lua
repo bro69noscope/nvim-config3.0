@@ -1,6 +1,6 @@
 return {
   "kevinhwang91/nvim-bqf",
-  enabled = false,
+  enabled = true,
   ft = "qf",
   opts = {
     preview = {
