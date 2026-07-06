@@ -257,3 +257,22 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end, 10)
   end,
 })
+
+-- Create a dim backdrop behind Telescope prompt windows
+local backdrop = require("scripts.ui.create-backdrop-window")
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "TelescopePrompt",
+  callback = function()
+    local prompt_win = vim.api.nvim_get_current_win()
+    local bd = backdrop.open({ blend = 70, zindex = 45 })
+
+    -- clean up when the picker's prompt window closes
+    vim.api.nvim_create_autocmd("WinClosed", {
+      pattern = tostring(prompt_win),
+      once = true,
+      callback = function()
+        backdrop.close(bd)
+      end,
+    })
+  end,
+})
