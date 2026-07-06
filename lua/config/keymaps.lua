@@ -291,7 +291,7 @@ map("n", "<leader>ot", "<cmd>tabnew<cr>", { desc = "new tab" })
 -- Open new wezterm tab in current cwd
 map("n", "<leader>to", function()
   require("scripts.ux.open-cwd-wezterm").new_cwd_wezterm_tab()
-end, { desc = "Open WezTerm tab in current cwd" })
+end, { desc = "Open WezTerm tab at cwd" })
 
 -- HACK: Did not manage to fit this in the snacks config
 map("i", "<C-h>", function()
