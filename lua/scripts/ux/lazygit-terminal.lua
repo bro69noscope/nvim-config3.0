@@ -61,6 +61,9 @@ local function lg_float_term(opts)
   -- Store in our global reference
   lazygit_term.buf = buf
   lazygit_term.win = float
+  local backdrop = require("scripts.ui.create-backdrop-window")
+  local bd = backdrop.open({ blend = 40 })
+  backdrop.link_to_window(float, bd)
 
   -- Fix Whichkey delay from waiting for bracket keys combinations
   vim.api.nvim_buf_set_keymap(buf, "t", "]", "]", { noremap = true, nowait = true })
