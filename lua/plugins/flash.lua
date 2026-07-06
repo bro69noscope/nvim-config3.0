@@ -6,9 +6,12 @@ return {
   priority = 49, -- Needs to load after treesitter text objects to correctly override the "f" and "t" keys
   vscode = true,
   opts = {
+    labels = "atinehcsbwrodypulmgfvjkxqz", -- enthium layout
+    -- labels = "atinehcsbwrodypulmgfvjkxqz", -- enthium layout
     modes = {
       char = {
         jump_labels = true,
+        label = { exclude = "hjkliardcx" },
       },
     },
   },
