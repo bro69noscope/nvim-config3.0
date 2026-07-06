@@ -22,7 +22,7 @@ return {
       vim.api.nvim_set_keymap("t", "<C-x>", [[<Cmd>ToggleTermToggleAll<CR>]], { noremap = true, silent = true })
     end
 
-    -- Function to create a new terminal
+    -- Create a new terminal
     local function create_terminal()
       local new_terminal = Terminal:new({
         id = next_terminal_id,
@@ -37,6 +37,33 @@ return {
       })
       next_terminal_id = next_terminal_id + 1
       return new_terminal
+    end
+
+    -- Create a new floating terminal
+    local backdrop = require("scripts.ui.create-backdrop-window")
+    local term_backdrop
+
+    local float_term = Terminal:new({
+      id = 100,
+      direction = "float",
+      -- hidden = true,
+      float_opts = {
+        border = "rounded",
+        width = math.floor(vim.o.columns * 0.8),
+        height = math.floor(vim.o.lines * 0.8),
+      },
+      on_open = function(t)
+        term_backdrop = backdrop.open({ blend = 70, zindex = 40 })
+        vim.cmd("startinsert!")
+        set_terminal_keymaps(t)
+      end,
+      on_close = function(t)
+        backdrop.close(term_backdrop)
+      end,
+    })
+
+    function Toggle_floating_terminal()
+      float_term:toggle()
     end
 
     -- Function to open a new terminal
@@ -67,6 +94,13 @@ return {
       "<leader>tt",
       "<Cmd>lua Toggle_or_create_terminal()<CR>",
       desc = "Toggle terminals",
+      icon = { icon = "", color = "blue" },
+    })
+
+    wk.add({
+      "<leader>tf",
+      "<Cmd>lua Toggle_floating_terminal()<CR>",
+      desc = "Open floating terminal",
       icon = { icon = "", color = "blue" },
     })
 
