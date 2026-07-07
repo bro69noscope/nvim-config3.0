@@ -7,6 +7,7 @@ return {
       ["python"] = { "ruff_format" },
       ["yaml"] = { "prettier" },
       ["json"] = { "prettier" },
+      ["jsonc"] = { "prettier" },
       ["toml"] = { "taplo" },
       ["lua"] = { "stylua" },
       ["zsh"] = { "beautysh" },
