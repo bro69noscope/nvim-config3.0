@@ -207,19 +207,19 @@ end, { desc = "Swap true/false keywords", icon = "" })
 
 -- Manipulate windows size
 map("n", "<leader>wm", function()
-  require("scripts.ui.maximize-window").maximize_window()
+  require("scripts.ui.resize-windows").maximize_window()
 end, { desc = "Maximize window size" })
 
 map("n", "<leader>ws", function()
-  require("scripts.ui.maximize-window").set_window()
+  require("scripts.ui.resize-windows").set_window()
 end, { desc = "Set window size" })
 
 map("n", "<leader>wr", function()
-  require("scripts.ui.maximize-window").restore_window()
+  require("scripts.ui.resize-windows").restore_window()
 end, { desc = "Restore window size" })
 
 map("n", "<leader>wh", function()
-  require("scripts.ui.maximize-window").half_size_window()
+  require("scripts.ui.resize-windows").half_size_window()
 end, { desc = "Set window to half size" })
 
 -- Toggle quickfix window
