@@ -107,7 +107,7 @@ map("n", "<leader>oP", function()
 end, { desc = "Open line in PyCharm", icon = { icon = "", color = "yellow" } })
 
 -- Focus windows
-local focus_win = require("scripts.ui.focus-nvim-windows")
+local focus_win = require("scripts.ux.focus-windows")
 
 map("n", "<leader>wi", function()
   focus_win.largest()
