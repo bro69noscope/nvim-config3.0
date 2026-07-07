@@ -8,6 +8,15 @@ return {
     },
     routes = {
       {
+        -- FIX: lazily filtering out qf lsp sync error (quicker plugin)
+        filter = {
+          event = "msg_show",
+          kind = "lua_error",
+          find = "compute_end_range",
+        },
+        opts = { skip = true },
+      },
+      {
         filter = {
           event = "notify",
           find = "Config Change Detected. Reloading",
