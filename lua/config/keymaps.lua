@@ -173,7 +173,7 @@ end, { desc = "Copy unnamed reg to clipboard", icon = "📋" })
 
 -- Various uitilities
 map("n", "<leader>uf", function()
-  require("scripts.utils.various-utils").make_window_floating()
+  require("scripts.ui.transform-windows").make_window_floating()
 end, { desc = "Make window floating" })
 
 map("n", "<Leader>uB", function()

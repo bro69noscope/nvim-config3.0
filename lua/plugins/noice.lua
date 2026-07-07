@@ -66,7 +66,7 @@ return {
       function()
         vim.cmd("NoiceAll")
         vim.schedule(function()
-          require("scripts.utils.various-utils").make_window_floating()
+          require("scripts.ui.transform-windows").make_window_floating()
           vim.cmd("normal! G")
           vim.cmd("normal! M")
         end)
