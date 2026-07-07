@@ -171,8 +171,11 @@ return {
           "-Command",
           "&'"
             .. vim.fn.stdpath("data")
-            .. "/mason/packages/powershell-editor-services/PowerShellEditorServices/Start-EditorServices.ps1'",
-          "-Stdio",
+            .. "/mason/packages/powershell-editor-services/PowerShellEditorServices/Start-EditorServices.ps1' "
+            .. "-Stdio "
+            .. "-SessionDetailsPath '"
+            .. vim.fn.stdpath("cache")
+            .. "/powershell-es/PowerShellEditorServices.json'",
         },
         settings = {
           powershell = {
