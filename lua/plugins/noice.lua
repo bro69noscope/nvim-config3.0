@@ -56,14 +56,13 @@ return {
       "<leader>na",
       function()
         vim.cmd("NoiceAll")
-        require("scripts.ui.maximize-window").half_size_window()
         vim.schedule(function()
           require("scripts.utils.various-utils").make_window_floating()
           vim.cmd("normal! G")
           vim.cmd("normal! M")
         end)
       end,
-      desc = "All notifications (half size window)",
+      desc = "All notifications",
     },
     {
       "<leader>nd",
