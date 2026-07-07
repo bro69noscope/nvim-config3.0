@@ -63,14 +63,6 @@ return {
           end
         end, { buffer = 0 })
 
-        -- local clients = vim.lsp.get_clients({ bufnr = 0 })
-        -- for _, client in pairs(clients) do
-        --   vim.lsp.buf_detach_client(0, client.id)
-        -- end
-        -- vim.defer_fn(function()
-        --   vim.cmd("Noice dismiss") -- dismiss notifications for LSP detach (noisy warnings from lsp)
-        -- end, 100) -- FIX: this might not be needed anymore
-
         vim.api.nvim_create_autocmd("TabClosed", {
           callback = function()
             diff_sanitize.re_enable_diff_features()
