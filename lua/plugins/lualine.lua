@@ -13,21 +13,6 @@ return {
       -- lualine_c_normal = { bg = "#1E2030", fg = "#828BB8", nocombine = true, }
       vim.api.nvim_set_hl(0, "LualineFilename", { fg = "#949fd1", bold = true })
 
-      -- HACK: Prevents noice hover window from moving weird when entered if winbar is enabled.
-      -- We set a global winbar to prevent the displacement causing the visual glitch
-      vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
-        callback = function()
-          local ft = vim.bo.filetype
-          if config.winbar and config.winbar.lualine_c then
-            if ft == "noice" and vim.o.winbar == "" then
-              vim.o.winbar = " "
-            elseif ft ~= "noice" and vim.o.winbar == " " then
-              vim.o.winbar = ""
-            end
-          end
-        end,
-      })
-
       local function diff_source()
         local gitsigns = vim.b.gitsigns_status_dict
         if gitsigns then
