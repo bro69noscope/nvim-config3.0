@@ -27,5 +27,8 @@ vim.api.nvim_create_autocmd("User", {
 
     local udlt = require("modules.snacks.toggle.custom-toggles.diag-underlines").diagnostic_underlines_toggle
     udlt:map("<leader>xu")
+
+    local qft = require("modules.snacks.toggle.custom-toggles.quickfix-win").quickfix_toggle
+    qft:map("<leader>C")
   end,
 })

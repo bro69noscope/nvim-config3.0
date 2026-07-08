@@ -222,11 +222,6 @@ map("n", "<leader>wh", function()
   require("scripts.ui.resize-windows").half_size_window()
 end, { desc = "Set window to half size" })
 
--- Toggle quickfix window
-map("n", "<leader>C", function()
-  require("scripts.ui.toggle-quickfix").toggle_quickfix()
-end, { desc = "Toggle quickfix window" })
-
 -- Yank buffer's paths to clipboard
 map("n", "<leader>yp", function()
   local relative_path = vim.fn.expand("%:p:~:.")
