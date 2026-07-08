@@ -18,13 +18,14 @@ return {
       vim.keymap.set("t", "<C-Down>", [[<Cmd>resize -2<CR>]], opts)
       vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)
       vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
-      -- Hide terminal mapping
-      vim.api.nvim_set_keymap("t", "<C-x>", [[<Cmd>ToggleTermToggleAll<CR>]], { noremap = true, silent = true })
+      -- Hide terminals mapping
+      vim.keymap.set("t", "<C-p>", [[<Cmd>ToggleTermToggleAll<CR>]], opts)
     end
 
     -- Create a new terminal
-    local function create_terminal()
+    local function create_terminal(dir)
       local new_terminal = Terminal:new({
+        dir = dir,
         id = next_terminal_id,
         direction = "horizontal",
         on_open = function(term)
@@ -42,41 +43,46 @@ return {
     -- Create a new floating terminal
     local backdrop = require("scripts.ui.create-backdrop-window")
     local term_backdrop
+    local float_term
 
-    local float_term = Terminal:new({
-      id = 100,
-      direction = "float",
-      -- hidden = true,
-      float_opts = {
-        border = "rounded",
-        width = math.floor(vim.o.columns * 0.8),
-        height = math.floor(vim.o.lines * 0.8),
-      },
-      on_open = function(t)
-        term_backdrop = backdrop.open({ blend = 70, zindex = 40 })
-        vim.cmd("startinsert!")
-        set_terminal_keymaps(t)
-      end,
-      on_close = function(t)
-        backdrop.close(term_backdrop)
-      end,
-    })
+    local function create_terminal_float(dir)
+      float_term = Terminal:new({
+        dir = dir,
+        hidden = true,
+        id = 100,
+        direction = "float",
+        float_opts = {
+          border = "rounded",
+          width = math.floor(vim.o.columns * 0.8),
+          height = math.floor(vim.o.lines * 0.8),
+        },
+        on_open = function(t)
+          term_backdrop = backdrop.open({ blend = 70, zindex = 40 })
+          vim.cmd("startinsert!")
+          set_terminal_keymaps(t)
+        end,
+        on_close = function(t)
+          backdrop.close(term_backdrop)
+        end,
+      })
+      return float_term
+    end
 
-    function Toggle_floating_terminal()
+    local function toggle_or_create_terminal_float(dir)
+      if not float_term then
+        create_terminal_float(dir)
+      elseif dir then
+        float_term:change_dir(dir)
+      end
+
       float_term:toggle()
     end
 
-    -- Function to open a new terminal
-    function Open_new_terminal()
-      local new_term = create_terminal()
-      new_term:open()
-    end
-
-    -- Function to toggle terminals or create one if none exist
-    function Toggle_or_create_terminal()
+    local function toggle_or_create_terminal(dir)
       local terms = require("toggleterm.terminal").get_all()
       if #terms == 0 then
-        Open_new_terminal()
+        local new_term = create_terminal(dir)
+        new_term:open()
       else
         vim.cmd("ToggleTermToggleAll")
       end
@@ -84,24 +90,51 @@ return {
 
     -- Set up keybindings for multi-terminal management
     local wk = require("which-key")
-    wk.add({
-      "<leader>tn",
-      "<Cmd>lua Open_new_terminal()<CR>",
-      desc = "Open new toggleterm",
-      icon = { icon = "", color = "blue" },
-    })
+
     wk.add({
       "<leader>tt",
-      "<Cmd>lua Toggle_or_create_terminal()<CR>",
-      desc = "Toggle terminals",
-      icon = { icon = "", color = "blue" },
+      function()
+        toggle_or_create_terminal()
+      end,
+      desc = "Toggleterm",
+      icon = { icon = "", color = "cyan" },
+    })
+
+    wk.add({
+      "<leader>tn",
+      function()
+        local new_term = create_terminal()
+        new_term:open()
+      end,
+      desc = "New toggleterm",
+      icon = { icon = "", color = "blue" },
+    })
+
+    wk.add({
+      "<leader>tN",
+      function()
+        toggle_or_create_terminal(vim.fn.expand("%:p:h"))
+      end,
+      desc = "New toggleterm at current file",
+      icon = { icon = "", color = "blue" },
     })
 
     wk.add({
       "<leader>tf",
-      "<Cmd>lua Toggle_floating_terminal()<CR>",
-      desc = "Open floating terminal",
-      icon = { icon = "", color = "blue" },
+      function()
+        toggle_or_create_terminal_float()
+      end,
+      desc = "Toggleterm float",
+      icon = { icon = "", color = "red" },
+    })
+
+    wk.add({
+      "<leader>tF",
+      function()
+        toggle_or_create_terminal_float(vim.fn.expand("%:p:h"))
+      end,
+      desc = "Toggleterm float at current file",
+      icon = { icon = "", color = "red" },
     })
 
     local shell
