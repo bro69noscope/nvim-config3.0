@@ -3,7 +3,7 @@ return {
   "dlyongemallo/diffview.nvim", -- fork of repo with some fixes over last 2 years
   enabled = true,
   keys = {
-    { "<leader>gov", "<cmd>DiffviewOpen<cr>", desc = "DiffView" },
+    { "<leader>god", "<cmd>DiffviewOpen<cr>", desc = "DiffView" },
     { "<leader>goh", mode = { "n" }, "<cmd>DiffviewFileHistory<cr>", desc = "File history" },
     { "<leader>goh", mode = { "v" }, ":DiffviewFileHistory<cr>", desc = "Lines history" },
     { "<leader>got", "<cmd>DiffviewFileHistory %<cr>", desc = "This file history" },

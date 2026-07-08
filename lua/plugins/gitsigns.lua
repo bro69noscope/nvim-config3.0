@@ -29,9 +29,7 @@ return {
       local diff_sanitize = require("scripts.ui.diff-sanitize")
 
       -- Helper function for mapping keys
-      local function map(mode, l, r, desc)
-        vim.keymap.set(mode, l, r, { desc = desc, silent = true })
-      end
+      local map = require("scripts.ui.whichkey-map").map
 
       -- Show old code that was removed as "deleted" in diff view
       -- vim.schedule(function()
@@ -69,17 +67,17 @@ return {
               vim.cmd("normal! zz")
             end
           end)
-        end, "Close diff tab")
+        end, { desc = "Close diff tab" })
 
         map("n", "<C-k>", function()
           vim.cmd.normal({ "[c", bang = true })
           vim.cmd("normal! zz")
-        end, "Next change in diff")
+        end, { desc = "Next change in diff" })
 
         map("n", "<C-j>", function()
           vim.cmd.normal({ "]c", bang = true })
           vim.cmd("normal! zz")
-        end, "Previous change in diff")
+        end, { desc = "Previous change in diff" })
 
         vim.api.nvim_create_autocmd("TabClosed", {
           callback = function(args)
@@ -112,44 +110,45 @@ return {
         local repeat_reverse = require("modules.gitsigns.repeat-reverse")
         local next_hunk, _ = repeat_reverse.setup_gitsigns()
         next_hunk()
-      end, "Next Hunk")
+      end, { desc = "Next Hunk" })
 
       map("n", "[g", function()
         local repeat_reverse = require("modules.gitsigns.repeat-reverse")
         local _, prev_hunk = repeat_reverse.setup_gitsigns()
         prev_hunk()
-      end, "Prev Hunk")
+      end, { desc = "Prev Hunk" })
 
       -- Jump to first/last hunk
       map("n", "]G", function()
         gs.nav_hunk("last")
-      end, "Last Hunk")
+      end, { desc = "Last Hunk" })
 
       map("n", "[G", function()
         gs.nav_hunk("first")
-      end, "First Hunk")
+      end, { desc = "First Hunk" })
 
       -- Buffer operations
-      map("n", "<leader>gS", gs.stage_buffer, "Stage Buffer")
-      map("n", "<leader>gR", gs.reset_buffer, "Reset Buffer")
+      map("n", "<leader>gS", gs.stage_buffer, { desc = "Stage Buffer" })
+      map("n", "<leader>gR", gs.reset_buffer, { desc = "Reset Buffer" })
 
       -- Hunk operations
-      map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
-      map({ "n", "v" }, "<leader>ghr", ":Gitsigns reset_hunk<CR>", "Reset Hunk")
-      map("n", "<leader>ghu", gs.undo_stage_hunk, "Undo Stage Hunk")
-      map("n", "<leader>ghp", gs.preview_hunk_inline, "Preview Hunk Inline")
+      map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", { desc = "Stage Hunk" })
+      map({ "n", "v" }, "<leader>ghr", ":Gitsigns reset_hunk<CR>", { desc = "Reset Hunk" })
+      map("n", "<leader>ghu", gs.undo_stage_hunk, { desc = "Undo Stage Hunk" })
+      map("n", "<leader>ghp", gs.preview_hunk_inline, { desc = "Preview Hunk Inline" })
 
       -- Blame operations
       map("n", "<leader>gb", function()
         gs.blame_line({ full = true })
-      end, "Blame Line")
+      end, { desc = "Blame Line" })
 
       map("n", "<leader>gB", function()
         gs.blame()
-      end, "Blame Buffer")
+      end, { desc = "Blame Buffer" })
 
       ---@param base? string
-      local function create_diff_tab(base)
+      ---@param vertical? boolean
+      local function create_diff_tab(base, vertical)
         local original_buf = vim.api.nvim_get_current_buf()
         local buffers_before = vim.api.nvim_list_bufs()
 
@@ -158,7 +157,7 @@ return {
         local filename = vim.fn.expand("%:t")
         local head_suffix = base and ("(" .. base .. ")") or ""
         vim.t.custom_tabname = "gs diff" .. head_suffix .. ": " .. filename
-        gs.diffthis(base)
+        gs.diffthis(base, { vertical = vertical })
         diff_sanitize.disable_diff_features()
 
         local buffers_after = vim.api.nvim_list_bufs()
@@ -183,16 +182,24 @@ return {
       end
 
       -- Diff operations in new tab
-      map("n", "<leader>god", function()
-        create_diff_tab(nil)
-      end, "Quick diff in new tab")
+      map("n", "<leader>gov", function()
+        create_diff_tab(nil, true)
+      end, { desc = "Quick diff in new tab (vertical)" })
 
-      map("n", "<leader>goD", function()
-        create_diff_tab("~")
-      end, "Quick diff ~ in new tab")
+      map("n", "<leader>goV", function()
+        create_diff_tab("~", true)
+      end, { desc = "Quick diff ~ in new tab (vertical)" })
+
+      map("n", "<leader>gos", function()
+        create_diff_tab(nil, false)
+      end, { desc = "Quick diff in new tab (horizontal)" })
+
+      map("n", "<leader>goS", function()
+        create_diff_tab("~", false)
+      end, { desc = "Quick diff ~ in new tab (horizontal)" })
 
       -- Text object for hunks
-      map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
+      map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "GitSigns Select Hunk" })
     end,
   },
 }
