@@ -1,27 +1,4 @@
-local has_wk, wk = pcall(require, "which-key")
-
--- Enhanced map function that handles both vim keymaps and which-key
-local function map(mode, lhs, rhs, options)
-  options = options or {}
-
-  local icon = options.icon
-  local vim_options = vim.tbl_deep_extend("force", {}, options)
-  vim_options.icon = nil -- Remove icon from vim keymap options
-
-  vim.keymap.set(mode, lhs, rhs, vim_options)
-
-  if has_wk and options.icon then
-    local wk_spec = {
-      lhs,
-      rhs,
-      desc = options.desc,
-      icon = icon,
-      mode = mode,
-    }
-
-    wk.add({ wk_spec })
-  end
-end
+local map = require("scripts.ui.whichkey-map").map
 
 -- lateral movement with H and L except in neo-tree
 vim.api.nvim_create_autocmd("FileType", {
