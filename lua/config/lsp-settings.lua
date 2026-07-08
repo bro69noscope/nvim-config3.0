@@ -127,18 +127,6 @@ vim.keymap.set("n", "[d", prev_diag)
 vim.keymap.set("n", "]D", next_error)
 vim.keymap.set("n", "[D", prev_error)
 
-vim.keymap.set("n", "<leader>xl", function()
-  vim.diagnostic.config({
-    virtual_text = not vim.diagnostic.config().virtual_text,
-  })
-end, { desc = "Toggle line diagnostics" })
-
-vim.keymap.set("n", "<leader>xu", function()
-  vim.diagnostic.config({
-    underline = not vim.diagnostic.config().underline,
-  })
-end, { desc = "Toggle diagnostics underlines" })
-
 vim.keymap.set("n", "K", function()
   vim.lsp.buf.hover()
 end, { desc = "Lsp Hover Info" })
