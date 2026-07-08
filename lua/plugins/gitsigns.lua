@@ -128,8 +128,11 @@ return {
       end, { desc = "First Hunk" })
 
       -- Buffer operations
-      map("n", "<leader>gS", gs.stage_buffer, { desc = "Stage Buffer" })
-      map("n", "<leader>gR", gs.reset_buffer, { desc = "Reset Buffer" })
+      map("n", "<leader>gS", gs.stage_buffer, { desc = "Stage Buffer", icon = "🗸" })
+      map("n", "<leader>gR", gs.reset_buffer, {
+        desc = "Reset Buffer",
+        icon = { icon = "", hl = "DevIconGitLogo" },
+      })
 
       -- Hunk operations
       map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", { desc = "Stage Hunk" })
@@ -184,19 +187,31 @@ return {
       -- Diff operations in new tab
       map("n", "<leader>gov", function()
         create_diff_tab(nil, true)
-      end, { desc = "Quick diff in new tab (vertical)" })
+      end, {
+        desc = "QuickDiff (vertical)",
+        icon = { icon = "", hl = "DevIconGitLogo" },
+      })
 
       map("n", "<leader>goV", function()
         create_diff_tab("~", true)
-      end, { desc = "Quick diff ~ in new tab (vertical)" })
+      end, {
+        desc = "QuickDiff ~ (vertical)",
+        icon = { icon = "", hl = "DevIconGitLogo" },
+      })
 
       map("n", "<leader>gos", function()
         create_diff_tab(nil, false)
-      end, { desc = "Quick diff in new tab (horizontal)" })
+      end, {
+        desc = "QuickDiff (horizontal)",
+        icon = { icon = "", hl = "DevIconGitLogo" },
+      })
 
       map("n", "<leader>goS", function()
         create_diff_tab("~", false)
-      end, { desc = "Quick diff ~ in new tab (horizontal)" })
+      end, {
+        desc = "QuickDiff ~ (horizontal)",
+        icon = { icon = "", hl = "DevIconGitLogo" },
+      })
 
       -- Text object for hunks
       map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "GitSigns Select Hunk" })
