@@ -13,6 +13,12 @@ return {
       -- lualine_c_normal = { bg = "#1E2030", fg = "#828BB8", nocombine = true, }
       vim.api.nvim_set_hl(0, "LualineFilename", { fg = "#949fd1", bold = true })
 
+      local jsonpath_toggle = require("modules.snacks.toggle.custom-toggles.jsonpath-statusline")
+
+      local status_line_ovverridden = function()
+        return jsonpath_toggle.enabled() -- and .. other possible ovverrides to add here
+      end
+
       local function diff_source()
         local gitsigns = vim.b.gitsigns_status_dict
         if gitsigns then
@@ -36,18 +42,35 @@ return {
       config.winbar.lualine_c = {
         {
           function()
-            return navic.get_location() .. " " -- White space string to make winbar always appear on
-            -- main window and avoid jitter due to it appearing/disappearing
-          end,
-          cond = function()
-            return navic.is_available()
+            if vim.wo.diff then
+              return ""
+            end
+
+            if vim.bo.filetype == "json" or vim.bo.filetype == "jsonc" then
+              return require("jsonpath").get() or ""
+            end
+
+            return navic.get_location()
           end,
         },
       }
 
       config.sections.lualine_c = {
         {
+          function()
+            local ok, jp = pcall(require, "jsonpath")
+            if ok then
+              return jp.get() or ""
+            end
+            return ""
+          end,
+          cond = jsonpath_toggle.enabled,
+        },
+        {
           "grapple",
+          cond = function()
+            return not status_line_ovverridden()
+          end,
         },
         {
           function()
@@ -56,6 +79,9 @@ return {
             local dir = vim.fn.fnamemodify(relative_path, ":h")
             local separator = OnWindows and "\\" or "/"
             return table.concat({ dir, separator, "%#LualineFilename#", filename, "%*" })
+          end,
+          cond = function()
+            return not status_line_ovverridden()
           end,
         },
         {
@@ -71,6 +97,9 @@ return {
             end
 
             return #buffer_letters > 0 and table.concat(buffer_letters, "") or ""
+          end,
+          cond = function()
+            return not status_line_ovverridden()
           end,
         },
       }

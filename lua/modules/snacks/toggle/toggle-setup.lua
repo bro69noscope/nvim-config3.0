@@ -21,5 +21,8 @@ vim.api.nvim_create_autocmd("User", {
 
     local wdtgl = require("modules.snacks.toggle.custom-toggles.word-diff-hl").word_diff_toggle
     wdtgl:map("<leader>gw")
+
+    local jpt = require("modules.snacks.toggle.custom-toggles.jsonpath-statusline").jsonpath_statusline_toggle
+    jpt:map("<leader>uj")
   end,
 })
