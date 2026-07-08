@@ -70,14 +70,12 @@ return {
 
     local actions = require("diffview.actions")
     local default_wrap_state = vim.o.wrap
-    local default_cursorline_state = vim.o.cursorline
     local diff_sanitize = require("scripts.ui.diff-sanitize")
 
     vim.api.nvim_create_autocmd("User", {
       pattern = "DiffviewClose",
       callback = function()
         vim.o.wrap = default_wrap_state
-        vim.o.cursorline = default_cursorline_state
       end,
     })
 
@@ -86,7 +84,6 @@ return {
         --- @ diagnostic disable-next-line: unused-local
         view_opened = function(view)
           default_wrap_state = vim.o.wrap
-          default_cursorline_state = vim.o.cursorline
           diff_sanitize.disable_diff_features()
 
           -- Name tabpage with diffview info
@@ -105,20 +102,21 @@ return {
             })
           end)
         end,
+
         view_closed = function()
           diff_sanitize.re_enable_diff_features()
         end,
+
         --- @ diagnostic disable-next-line: unused-local
         diff_buf_read = function(bufnr)
-          -- Assure cleanup of potential winbar breadcrumbs residues
           for _, win in ipairs(vim.api.nvim_list_wins()) do
             vim.wo[win].winbar = ""
-          end
-          if vim.opt_local.wrap ~= false or vim.opt_local.cursorline ~= false then
-            vim.opt_local.wrap = false
-            vim.opt_local.cursorline = false
+            vim.wo[win].culopt = "number"
+            vim.wo[win].wrap = false
           end
         end,
+
+        --- @ diagnostic disable-next-line: unused-local
         diff_buf_win_enter = function(bufnr, winid, ctx)
           if ctx.layout_name:match("^diff2") then
             if ctx.symbol == "a" then
