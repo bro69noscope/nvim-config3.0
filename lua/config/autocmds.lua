@@ -49,14 +49,14 @@ vim.api.nvim_create_autocmd("CmdwinEnter", {
   end,
 })
 
--- Disable cursorline in diff mode
+-- Partial fix for ugly underline in diffs
 vim.api.nvim_create_autocmd("WinEnter", {
   callback = function()
     if vim.wo.diff then
       local wins = vim.api.nvim_tabpage_list_wins(0)
       for _, win in ipairs(wins) do
         vim.wo[win].wrap = false
-        vim.wo[win].cursorline = false
+        vim.wo[win].culopt = "number"
       end
     end
   end,
