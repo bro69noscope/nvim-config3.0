@@ -12,15 +12,6 @@ vim.api.nvim_create_autocmd("User", {
     Snacks.toggle.treesitter():map("<leader>uT")
     Snacks.toggle.inlay_hints():map("<leader>uh")
 
-    -- Colorcolumn toggle
-    local function cc_for_current()
-      local ft = vim.bo.filetype
-      local lenght = Linelenght_by_ft[ft] or 80
-      return tostring(lenght)
-    end
-
-    Snacks.toggle.option("colorcolumn", { off = "", on = cc_for_current }):map("<leader>uc")
-
     -- Custom toggles
     local ctt = require("modules.snacks.toggle.custom-toggles.color_column").colorcolumn_toggle
     ctt:map("<leader>uc")
