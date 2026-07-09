@@ -14,9 +14,6 @@ return {
       ["sh"] = { "shfmt" },
     },
     formatters = {
-      stylua = {
-        prepend_args = { "--indent-type", "Spaces", "--indent-width", "2" },
-      },
       beautysh = {
         prepend_args = { "--indent-size", "2" },
       },
