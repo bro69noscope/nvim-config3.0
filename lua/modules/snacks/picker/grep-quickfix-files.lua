@@ -20,7 +20,8 @@ M.grep_qf_files = function()
   local files_str = table.concat(filenames, ", ")
   local prefix = "Grep in " .. #filetable .. " files: "
   local max_files_length = 80 - #prefix - 4 -- 4 for " ..."
-  local title = #files_str > max_files_length and (prefix .. files_str:sub(1, max_files_length) .. "...")
+  local title = #files_str > max_files_length
+      and (prefix .. files_str:sub(1, max_files_length) .. "...")
     or ("Grep in: " .. files_str)
 
   Snacks.picker.grep({
@@ -29,7 +30,10 @@ M.grep_qf_files = function()
     title = title,
     win = {
       input = {
-        keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(filetable, title),
+        keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(
+          filetable,
+          title
+        ),
       },
     },
   })

@@ -11,8 +11,18 @@ return {
     delay = 200, -- delay in milliseconds
     spec = {
       -- Git
-      { "<leader>g", group = "Git", icon = { icon = "󰊢", hl = "DevIconGitLogo" }, mode = { "n", "v" } },
-      { "<leader>go", group = "Open..", icon = { icon = "󰊢", hl = "DevIconGitLogo" }, mode = { "n", "v" } },
+      {
+        "<leader>g",
+        group = "Git",
+        icon = { icon = "󰊢", hl = "DevIconGitLogo" },
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>go",
+        group = "Open..",
+        icon = { icon = "󰊢", hl = "DevIconGitLogo" },
+        mode = { "n", "v" },
+      },
       { "<leader>gh", group = "Hunks", mode = { "n", "v" } },
 
       -- Refactor

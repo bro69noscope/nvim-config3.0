@@ -13,7 +13,11 @@ M.append_file_to_system_register = function()
   local current_clipboard = vim.fn.getreg("+")
   local m_register = vim.fn.getreg("m")
   vim.fn.setreg("+", current_clipboard .. m_register)
-  vim.notify("Appended file content to system clipboard", vim.log.levels.INFO, { title = "Clipboard" })
+  vim.notify(
+    "Appended file content to system clipboard",
+    vim.log.levels.INFO,
+    { title = "Clipboard" }
+  )
 end
 
 M.append_unnamed_reg_to_system_reg = function()

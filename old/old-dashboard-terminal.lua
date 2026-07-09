@@ -65,7 +65,8 @@ return {
       end
     end
 
-    local untracked_cmd, untracked_height = process_cmd(get_platform_specific_untracked_cmd(), 10, true)
+    local untracked_cmd, untracked_height =
+      process_cmd(get_platform_specific_untracked_cmd(), 10, true)
     local diff_cmd, diff_height = process_cmd("git --no-pager diff --stat=60,40 -B -M -C", 20, true)
 
     -- local untracked_cmd, untracked_height = process_cmd('git status --porcelain | grep "^??"', 10)

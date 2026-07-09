@@ -35,7 +35,11 @@ return {
       if require("copilot.suggestion").is_visible() then
         require("copilot.suggestion").accept_word()
       else
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Right>", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<Right>", true, false, true),
+          "n",
+          false
+        )
       end
     end, {
       silent = true,
@@ -46,7 +50,11 @@ return {
       if require("copilot.suggestion").is_visible() then
         require("copilot.suggestion").accept()
       else
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<Tab>", true, false, true),
+          "n",
+          false
+        )
       end
     end, {
       silent = true,
@@ -55,9 +63,17 @@ return {
     -- Force tab insert with S-Tab when suggestion is visible
     vim.keymap.set("i", "<S-Tab>", function()
       if require("copilot.suggestion").is_visible() then
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<Tab>", true, false, true),
+          "n",
+          false
+        )
       else
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<S-Tab>", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<S-Tab>", true, false, true),
+          "n",
+          false
+        )
       end
     end, {
       silent = true,

@@ -39,7 +39,11 @@ return {
 
         -- Check if this is the "old" version (index/HEAD)
         if bufname:match("^gitsigns://") then
-          vim.api.nvim_set_option_value("winhl", "DiffAdd:DiffDelete,DiffDelete:DiffDelete", { win = winid })
+          vim.api.nvim_set_option_value(
+            "winhl",
+            "DiffAdd:DiffDelete,DiffDelete:DiffDelete",
+            { win = winid }
+          )
         end
       end
       -- end)

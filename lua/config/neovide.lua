@@ -21,7 +21,12 @@ if vim.g.neovide == true then
     { silent = true }
   )
   vim.keymap.set("n", "<C-0>", ":lua vim.g.neovide_scale_factor = 1<CR>", { silent = true })
-  vim.keymap.set("n", "<C-/>", ":lua vim.g.neovide_scale_factor = " .. zoomed_scale .. "<CR>", { silent = true })
+  vim.keymap.set(
+    "n",
+    "<C-/>",
+    ":lua vim.g.neovide_scale_factor = " .. zoomed_scale .. "<CR>",
+    { silent = true }
+  )
   return true
 end
 return false

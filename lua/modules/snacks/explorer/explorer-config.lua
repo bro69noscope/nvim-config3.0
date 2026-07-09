@@ -104,7 +104,10 @@ local grep_in_dir = function(picker, item, opts)
     dirs = dirs,
     win = {
       input = {
-        keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(dirs, title),
+        keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(
+          dirs,
+          title
+        ),
       },
     },
   }

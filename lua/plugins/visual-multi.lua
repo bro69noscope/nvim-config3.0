@@ -77,7 +77,12 @@ return {
     vim.api.nvim_set_hl(0, "VM_Mono", { link = "VMCustom" })
 
     -- Dropoff cursor at current position
-    vim.keymap.set("n", "<C-Right>", "<Plug>(VM-Add-Cursor-At-Pos)", { noremap = true, silent = true })
+    vim.keymap.set(
+      "n",
+      "<C-Right>",
+      "<Plug>(VM-Add-Cursor-At-Pos)",
+      { noremap = true, silent = true }
+    )
     -- Toggle cursors shifting with HJKL
     vim.keymap.set("n", "<C-Left>", "<Plug>(VM-Toggle-Mappings)", { noremap = true, silent = true })
     -- Add cursors up/down

@@ -61,11 +61,19 @@ local function setup_diagnostic_jumps()
 
   -- Error-only diagnostic jumps
   local function next_error()
-    vim.diagnostic.jump({ count = vim.v.count1, severity = vim.diagnostic.severity.ERROR, float = true })
+    vim.diagnostic.jump({
+      count = vim.v.count1,
+      severity = vim.diagnostic.severity.ERROR,
+      float = true,
+    })
   end
 
   local function prev_error()
-    vim.diagnostic.jump({ count = -vim.v.count1, severity = vim.diagnostic.severity.ERROR, float = true })
+    vim.diagnostic.jump({
+      count = -vim.v.count1,
+      severity = vim.diagnostic.severity.ERROR,
+      float = true,
+    })
   end
 
   local next_d, prev_d = RepeatablePairs.track_pair(next_diag, prev_diag)

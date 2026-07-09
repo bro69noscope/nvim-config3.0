@@ -15,10 +15,16 @@ local function select_comment(ai_type, line_num, comment_start, line_text)
   local comment_end = #line_text
   if ai_type == "a" then
     local ws_start = line_text:sub(1, comment_start - 1):match(".*%S()%s*$") or comment_start
-    return { from = { line = line_num, col = ws_start }, to = { line = line_num, col = comment_end } }
+    return {
+      from = { line = line_num, col = ws_start },
+      to = { line = line_num, col = comment_end },
+    }
   else
     local text_start = line_text:find("%S", comment_start + 2) or (comment_start + 2)
-    return { from = { line = line_num, col = text_start }, to = { line = line_num, col = comment_end } }
+    return {
+      from = { line = line_num, col = text_start },
+      to = { line = line_num, col = comment_end },
+    }
   end
 end
 
@@ -45,7 +51,11 @@ local function get_current_comment_boundaries()
     end
 
     -- Go down to find end of comment block
-    while comment_end_line < #lines and lines[comment_end_line + 1] and lines[comment_end_line + 1]:match("^%s*%-%-") do
+    while
+      comment_end_line < #lines
+      and lines[comment_end_line + 1]
+      and lines[comment_end_line + 1]:match("^%s*%-%-")
+    do
       comment_end_line = comment_end_line + 1
     end
 

@@ -158,7 +158,8 @@ map("n", "<Leader>uB", function()
 end, { desc = "Capture current buffer name" })
 
 map("n", "<leader>ub", function()
-  local bufinfo = require("scripts.utils.various-utils").capture_current_buffer_info({ silent = true })
+  local bufinfo =
+    require("scripts.utils.various-utils").capture_current_buffer_info({ silent = true })
   local bufname, raw_bufname = bufinfo.bufname, bufinfo.raw_bufname
   vim.notify("path: " .. bufname .. "\n" .. "raw: " .. raw_bufname, vim.log.levels.INFO)
   vim.fn.setreg("+", bufname .. "\n" .. raw_bufname)
@@ -232,7 +233,12 @@ map("n", "<leader>xo", function()
 end, { desc = "Open buffers from path", icon = "📂" })
 
 -- Remove trailing whitespace
-map("n", "<leader>u<space>", "<cmd>keeppatterns %s/\\s\\+$//e<CR>", { desc = "Remove trailing whitespace" })
+map(
+  "n",
+  "<leader>u<space>",
+  "<cmd>keeppatterns %s/\\s\\+$//e<CR>",
+  { desc = "Remove trailing whitespace" }
+)
 
 -- dbui test
 vim.keymap.set("n", "g]", "gt", { desc = "Next tab" })
@@ -240,7 +246,8 @@ vim.keymap.set("n", "g[", "gT", { desc = "Previous tab" })
 
 -- Generate symbol refactor template for symbol under cursor
 map("n", "<leader>rs", function()
-  local template = require("lang.python.grugfar-astgrep.symbol-imports").generate_template_for_symbol()
+  local template =
+    require("lang.python.grugfar-astgrep.symbol-imports").generate_template_for_symbol()
   if template then
     require("grug-far").open({
       engine = "astgrep-rules",

@@ -94,14 +94,22 @@ M.convert_path_separators = function()
     vim.fn.setreg('"', result)
 
     vim.api.nvim_win_close(win, true)
-    vim.notify('Result copied to empty "" register', vim.log.levels.INFO, { title = "Path Separator Converter" })
+    vim.notify(
+      'Result copied to empty "" register',
+      vim.log.levels.INFO,
+      { title = "Path Separator Converter" }
+    )
   end, opts)
 
   local function close_window()
     if vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     end
-    vim.notify("closed without changes", vim.log.levels.INFO, { title = "Path Separator Converter" })
+    vim.notify(
+      "closed without changes",
+      vim.log.levels.INFO,
+      { title = "Path Separator Converter" }
+    )
   end
   -- ESC to cancel
   vim.keymap.set("n", "<Esc>", function()

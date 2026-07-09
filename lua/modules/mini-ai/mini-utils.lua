@@ -10,7 +10,8 @@ function M.ai_indent(ai_type)
 
   for l, line in ipairs(lines) do
     if not line:find("^%s*$") then
-      indents[#indents + 1] = { line = l, indent = #line:gsub("\t", spaces):match("^%s*"), text = line }
+      indents[#indents + 1] =
+        { line = l, indent = #line:gsub("\t", spaces):match("^%s*"), text = line }
     end
   end
 
@@ -43,7 +44,8 @@ function M.ai_buffer(ai_type)
   local start_line, end_line = 1, vim.fn.line("$")
   if ai_type == "i" then
     -- Skip first and last blank lines for `i` textobject
-    local first_nonblank, last_nonblank = vim.fn.nextnonblank(start_line), vim.fn.prevnonblank(end_line)
+    local first_nonblank, last_nonblank =
+      vim.fn.nextnonblank(start_line), vim.fn.prevnonblank(end_line)
     -- Do nothing for buffer with all blanks
     if first_nonblank == 0 or last_nonblank == 0 then
       return { from = { line = start_line, col = 1 } }

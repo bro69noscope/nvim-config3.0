@@ -54,7 +54,8 @@ M.open_buffers = function()
   end
 
   -- Get git-tracked files (returns relative to git root)
-  local git_files_raw = vim.fn.systemlist(string.format("git -C %s ls-files", vim.fn.shellescape(git_root)))
+  local git_files_raw =
+    vim.fn.systemlist(string.format("git -C %s ls-files", vim.fn.shellescape(git_root)))
   local git_files = {}
   for _, file in ipairs(git_files_raw) do
     local full_path = normalize_path(git_root .. "/" .. file)

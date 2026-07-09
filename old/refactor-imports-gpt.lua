@@ -274,7 +274,14 @@ function M.refactor_python_imports_absolute_elect(relative_path, is_directory, o
         loud("calling search for rule:" .. (doc.id or "unknown"))
         wait_for_search_terminal(inst, function(ok, stats, terminal_status)
           loud("search complete for yaml:\n" .. (doc.yaml or "unknown"))
-          loud(string.format("rule=%s status=%s stats=%s", doc.id or "unknown", terminal_status, vim.inspect(stats)))
+          loud(
+            string.format(
+              "rule=%s status=%s stats=%s",
+              doc.id or "unknown",
+              terminal_status,
+              vim.inspect(stats)
+            )
+          )
           if ok and (stats.matches or 0) > 0 then
             table.insert(winners, doc)
             loud("rule " .. (doc.id or "unknown") .. " is a winner")

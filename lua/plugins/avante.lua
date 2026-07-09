@@ -19,7 +19,11 @@ return {
       pattern = "*",
       callback = function()
         if vim.bo.filetype == "AvanteInput" then
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, true, true), "n", false)
+          vim.api.nvim_feedkeys(
+            vim.api.nvim_replace_termcodes("<Esc>", true, true, true),
+            "n",
+            false
+          )
           vim.cmd("startinsert")
         end
       end,

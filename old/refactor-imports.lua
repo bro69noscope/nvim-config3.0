@@ -132,7 +132,8 @@ local function generate_relative_template_with_scope(relative_path, is_directory
       ),
         grandparent_dir
     else
-      local relative_module_noparent_template = require("lang.python.astgrep-rules.templates.rel-module-noparent")
+      local relative_module_noparent_template =
+        require("lang.python.astgrep-rules.templates.rel-module-noparent")
       return string.format(
         relative_module_noparent_template,
         -- id: rel-from
@@ -159,7 +160,8 @@ M.refactor_python_imports = function(relative_path, is_directory)
   })
 
   -- Second search: relative imports (scoped appropriately)
-  local relative_template, search_dir = generate_relative_template_with_scope(relative_path, is_directory)
+  local relative_template, search_dir =
+    generate_relative_template_with_scope(relative_path, is_directory)
 
   if relative_template then
     require("grug-far").open({

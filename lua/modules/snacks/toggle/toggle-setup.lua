@@ -22,10 +22,12 @@ vim.api.nvim_create_autocmd("User", {
     local wdtgl = require("modules.snacks.toggle.custom-toggles.word-diff-hl").word_diff_toggle
     wdtgl:map("<leader>uW")
 
-    local jpt = require("modules.snacks.toggle.custom-toggles.jsonpath-statusline").jsonpath_statusline_toggle
+    local jpt =
+      require("modules.snacks.toggle.custom-toggles.jsonpath-statusline").jsonpath_statusline_toggle
     jpt:map("<leader>uj")
 
-    local udlt = require("modules.snacks.toggle.custom-toggles.diag-underlines").diagnostic_underlines_toggle
+    local udlt =
+      require("modules.snacks.toggle.custom-toggles.diag-underlines").diagnostic_underlines_toggle
     udlt:map("<leader>xu")
 
     local qft = require("modules.snacks.toggle.custom-toggles.quickfix-win").quickfix_toggle

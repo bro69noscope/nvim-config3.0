@@ -14,7 +14,8 @@ function M.generate(relative_path, is_directory)
       tpl,
       -- id: rel-from-submodule
       dir_name
-    ), parent_dir
+    ),
+      parent_dir
   end
 
   local dotted = path.normalize_path(relative_path, false)

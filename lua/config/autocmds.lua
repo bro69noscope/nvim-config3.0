@@ -235,7 +235,11 @@ vim.api.nvim_create_autocmd("FileType", {
       if not vm_active then
         vim.cmd("q")
       else
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Plug>(VM-Skip-Region)", true, false, true), "n", false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes("<Plug>(VM-Skip-Region)", true, false, true),
+          "n",
+          false
+        )
       end
     end, { buffer = true, silent = true })
   end,

@@ -30,7 +30,10 @@ local max_padding = 7
 local min_cols = 150
 local max_cols = 190
 
-local top_padding = math.max(0, math.min(max_padding, (vim.o.columns - min_cols) / (max_cols - min_cols) * max_padding))
+local top_padding = math.max(
+  0,
+  math.min(max_padding, (vim.o.columns - min_cols) / (max_cols - min_cols) * max_padding)
+)
 
 if tiny_header then
   top_padding = -1

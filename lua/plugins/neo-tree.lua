@@ -32,7 +32,11 @@ return {
           -- Map <CR> in normal mode to confirm/save the input
           vim.keymap.set("n", "<CR>", function()
             vim.cmd.startinsert()
-            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
+            vim.api.nvim_feedkeys(
+              vim.api.nvim_replace_termcodes("<CR>", true, false, true),
+              "n",
+              false
+            )
           end, { buffer = args.bufnr, noremap = true })
         end,
       },

@@ -111,7 +111,10 @@ function M.generate_template_for_symbol()
     return nil
   end
 
-  vim.notify(string.format("Generating rules for %s from %s", symbol, old_module), vim.log.levels.INFO)
+  vim.notify(
+    string.format("Generating rules for %s from %s", symbol, old_module),
+    vim.log.levels.INFO
+  )
 
   return M.generate_symbol_refactor_template(symbol, old_module)
 end

@@ -32,7 +32,10 @@ local function open_final_from_winners(winners, opts)
 
   if opts.notify ~= false then
     local scope_msg = opts.paths and (" in " .. opts.paths) or ""
-    vim.notify(string.format("Elected %d %s import rules%s", #winners, opts.type or "", scope_msg), vim.log.levels.INFO)
+    vim.notify(
+      string.format("Elected %d %s import rules%s", #winners, opts.type or "", scope_msg),
+      vim.log.levels.INFO
+    )
   end
 
   if opts.on_complete then
@@ -48,7 +51,10 @@ function M.elect_rules(docs, opts)
   opts = opts or {}
 
   if #docs == 0 then
-    vim.notify(string.format("No %s import rules to elect from", opts.type or ""), vim.log.levels.WARN)
+    vim.notify(
+      string.format("No %s import rules to elect from", opts.type or ""),
+      vim.log.levels.WARN
+    )
     return
   end
 
