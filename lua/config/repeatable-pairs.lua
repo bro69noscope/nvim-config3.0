@@ -6,7 +6,7 @@ local ts_repeat_move = nil
 
 local function get_ts_repeat_move()
   if ts_repeat_move == nil then
-    local ok, module = pcall(require, "nvim-treesitter.textobjects.repeatable_move")
+    local ok, module = pcall(require, "repeatable_move")
     ts_repeat_move = ok and module or false
   end
   return ts_repeat_move ~= false and ts_repeat_move or nil

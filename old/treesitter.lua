@@ -1,14 +1,16 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
-    enabled = true,
+    enabled = false,
+    branch = "main",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     lazy = true,
     event = { "VeryLazy" },
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    enabled = true,
+    enabled = false,
+    branch = "main",
     build = ":TSUpdate",
     event = "VeryLazy",
     config = function()
