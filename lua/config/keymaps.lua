@@ -276,3 +276,11 @@ end, { desc = "Open WezTerm tab at cwd" })
 map("i", "<C-h>", function()
   Snacks.picker.smart()
 end)
+
+-- Try to format lines too long without lsp/formatter
+map(
+  "n",
+  "<leader>rl",
+  require("scripts.ux.format-longlines").makeshift_format,
+  { desc = "Scuffed Format long lines in file", icon = "🤡" }
+)
