@@ -13,10 +13,12 @@ if OnWindows then
   end
 end
 
-Linelenght_by_ft = {
+Linelength_by_ft = {
   lua = 100,
   python = 88,
   autohotkey = 88,
+  ps1 = 100,
+  psm1 = 100,
   markdown = "",
   text = "",
 }

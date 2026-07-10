@@ -1,7 +1,7 @@
 local M = {}
 
 local function cc_for_current()
-  return tostring(Linelenght_by_ft[vim.bo.filetype] or 80)
+  return tostring(Linelength_by_ft[vim.bo.filetype] or 80)
 end
 
 M.colorcolumn_toggle = Snacks.toggle.new({

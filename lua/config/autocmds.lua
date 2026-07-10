@@ -104,26 +104,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "python",
-  callback = function()
-    local l = Linelenght_by_ft["python"]
-    vim.bo.textwidth = l
-  end,
-})
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "autohotkey",
-  callback = function()
-    local l = Linelenght_by_ft["autohotkey"]
-    vim.bo.textwidth = l
-  end,
-})
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "lua",
-  callback = function()
-    local l = Linelenght_by_ft["lua"]
-    vim.bo.textwidth = l
+  pattern = vim.tbl_keys(Linelength_by_ft),
+  callback = function(args)
+    local length = Linelength_by_ft[args.match]
+    vim.bo.textwidth = length
   end,
 })
 
