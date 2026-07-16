@@ -53,9 +53,9 @@ return {
             module = "blink.cmp.sources.buffer",
             opts = {
               -- Hight limits for when on powerful machine
-              max_sync_buffer_size = 90000,
-              max_async_buffer_size = 4000000,
-              max_total_buffer_size = 9000000,
+              max_sync_buffer_size = 9000000,
+              max_async_buffer_size = 10000000,
+              max_total_buffer_size = 90000000,
               -- Only get completions from the current buffer
               get_bufnrs = function()
                 return { vim.api.nvim_get_current_buf() }
