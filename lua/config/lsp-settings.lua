@@ -135,6 +135,10 @@ vim.keymap.set("n", "[d", prev_diag)
 vim.keymap.set("n", "]D", next_error)
 vim.keymap.set("n", "[D", prev_error)
 
+vim.keymap.set("n", "<leader>lL", function()
+  vim.cmd("edit " .. vim.lsp.get_log_path())
+end, { desc = "Open LSP log" })
+
 vim.keymap.set("n", "K", function()
   vim.lsp.buf.hover()
 end, { desc = "Lsp Hover Info" })
