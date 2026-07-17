@@ -105,6 +105,14 @@ return {
         section = "session",
       },
       {
+        icon = "📂",
+        key = "p",
+        desc = "Pick Project",
+        action = function()
+          require("telescope").extensions.project.project({})
+        end,
+      },
+      {
         icon = "💤",
         key = "l",
         desc = "Open Lazy",

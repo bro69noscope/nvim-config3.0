@@ -286,7 +286,7 @@ map(
 )
 
 -- set cwd to parent directory of current file
-map("n", "<leader>u.", function()
+map("n", "<leader>.", function()
   vim.cmd("cd %:p:h")
 end, { desc = "Set cwd to parent directory" })
 
@@ -301,6 +301,6 @@ map("n", "<Tab>", function()
 end, { desc = "Move cwd down one level" })
 
 -- set cwd to project root (git root)
-map("n", "<leader>ur", function()
+map("n", "<leader>R", function()
   require("scripts.ux.move-cwd-level").set_cwd_to_project_root()
 end, { desc = "Set cwd to project root" })
