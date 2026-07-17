@@ -92,6 +92,12 @@ return {
         icon = { icon = "󰒒", color = "blue" },
       },
 
+      -- single actions
+      {
+        "<leader>p",
+        icon = { icon = "", color = "orange" },
+      },
+
       -- Unused but considered:
       -- { "<leader>N", desc = "Toggle No Neck Pain", icon = { icon = "☕", color = "blue" } },
     },

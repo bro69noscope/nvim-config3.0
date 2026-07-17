@@ -9,6 +9,7 @@ return {
       function()
         require("telescope").extensions.project.project({})
       end,
+      desc = "Pick Projects",
     },
   },
 }
