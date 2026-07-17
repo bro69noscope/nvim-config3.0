@@ -284,3 +284,23 @@ map(
   require("scripts.ux.format-longlines").makeshift_format,
   { desc = "Scuffed Format long lines in file", icon = "🤡" }
 )
+
+-- set cwd to parent directory of current file
+map("n", "<leader>u.", function()
+  vim.cmd("cd %:p:h")
+end, { desc = "Set cwd to parent directory" })
+
+-- move cwd up one directory level
+map("n", "<BS>", function()
+  require("scripts.ux.move-cwd-level").move_cwd_up_one_level()
+end, { desc = "Move cwd up one level" })
+
+-- move cwd down one directory level
+map("n", "<Tab>", function()
+  require("scripts.ux.move-cwd-level").move_cwd_down_one_level()
+end, { desc = "Move cwd down one level" })
+
+-- set cwd to project root (git root)
+map("n", "<leader>ur", function()
+  require("scripts.ux.move-cwd-level").set_cwd_to_project_root()
+end, { desc = "Set cwd to project root" })

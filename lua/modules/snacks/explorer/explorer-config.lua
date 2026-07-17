@@ -6,6 +6,20 @@ local create_return_action = function(current_win, cursor_pos)
   end
 end
 
+local set_cwd_here = function(picker, item)
+  if not item or not item.file then
+    return
+  end
+
+  local path = item.file
+
+  if vim.fn.isdirectory(path) ~= 1 then
+    path = vim.fn.fnamemodify(path, ":h")
+  end
+
+  vim.cmd("cd " .. vim.fn.fnameescape(path))
+end
+
 -- Wrapper function to launch any picker with return-to-explorer capability
 local launch_picker_with_return = function(picker_fn, config)
   local current_win = vim.api.nvim_get_current_win()
@@ -174,6 +188,7 @@ return {
     focus_right_win = focus_right_win,
     grep_python_imports = grep_for_python_imports,
     grug_far_refactor_python_imports = grug_far_refactor_imports,
+    set_cwd_here = set_cwd_here,
   },
   win = {
     list = {
@@ -184,6 +199,7 @@ return {
         ["gD"] = { "grep_in_dir_default", desc = "Grep in dir (default)" },
         ["gi"] = { "grep_python_imports", desc = "Grep Python imports" },
         ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
+        ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
         ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
         ["<c-j>"] = false,
         ["<c-k>"] = false,
