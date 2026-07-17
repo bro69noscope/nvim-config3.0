@@ -4,7 +4,12 @@ return {
     event = { "BufReadPre" },
     enabled = true,
     cmd = { "Mason", "MasonInstall", "MasonUninstall", "MasonLog", "MasonUpdate" },
-    opts = {},
+    opts = {
+      registries = {
+        "github:mason-org/mason-registry",
+        "github:Crashdummyy/mason-registry",
+      },
+    },
   },
   {
     "williamboman/mason-lspconfig.nvim",
@@ -22,6 +27,7 @@ return {
         "ruff",
         -- pwsh
         "powershell_es",
+        -- for c#, do ":MasonInstall roslyn / roslyn-nightly"
       },
     },
   },
@@ -222,6 +228,7 @@ return {
         basedpyright = true,
         pylsp = true,
         ruff = true,
+        roslyn = OnWindows, -- custom mason-registry version
         ahk2 = OnWindows,
         powershell_es = OnWindows,
       }

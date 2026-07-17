@@ -12,6 +12,7 @@ return {
       ["lua"] = { "stylua" },
       ["zsh"] = { "beautysh" },
       ["sh"] = { "shfmt" },
+      ["cs"] = { "csharpier" },
     },
     formatters = {
       beautysh = {
