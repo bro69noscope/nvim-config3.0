@@ -41,7 +41,7 @@ return {
       { "<leader>yo", icon = { icon = "💥" }, desc = "Open yazi at current file" },
       { "<leader>yw", icon = { icon = "💥" }, desc = "Open yazi in working directory" },
       { "<leader>Y", icon = { icon = "💥" }, desc = "Resume yazi session" },
-      { "<leader>y", group = "Yank/Yazi", icon = { icon = "", color = "yellow" } },
+      { "<leader>y", group = "Yazi/Yank", icon = { icon = "💥", color = "yellow" } },
 
       -- Upper/lowercase
       { "gU", desc = "UPPERCASE", icon = { icon = "🔠" }, mode = { "n", "v" } },
