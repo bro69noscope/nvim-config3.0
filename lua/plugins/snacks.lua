@@ -11,6 +11,7 @@ return {
     require("modules.snacks.setup-debug")
   end,
   opts = {
+    image = { enabled = not OnNeovide }, --TODO: check when neovide supports image preview
     -- bigfile = { enabled = true },
     dashboard = require("modules.snacks.dashboard.dashboard-config"),
     -- explorer = { enabled = true },
