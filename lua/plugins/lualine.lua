@@ -50,7 +50,7 @@ return {
               return require("jsonpath").get() or ""
             end
 
-            return navic.get_location()
+            return navic.get_location() .. " " -- never empty to avoid stutter
           end,
         },
       }
