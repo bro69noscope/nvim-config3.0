@@ -8,6 +8,7 @@ return {
       ["yaml"] = { "prettier" },
       ["json"] = { "prettier" },
       ["jsonc"] = { "prettier" },
+      ["json5"] = { "prettier" },
       ["toml"] = { "taplo" },
       ["lua"] = { "stylua" },
       ["zsh"] = { "beautysh" },
