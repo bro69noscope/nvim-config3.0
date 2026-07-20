@@ -9,5 +9,6 @@ M.new_cwd_wezterm_tab = function()
     "--cwd",
     cwd,
   }, { detach = true })
+  vim.notify("Opened new WezTerm tab in cwd:\n" .. cwd, vim.log.levels.INFO)
 end
 return M
