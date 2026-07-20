@@ -1,5 +1,9 @@
 local map = require("scripts.ui.whichkey-map").map
 
+-- move lines up and down
+map("n", "<M-K>", ":m .-2<CR>==", { silent = true })
+map("n", "<M-J>", ":m .+1<CR>==", { silent = true })
+
 -- lateral movement with H and L except in neo-tree
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
