@@ -1,6 +1,7 @@
 if vim.g.neovide == true then
   vim.o.guifont = "BerkeleyMono Nerd Font"
-  local zoomed_scale = 1.225
+  -- local zoomed_scale = 1.225
+  local zoomed_scale = 0.87
   local function paste()
     vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
   end
