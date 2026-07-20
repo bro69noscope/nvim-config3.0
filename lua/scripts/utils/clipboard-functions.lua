@@ -1,4 +1,16 @@
 local M = {}
+local function get_file_header()
+  local path = vim.fn.expand("%:p")
+  if path == "" then
+    return "[No file name]\n\n"
+  end
+  return path .. "\n\n"
+end
+
+local function count_lines(str)
+  return select(2, string.gsub(str, "\n", "\n")) + 1
+end
+
 M.copy_file_to_system_register = function()
   local view = vim.fn.winsaveview()
   vim.cmd('normal! ggVG"+y')
@@ -9,12 +21,57 @@ M.append_file_to_system_register = function()
   local view = vim.fn.winsaveview()
   vim.cmd('normal! ggVG"my')
   vim.fn.winrestview(view)
-
   local current_clipboard = vim.fn.getreg("+")
   local m_register = vim.fn.getreg("m")
-  vim.fn.setreg("+", current_clipboard .. m_register)
+  local new_register_content = current_clipboard .. m_register
+  vim.fn.setreg("+", new_register_content)
+
+  local lines_added = count_lines(m_register)
+  local total_lines = count_lines(new_register_content)
   vim.notify(
-    "Appended file content to system clipboard",
+    string.format(
+      "Appended file content to system clipboard\nAdded %d %s | Total lines: %d",
+      lines_added,
+      lines_added == 1 and "line" or "lines",
+      total_lines
+    ),
+    vim.log.levels.INFO,
+    { title = "Clipboard" }
+  )
+end
+
+M.copy_code_to_system_register = function()
+  local view = vim.fn.winsaveview()
+  vim.cmd('normal! ggVG"+y')
+  local content = vim.fn.getreg("+")
+  vim.fn.setreg("+", get_file_header() .. content)
+  vim.fn.winrestview(view)
+  vim.notify(
+    "Copied file content to system clipboard",
+    vim.log.levels.INFO,
+    { title = "Clipboard" }
+  )
+end
+
+M.append_code_to_system_register = function()
+  local view = vim.fn.winsaveview()
+  vim.cmd('normal! ggVG"my')
+  local m_register = vim.fn.getreg("m")
+  local current_clipboard = vim.fn.getreg("+")
+  local addition = get_file_header() .. m_register
+  local new_register_content = current_clipboard .. "\n\n" .. addition
+  vim.fn.setreg("+", new_register_content)
+  vim.fn.winrestview(view)
+
+  local lines_added = count_lines(m_register)
+  local total_lines = count_lines(new_register_content)
+  vim.notify(
+    string.format(
+      "Appended file content to system clipboard\nAdded %d %s | Total lines: %d",
+      lines_added,
+      lines_added == 1 and "line" or "lines",
+      total_lines
+    ),
     vim.log.levels.INFO,
     { title = "Clipboard" }
   )
@@ -23,24 +80,21 @@ end
 M.append_unnamed_reg_to_system_reg = function()
   local unnamed_register = vim.fn.getreg('"')
   local system_register = vim.fn.getreg("+")
-
-  -- Count the number of lines in the unnamed register
-  local lines_added = select(2, string.gsub(unnamed_register, "\n", "\n"))
-
   local new_register_content = system_register .. "\n" .. unnamed_register
   vim.fn.setreg("+", new_register_content)
 
-  -- Count the total number of lines in the new system register
-  local total_lines = select(2, string.gsub(new_register_content, "\n", "\n"))
-
-  -- Create and show the notification
-  local notification_message = string.format(
-    "Added %d %s to system register\nTotal lines: %d",
-    lines_added,
-    lines_added == 1 and "line" or "lines",
-    total_lines
+  local lines_added = count_lines(unnamed_register)
+  local total_lines = count_lines(new_register_content)
+  vim.notify(
+    string.format(
+      "Added %d %s to system register\nTotal lines: %d",
+      lines_added,
+      lines_added == 1 and "line" or "lines",
+      total_lines
+    ),
+    vim.log.levels.INFO,
+    { title = "Register Update" }
   )
-  vim.notify(notification_message, vim.log.levels.INFO, { title = "Register Update" })
 end
 
 return M
