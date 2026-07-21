@@ -304,7 +304,7 @@ map("n", "<BS>", function()
 end, { desc = "Move cwd up one level" })
 
 -- move cwd down one directory level
-map("n", "<Tab>", function()
+map("n", "<M-BS>", function()
   require("scripts.ux.move-cwd-level").move_cwd_down_one_level()
 end, { desc = "Move cwd down one level" })
 
