@@ -170,7 +170,7 @@ map("n", "<leader>ub", function()
     require("scripts.utils.various-utils").capture_current_buffer_info({ silent = true })
   local bufname, raw_bufname = bufinfo.bufname, bufinfo.raw_bufname
   vim.notify("path: " .. bufname .. "\n" .. "raw: " .. raw_bufname, vim.log.levels.INFO)
-  vim.fn.setreg("+", bufname .. "\n" .. raw_bufname)
+  vim.fn.setreg("+", bufname)
 end, { desc = "Yank current buffer name to clipboard" })
 
 -- Path quick conversion
@@ -316,3 +316,16 @@ end, { desc = "Set cwd to project root" })
 -- move lines up and down
 map("n", "<M-K>", ":m .-2<CR>==", { silent = true })
 map("n", "<M-J>", ":m .+1<CR>==", { silent = true })
+
+map("n", "<leader>cl", function()
+  vim.fn.setqflist({}, "a", {
+    items = {
+      {
+        filename = vim.fn.expand("%"),
+        lnum = vim.fn.line("."),
+        col = vim.fn.col("."),
+        text = vim.fn.getline("."),
+      },
+    },
+  })
+end, { desc = "Add current line to quickfix" })
