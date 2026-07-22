@@ -152,6 +152,9 @@ return {
         merge_tool = {
           layout = "diff3_mixed",
         },
+        default = {
+          layout = "diff2_vertical",
+        },
       },
       keymaps = {
         view = {
@@ -159,7 +162,7 @@ return {
           { "n", "-", actions.toggle_stage_entry, { desc = "Toggle stage file" } },
           {
             "n",
-            "<C-j>",
+            NextDiffChangeBind,
             function()
               local cur_pos = vim.api.nvim_win_get_cursor(0)
               vim.cmd("normal! ]c")
@@ -178,7 +181,7 @@ return {
           },
           {
             "n",
-            "<C-k>",
+            PreviousDiffChangeBind,
             function()
               local cur_pos = vim.api.nvim_win_get_cursor(0)
               vim.cmd("normal! [c")

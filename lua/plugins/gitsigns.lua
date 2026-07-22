@@ -73,13 +73,13 @@ return {
           end)
         end, { desc = "Close diff tab" })
 
-        map("n", "<C-k>", function()
-          vim.cmd.normal({ "[c", bang = true })
+        map("n", NextDiffChangeBind, function()
+          vim.cmd.normal({ "]c", bang = true })
           vim.cmd("normal! zz")
         end, { desc = "Next change in diff" })
 
-        map("n", "<C-j>", function()
-          vim.cmd.normal({ "]c", bang = true })
+        map("n", PreviousDiffChangeBind, function()
+          vim.cmd.normal({ "[c", bang = true })
           vim.cmd("normal! zz")
         end, { desc = "Previous change in diff" })
 
