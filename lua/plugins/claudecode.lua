@@ -7,6 +7,12 @@ return {
   -- spec defers loading until a <leader>a* mapping is pressed and the commands
   -- would not exist yet.
   opts = {
+    diff_opts = {
+      layout = "horizontal",
+      open_in_new_tab = true,
+      hide_terminal_in_new_tab = false,
+      keep_terminal_focus = false,
+    },
     terminal = {
       snacks_win_opts = {
         keys = {
