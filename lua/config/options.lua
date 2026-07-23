@@ -19,8 +19,8 @@ Linelength_by_ft = {
   autohotkey = 88,
   ps1 = 100,
   psm1 = 100,
-  markdown = "",
-  text = "",
+  markdown = 0,
+  text = 0,
 }
 
 vim.opt.undofile = true
