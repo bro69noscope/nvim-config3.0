@@ -317,6 +317,7 @@ end, { desc = "Set cwd to project root" })
 map("n", "<M-K>", ":m .-2<CR>==", { silent = true })
 map("n", "<M-J>", ":m .+1<CR>==", { silent = true })
 
+-- add current line to quickfix list
 map("n", "<leader>cl", function()
   vim.fn.setqflist({}, "a", {
     items = {
