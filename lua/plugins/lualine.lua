@@ -71,14 +71,6 @@ return {
           cond = function()
             return not status_line_ovverridden()
           end,
-          -- #0indexedGrapple
-          fmt = function(str)
-            return (
-              str:gsub("%d+", function(n)
-                return tostring(tonumber(n) - 1)
-              end)
-            )
-          end,
         },
         {
           function()
