@@ -19,7 +19,7 @@ return {
       vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)
       vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
       -- Hide terminals mapping
-      vim.keymap.set("t", "<C-p>", [[<Cmd>ToggleTermToggleAll<CR>]], opts)
+      vim.keymap.set("t", HideTerminalBind, [[<Cmd>ToggleTermToggleAll<CR>]], opts)
     end
 
     -- Create a new terminal

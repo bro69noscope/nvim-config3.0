@@ -11,7 +11,7 @@ return {
       snacks_win_opts = {
         keys = {
           claude_hide = {
-            "<C-x>",
+            HideTerminalBind,
             function(self)
               self:hide()
             end,
