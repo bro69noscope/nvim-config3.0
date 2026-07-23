@@ -16,7 +16,7 @@ return {
   lazy = false,
   keys = {
     {
-      "<leader>X",
+      "<leader>F",
       function()
         require("oil").open_float()
       end,

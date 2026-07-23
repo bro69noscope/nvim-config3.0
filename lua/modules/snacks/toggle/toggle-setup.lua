@@ -32,5 +32,8 @@ vim.api.nvim_create_autocmd("User", {
 
     local qft = require("modules.snacks.toggle.custom-toggles.quickfix-win").quickfix_toggle
     qft:map("<leader>C")
+
+    local trt = require("modules.snacks.toggle.custom-toggles.trouble-win").trouble_toggle
+    trt:map("<leader>X")
   end,
 })
