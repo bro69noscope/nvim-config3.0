@@ -78,6 +78,14 @@ return {
             local relative_path = vim.fn.expand("%:.")
             local dir = vim.fn.fnamemodify(relative_path, ":h")
             local separator = OnWindows and "\\" or "/"
+            local full_path_len = #vim.fn.expand("%:p")
+
+            if full_path_len > 140 then
+              dir = vim.fn.pathshorten(dir, 3)
+            elseif full_path_len > 100 then
+              dir = vim.fn.pathshorten(dir, 5)
+            end
+
             return table.concat({ dir, separator, "%#LualineFilename#", filename, "%*" })
           end,
           cond = function()
