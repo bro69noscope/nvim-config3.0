@@ -15,6 +15,14 @@ return {
   cmd = "Grapple",
   keys = {
     { "<leader>A", "<cmd>Grapple toggle<cr>", desc = "Grapple toggle tag" },
+    {
+      "<leader>G",
+      function()
+        require("grapple").reset()
+        require("grapple").tag()
+      end,
+      desc = "Grapple wipe tags and add current file",
+    },
     { "<leader>H", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
     { "<leader>T", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
     { "<leader>1", "<cmd>Grapple select index=1<cr>", desc = "Grapple select 1" },
