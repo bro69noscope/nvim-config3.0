@@ -6,6 +6,24 @@ return {
   -- so `:ClaudeCode` and friends work on a fresh start. Without it, a keys-only
   -- spec defers loading until a <leader>a* mapping is pressed and the commands
   -- would not exist yet.
+  opts = {
+    terminal = {
+      snacks_win_opts = {
+        keys = {
+          claude_hide = {
+            "<C-x>",
+            function(self)
+              self:hide()
+            end,
+            mode = "t",
+            desc = "Hide",
+          },
+          -- or set this to something else / remove it, e.g.:
+          -- claude_hide = false,
+        },
+      },
+    },
+  },
   cmd = {
     "ClaudeCode",
     "ClaudeCodeFocus",
@@ -24,6 +42,7 @@ return {
   },
   keys = {
     { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+    { "<leader>T", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
     { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
     { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
     { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
