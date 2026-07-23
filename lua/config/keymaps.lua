@@ -329,3 +329,8 @@ map("n", "<leader>cl", function()
     },
   })
 end, { desc = "Add current line to quickfix" })
+
+-- serch visual selection in explorer
+map("x", "<leader>se", function()
+  require("scripts.ux.search-with-explorer").open_selection_in_explorer()
+end, { desc = "Open selected path in explorer" })
