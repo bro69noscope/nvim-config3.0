@@ -9,16 +9,6 @@ return {
 
     local function set_terminal_keymaps(term)
       local opts = { buffer = term.bufnr }
-      vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
-      vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
-      vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
-      vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
-      -- Resize mappings
-      vim.keymap.set("t", "<C-Up>", [[<Cmd>resize +2<CR>]], opts)
-      vim.keymap.set("t", "<C-Down>", [[<Cmd>resize -2<CR>]], opts)
-      vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)
-      vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
-      -- Hide terminals mapping
       vim.keymap.set("t", HideTerminalBind, [[<Cmd>ToggleTermToggleAll<CR>]], opts)
     end
 
