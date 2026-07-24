@@ -24,7 +24,7 @@ return {
       desc = "Grapple wipe tags and add current file",
     },
     { "<leader>H", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
-    { "<leader>S", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
+    { "<leader>Q", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
     { "g1", "<cmd>Grapple select index=1<cr>", desc = "Grapple select 1" },
     { "g2", "<cmd>Grapple select index=2<cr>", desc = "Grapple select 2" },
     { "g3", "<cmd>Grapple select index=3<cr>", desc = "Grapple select 3" },
