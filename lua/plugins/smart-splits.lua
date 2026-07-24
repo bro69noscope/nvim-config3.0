@@ -1,7 +1,7 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
-    enabled = not OnWindows and true, -- We don't use it on Windows (a bit slow, we have an
+    enabled = not OnWindows and true or OnNeovide, -- We don't use it on Windows (a bit slow, we have an
     -- alternative plugin)
     lazy = false,
     opts = {
