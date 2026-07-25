@@ -9,7 +9,7 @@ Logger.set_level("DEBUG")
 RepeatablePairs.setup()
 NextDiffChangeBind = "<c-j>"
 PreviousDiffChangeBind = "<c-k>"
-HideTerminalBind = "<c-p>"
+HideTerminalBind = "<c-u>"
 
 require("config.options")
 require("config.lazy")
