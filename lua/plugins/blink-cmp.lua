@@ -19,8 +19,7 @@ return {
         preset = "none",
         ["<C-k>"] = { "select_prev", "fallback" },
         ["<C-j>"] = { "select_next", "fallback" },
-        ["<C-g>"] = { "show", "show_documentation", "hide_documentation" },
-        ["<C-e>"] = { "hide", "fallback" },
+        ["<C-e>"] = { "show", "hide" },
         ["<CR>"] = { "accept", "fallback" },
       },
 
