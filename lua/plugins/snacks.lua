@@ -112,6 +112,8 @@ return {
     },
    -- stylua: ignore start
 
+    -- smart from imode
+    { "<C-t>", function() Snacks.picker.smart() end, mode ={"i"}},
     -- Default grepping (without the finder overriden by egrepify)
     { "<leader>sG", function() Snacks.picker.grep({ finder = "grep", }) end, desc = "Grep (default)", },
 
