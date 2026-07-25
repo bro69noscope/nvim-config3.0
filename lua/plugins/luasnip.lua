@@ -1,12 +1,6 @@
 return {
   "L3MON4D3/LuaSnip",
   enabled = true,
-  keys = {
-    { "<C-k>", mode = { "i", "s" } },
-    { "<C-j>", mode = { "i", "s" } },
-    { "<C-l>", mode = { "i" } },
-    { "<C-e>", mode = { "i", "s" } },
-  },
   dependencies = {
     "rafamadriz/friendly-snippets",
   },
@@ -40,23 +34,23 @@ return {
     require("luasnip.loaders.from_vscode").lazy_load()
 
     -- Movement inside snippets slots
-    vim.keymap.set({ "i", "s" }, "<C-j>", function()
+    vim.keymap.set({ "i", "s" }, "<m-j>", function()
       return ls.jumpable(1) and "<Plug>luasnip-jump-next" or "<Tab>"
     end, { expr = true, silent = true })
 
-    vim.keymap.set({ "i", "s" }, "<C-k>", function()
+    vim.keymap.set({ "i", "s" }, "<m-k>", function()
       return ls.jumpable(-1) and "<Plug>luasnip-jump-prev" or "<S-Tab>"
     end, { expr = true, silent = true })
 
-    vim.keymap.set({ "i" }, "<C-l>", function()
-      --- @ diagnostic disable-next-line: missing-parameter
-      ls.expand()
-    end, { silent = true })
-
-    vim.keymap.set({ "i", "s" }, "<C-e>", function()
-      if ls.choice_active() then
-        ls.change_choice(1)
-      end
-    end, { silent = true })
+    -- vim.keymap.set({ "i" }, "<C-l>", function()
+    --   --- @ diagnostic disable-next-line: missing-parameter
+    --   ls.expand()
+    -- end, { silent = true })
+    --
+    -- vim.keymap.set({ "i", "s" }, "<C-e>", function()
+    --   if ls.choice_active() then
+    --     ls.change_choice(1)
+    --   end
+    -- end, { silent = true })
   end,
 }
