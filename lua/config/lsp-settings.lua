@@ -139,10 +139,6 @@ vim.keymap.set("n", "<leader>lL", function()
   vim.cmd("edit " .. vim.lsp.get_log_path())
 end, { desc = "Open LSP log" })
 
-vim.keymap.set("n", "K", function()
-  vim.lsp.buf.hover()
-end, { desc = "Lsp Hover Info" })
-
 vim.keymap.set("n", "<space>ca", function()
   vim.lsp.buf.code_action({
     filter = code_action_filter,
@@ -157,3 +153,23 @@ vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol un
 vim.keymap.set("n", "go", vim.diagnostic.open_float, { desc = "Open Diagnostic Float" })
 vim.keymap.set("n", "<leader>lr", restart_lsp, { desc = "Restart LSP" })
 vim.keymap.set("n", "<leader>li", "<cmd>checkhealth vim.lsp<cr>", { desc = "Show LSP info" })
+
+-- START HACK: Hide lualine winbar when showing hover docs, since the automatic redrawing of the
+-- winbar is buggy and can cause a displacement of 1 line in the noice lsp hover window.
+local function hover_with_blank_winbar()
+  require("lualine").hide({ place = { "winbar" } })
+  vim.lsp.buf.hover()
+end
+
+vim.keymap.set("n", "K", hover_with_blank_winbar, { desc = "LSP Hover (winbar blanked)" })
+
+vim.api.nvim_create_autocmd("WinClosed", {
+  callback = function(args)
+    local win = tonumber(args.match)
+    local ok, buf = pcall(vim.api.nvim_win_get_buf, win)
+    if ok and vim.bo[buf].filetype == "noice" then
+      require("lualine").hide({ place = { "winbar" }, unhide = true })
+    end
+  end,
+})
+-- END HACK

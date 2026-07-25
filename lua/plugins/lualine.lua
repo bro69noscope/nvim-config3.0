@@ -30,6 +30,18 @@ return {
         end
       end
 
+      local function winbar_cfg()
+        local excluded_ft = {
+          qf = true,
+          trouble = true,
+          toggleterm = true,
+          snacks_terminal = true,
+          noice = true,
+        }
+        local loc = navic.get_location()
+        return loc .. (excluded_ft[vim.bo.filetype] and "" or " ")
+      end
+
       config.options.theme = "tokyonight"
 
       config.sections.lualine_b = {
@@ -46,11 +58,15 @@ return {
               return ""
             end
 
-            if vim.bo.filetype == "json" or vim.bo.filetype == "jsonc" then
+            if
+              vim.bo.filetype == "json"
+              or vim.bo.filetype == "jsonc"
+              or vim.bo.filetype == "json5"
+            then
               return require("jsonpath").get() or ""
             end
 
-            return navic.get_location() .. " " -- never empty to avoid stutter
+            return winbar_cfg()
           end,
         },
       }
