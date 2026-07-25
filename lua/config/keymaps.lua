@@ -330,3 +330,17 @@ end, { desc = "Add current line to quickfix" })
 map("x", "<leader>se", function()
   require("scripts.ux.search-with-explorer").open_selection_in_explorer()
 end, { desc = "Open selected path in explorer" })
+
+-- Repeatable movement for misspelled words
+local function next_spell()
+  vim.cmd("normal! ]s")
+end
+
+local function prev_spell()
+  vim.cmd("normal! [s")
+end
+
+local next_spell_r, prev_spell_r = RepeatablePairs.track_pair(next_spell, prev_spell)
+
+vim.keymap.set("n", "]s", next_spell_r, { desc = "Next misspelled word" })
+vim.keymap.set("n", "[s", prev_spell_r, { desc = "Previous misspelled word" })
