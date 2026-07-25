@@ -48,6 +48,18 @@ return {
     picker = require("modules.snacks.picker.picker-config"),
   },
   keys = {
+    -- smart from imode
+    {
+      "<C-t>",
+      function()
+        local has_blink_cmp, blink_cmp = pcall(require, "blink.cmp")
+        if has_blink_cmp and blink_cmp.is_visible() then
+          blink_cmp.hide()
+        end
+        Snacks.picker.smart()
+      end,
+      mode = { "i" },
+    },
     -- Explorer
     {
       "<leader>e",
@@ -112,8 +124,6 @@ return {
     },
    -- stylua: ignore start
 
-    -- smart from imode
-    { "<C-t>", function() Snacks.picker.smart() end, mode ={"i"}},
     -- Default grepping (without the finder overriden by egrepify)
     { "<leader>sG", function() Snacks.picker.grep({ finder = "grep", }) end, desc = "Grep (default)", },
 
@@ -150,7 +160,7 @@ return {
     { "<leader>sc", function() Snacks.picker.commands() end, desc = "Commands" },
     { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
-    { "<leader>sf", function() Snacks.picker.files() end, desc = "Find Files" },
+    { "<leader>;", function() Snacks.picker.files() end, desc = "Find Files" },
     { "<leader>sh", function() Snacks.picker.help() end, desc = "Help Pages" },
     { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlights" },
     { "<leader>si", function() Snacks.picker.icons() end, desc = "Icons" },
@@ -163,7 +173,7 @@ return {
     { "<leader>sp", function() Snacks.picker.lazy() end, desc = "Search for Plugin Spec" },
     { "<leader>sq", function() Snacks.picker.qflist() end, desc = "Quickfix List" },
     { "<leader>sr", function() Snacks.picker.recent() end, desc = "Recent" },
-    { "<leader>sR", function() Snacks.picker.resume() end, desc = "Resume" },
+    { "<leader>s.", function() Snacks.picker.resume() end, desc = "Resume" },
     { "<leader>st", function() Snacks.picker.todo_comments() end, desc = "Todo comments" },
     { "<leader>sT", function () Snacks.picker.todo_comments({
       keywords = { "TODO", "FIX", "FIXME" } }) end, desc = "Todo/Fix/Fixme" },
