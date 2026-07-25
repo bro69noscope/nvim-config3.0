@@ -11,6 +11,24 @@ local function count_lines(str)
   return select(2, string.gsub(str, "\n", "\n")) + 1
 end
 
+local function get_qf_files()
+  local qflist = vim.fn.getqflist()
+  local files, seen = {}, {}
+  for _, item in ipairs(qflist) do
+    local fname
+    if item.bufnr and item.bufnr > 0 then
+      fname = vim.api.nvim_buf_get_name(item.bufnr)
+    elseif item.filename and item.filename ~= "" then
+      fname = item.filename
+    end
+    if fname and fname ~= "" and not seen[fname] then
+      seen[fname] = true
+      table.insert(files, fname)
+    end
+  end
+  return files
+end
+
 M.copy_file_to_system_register = function()
   local view = vim.fn.winsaveview()
   vim.cmd('normal! ggVG"+y')
@@ -95,6 +113,42 @@ M.append_unnamed_reg_to_system_reg = function()
     vim.log.levels.INFO,
     { title = "Register Update" }
   )
+end
+
+M.copy_qf_code_to_register = function()
+  local files = get_qf_files()
+  if #files == 0 then
+    vim.notify("Quickfix list is empty", vim.log.levels.WARN, { title = "Clipboard" })
+    return
+  end
+  local orig_buf = vim.api.nvim_get_current_buf()
+  for i, fname in ipairs(files) do
+    local bufnr = vim.fn.bufadd(fname)
+    vim.fn.bufload(bufnr)
+    vim.api.nvim_set_current_buf(bufnr)
+    if i == 1 then
+      M.copy_code_to_system_register()
+    else
+      M.append_code_to_system_register()
+    end
+  end
+  vim.api.nvim_set_current_buf(orig_buf)
+end
+
+M.append_qf_code_to_register = function()
+  local files = get_qf_files()
+  if #files == 0 then
+    vim.notify("Quickfix list is empty", vim.log.levels.WARN, { title = "Clipboard" })
+    return
+  end
+  local orig_buf = vim.api.nvim_get_current_buf()
+  for _, fname in ipairs(files) do
+    local bufnr = vim.fn.bufadd(fname)
+    vim.fn.bufload(bufnr)
+    vim.api.nvim_set_current_buf(bufnr)
+    M.append_code_to_system_register()
+  end
+  vim.api.nvim_set_current_buf(orig_buf)
 end
 
 return M

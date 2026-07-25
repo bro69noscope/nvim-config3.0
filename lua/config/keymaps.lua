@@ -148,6 +148,14 @@ map("n", "<leader>yC", function()
   require("scripts.utils.clipboard-functions").append_code_to_system_register()
 end, { desc = "Append file content with header to system clipboard" })
 
+map("n", "<leader>yq", function()
+  require("scripts.utils.clipboard-functions").copy_qf_code_to_register()
+end, { desc = "Copy quickfix code to system clipboard" })
+
+map("n", "<leader>yQ", function()
+  require("scripts.utils.clipboard-functions").append_qf_code_to_register()
+end, { desc = "Append quickfix code to system clipboard" })
+
 map("n", "<leader>+", function()
   require("scripts.utils.clipboard-functions").append_unnamed_reg_to_system_reg()
 end, { desc = "Append unnamed reg to clipboard", icon = "📋" })
