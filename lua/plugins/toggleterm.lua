@@ -38,7 +38,7 @@ return {
     local function create_terminal_float(dir)
       float_term = Terminal:new({
         dir = dir,
-        hidden = true,
+        -- hidden = true,
         id = 100,
         direction = "float",
         float_opts = {
