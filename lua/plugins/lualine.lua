@@ -16,7 +16,7 @@ return {
       local jsonpath_toggle = require("modules.snacks.toggle.custom-toggles.jsonpath-statusline")
 
       local status_line_ovverridden = function()
-        return jsonpath_toggle.enabled() -- and .. other possible ovverrides to add here
+        return jsonpath_toggle.enabled() -- and .. other possible overrides to add here
       end
 
       local function diff_source()
