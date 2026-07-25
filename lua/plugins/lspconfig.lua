@@ -53,9 +53,9 @@ return {
       -- Setup completion capabilities
       local has_cmp_lsp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
       local has_cmp, cmp = pcall(require, "cmp")
-      local has_blink, blink = pcall(require, "blink.cmp")
-      if has_blink then
-        capabilities = blink.get_lsp_capabilities()
+      local has_blink_cmp, blink_cmp = pcall(require, "blink.cmp")
+      if has_blink_cmp then
+        capabilities = blink_cmp.get_lsp_capabilities()
       else
         if has_cmp_lsp then
           capabilities = cmp_lsp.default_capabilities(capabilities)
@@ -79,8 +79,8 @@ return {
 
         -- close completion menu when showing signature help
         vim.keymap.set("i", "<c-s>", function()
-          if has_blink and blink.is_visible() then
-            blink.hide()
+          if has_blink_cmp and blink_cmp.is_visible() then
+            blink_cmp.hide()
           end
           if has_cmp and cmp.visible() then
             cmp.close()
