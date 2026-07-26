@@ -92,8 +92,9 @@ return {
         enabled = true,
         keymap = {
           preset = "none",
-          ["<Up>"] = { "select_prev", "fallback" },
-          ["<Down>"] = { "select_next", "fallback" },
+          ["<C-k>"] = { "select_prev", "fallback" },
+          ["<C-j>"] = { "select_next", "fallback" },
+          ["<C-e>"] = { "show", "hide" },
           ["<Tab>"] = { "accept", "fallback" },
         },
         -- Configure sources for different command line modes
