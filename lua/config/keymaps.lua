@@ -351,5 +351,16 @@ end
 
 local next_spell_r, prev_spell_r = RepeatablePairs.track_pair(next_spell, prev_spell)
 
-vim.keymap.set("n", "]s", next_spell_r, { desc = "Next misspelled word" })
-vim.keymap.set("n", "[s", prev_spell_r, { desc = "Previous misspelled word" })
+map("n", "]s", next_spell_r, { desc = "Next misspelled word" })
+map("n", "[s", prev_spell_r, { desc = "Previous misspelled word" })
+
+-- to undo the LLM alignment non-sense
+local function unalign()
+  local range = "%"
+  if vim.fn.mode() == "v" or vim.fn.mode() == "V" or vim.fn.mode() == "\22" then
+    range = "'<,'>"
+  end
+  vim.cmd(range .. [[s/\S\zs\s\{2,}/ /g]])
+end
+
+map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space to single" })
