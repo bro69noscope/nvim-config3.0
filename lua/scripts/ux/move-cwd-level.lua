@@ -1,10 +1,25 @@
 local M = {}
+
 M.set_cwd_to_project_root = function()
+  local cwd = vim.fn.getcwd()
   local root = vim.fs.root(0, ".git")
 
   if not root then
     vim.notify("No git repository found", vim.log.levels.ERROR)
     return
+  end
+
+  -- Already at this root — look for a parent git repo instead
+  if vim.fs.normalize(root) == vim.fs.normalize(cwd) then
+    local parent = vim.fs.dirname(root)
+    local parent_root = vim.fs.root(parent, ".git")
+
+    if not parent_root then
+      vim.notify("No parent git repository found", vim.log.levels.WARN)
+      return
+    end
+
+    root = parent_root
   end
 
   vim.cmd("cd " .. vim.fn.fnameescape(root))
