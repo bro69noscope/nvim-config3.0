@@ -20,6 +20,7 @@ map("t", "<C-q>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
 -- leader qq to quit all
 map({ "n", "v" }, "<leader>qq", ":<C-u>qa<CR>", { desc = "Quit all", silent = true })
+map({ "n", "v" }, "<leader>qf", ":<C-u>cq<CR>", { desc = "Quit and fail", silent = true })
 map({ "n", "v" }, "<leader>qt", "<cmd>TabcloseBetter<cr>", { desc = "Close tab", silent = true })
 map({ "n", "v" }, "<leader>qo", "<cmd>tabonly<cr>", { desc = "Close other tabs", silent = true })
 
