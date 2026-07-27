@@ -9,6 +9,7 @@ return {
     end
     require("modules.snacks.toggle.toggle-setup")
     require("modules.snacks.setup-debug")
+    require("modules.snacks.explorer.safe-copy").setup()
   end,
   opts = {
     terminal = {
