@@ -10,6 +10,7 @@ return {
       ["jsonc"] = { "prettier" },
       ["json5"] = { "prettier" },
       ["html"] = { "prettier" },
+      ["xml"] = { "prettier" }, -- with plugin npm install --save-dev @prettier/plugin-xml
       ["css"] = { "prettier" },
       ["scss"] = { "prettier" },
       ["less"] = { "prettier" },
