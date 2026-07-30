@@ -280,3 +280,22 @@ vim.api.nvim_create_autocmd("TermOpen", {
     vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
   end,
 })
+
+-- Show feedback on yank, delete, change in named registers
+vim.api.nvim_create_autocmd("TextYankPost", {
+  group = vim.api.nvim_create_augroup("RegFeedback", {}),
+  callback = function()
+    local reg = vim.v.event.regname
+    if reg == "" then
+      return
+    end -- skip unnamed/default register noise
+
+    local op = vim.v.event.operator
+    local verb = (op == "y" and "yanked")
+      or (op == "d" and "deleted")
+      or (op == "c" and "changed")
+      or op
+
+    vim.notify(string.format('%s to "%s', verb, reg), vim.log.levels.INFO)
+  end,
+})
