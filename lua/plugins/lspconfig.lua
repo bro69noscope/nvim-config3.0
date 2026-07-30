@@ -28,6 +28,12 @@ return {
         -- pwsh
         "powershell_es",
         -- for c#, do ":MasonInstall roslyn / roslyn-nightly"
+        -- html, css, json, js
+        "html",
+        "cssls",
+        "jsonls",
+        "ts_ls",
+        "emmet_ls",
       },
     },
   },
@@ -231,6 +237,11 @@ return {
         roslyn = OnWindows, -- custom mason-registry version
         ahk2 = OnWindows,
         powershell_es = OnWindows,
+        html = true,
+        cssls = true,
+        jsonls = true,
+        ts_ls = true,
+        emmet_ls = true,
       }
 
       for name, ok in pairs(servers) do
