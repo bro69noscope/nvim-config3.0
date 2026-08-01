@@ -43,6 +43,7 @@ return {
       layout = "grep_vertical",
       finder = function()
         -- NOTE: ai code to review, seems to work. Fixes crash on invalid buffer preview.
+        -- TODO: create issue
         local jumps = vim.fn.getjumplist()[1]
         local items = {}
         for _, jump in ipairs(jumps) do
