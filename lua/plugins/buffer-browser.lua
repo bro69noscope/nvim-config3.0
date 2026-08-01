@@ -5,17 +5,7 @@ return {
       filetype_filters = { "gitcommit", "TelescopePrompt" },
     })
 
-    vim.keymap.set(
-      "n",
-      "<leader>b]",
-      require("buffer_browser").next,
-      { desc = "Next [B]uffer []]" }
-    )
-    vim.keymap.set(
-      "n",
-      "<leader>b[",
-      require("buffer_browser").prev,
-      { desc = "Previous [B]uffer [[]" }
-    )
+    vim.keymap.set("n", "]b", require("buffer_browser").next, { desc = "Next [B]uffer" })
+    vim.keymap.set("n", "[b", require("buffer_browser").prev, { desc = "Previous [B]uffer" })
   end,
 }
