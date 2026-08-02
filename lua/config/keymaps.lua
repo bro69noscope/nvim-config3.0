@@ -364,3 +364,6 @@ local function unalign()
 end
 
 map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space to single" })
+
+-- Easier to press last yank from imode
+map("i", "<C-r><C-n>", "<C-r>0", { noremap = true, desc = "Insert register 0" })
