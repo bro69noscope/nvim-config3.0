@@ -71,6 +71,7 @@ return {
     local actions = require("diffview.actions")
     local default_wrap_state = vim.o.wrap
     local diff_sanitize = require("scripts.ui.diff-sanitize")
+    local jump_sections = require("modules.diffview.jump-sections")
 
     vim.api.nvim_create_autocmd("User", {
       pattern = "DiffviewClose",
@@ -95,6 +96,7 @@ return {
     })
 
     require("diffview").setup({
+      wrap_entries = false, -- Fork opt only
       hooks = {
         --- @ diagnostic disable-next-line: unused-local
         view_opened = function(view)
@@ -162,6 +164,12 @@ return {
           { "n", "-", actions.toggle_stage_entry, { desc = "Toggle stage file" } },
           {
             "n",
+            vim.g.maplocalleader .. "s",
+            jump_sections.jump_to_next_section,
+            { desc = "Jump between changes/staged sections" },
+          },
+          {
+            "n",
             NextDiffChangeBind,
             function()
               local cur_pos = vim.api.nvim_win_get_cursor(0)
@@ -203,9 +211,17 @@ return {
           { "n", "q", actions.close, { desc = "Close diffview" } },
           { "n", "s", false, { desc = "diffview_ignore" } }, -- lets us use flash in diffview
           { "n", "-", actions.toggle_stage_entry, { desc = "Toggle stage file" } },
+          { "n", "l", actions.focus_entry, { desc = "Open and focus file" } },
+          {
+            "n",
+            vim.g.maplocalleader .. "s",
+            jump_sections.jump_to_next_section,
+            { desc = "Jump between changes/staged sections" },
+          },
         },
         file_history_panel = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
+          { "n", "l", actions.focus_entry, { desc = "Open and focus file" } },
         },
       },
     })
