@@ -7,8 +7,8 @@ _G.OnNeovide = require("config.neovide")
 Logger.init()
 Logger.set_level("DEBUG")
 RepeatablePairs.setup()
-NextDiffChangeBind = "<c-g>"
-PreviousDiffChangeBind = "<c-m>"
+NextDiffChangeBind = "<m-j>"
+PreviousDiffChangeBind = "<m-k>"
 HideTerminalBind = "<c-u>"
 
 require("config.options")
