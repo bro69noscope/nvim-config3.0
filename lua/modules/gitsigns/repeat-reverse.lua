@@ -1,27 +1,28 @@
 local M = {}
+
 function M.setup_gitsigns()
   if M.gitsigns_next_hunk then
     return M.gitsigns_next_hunk, M.gitsigns_prev_hunk
   end
 
-  local function next_hunk()
+  local function next_hunk(opts)
     local gs = package.loaded.gitsigns
     if vim.wo.diff then
       vim.cmd.normal({ "]c", bang = true })
     else
-      gs.next_hunk()
+      gs.nav_hunk("next", opts)
     end
     vim.defer_fn(function()
       vim.cmd("normal! zz")
     end, 5)
   end
 
-  local function prev_hunk()
+  local function prev_hunk(opts)
     local gs = package.loaded.gitsigns
     if vim.wo.diff then
       vim.cmd.normal({ "[c", bang = true })
     else
-      gs.prev_hunk()
+      gs.nav_hunk("prev", opts)
     end
     vim.defer_fn(function()
       vim.cmd("normal! zz")
@@ -32,4 +33,5 @@ function M.setup_gitsigns()
 
   return M.gitsigns_next_hunk, M.gitsigns_prev_hunk
 end
+
 return M

@@ -110,16 +110,16 @@ return {
       end
 
       -- Hunk navigation
-      map("n", "]g", function()
+      map("n", NextDiffChangeBind, function()
         local repeat_reverse = require("modules.gitsigns.repeat-reverse")
         local next_hunk, _ = repeat_reverse.setup_gitsigns()
-        next_hunk()
+        next_hunk({ wrap = false })
       end, { desc = "Next Hunk" })
 
-      map("n", "[g", function()
+      map("n", PreviousDiffChangeBind, function()
         local repeat_reverse = require("modules.gitsigns.repeat-reverse")
         local _, prev_hunk = repeat_reverse.setup_gitsigns()
-        prev_hunk()
+        prev_hunk({ wrap = false })
       end, { desc = "Prev Hunk" })
 
       -- Jump to first/last hunk
