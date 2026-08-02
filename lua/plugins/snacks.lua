@@ -48,6 +48,44 @@ return {
     words = { enabled = true },
     picker = require("modules.snacks.picker.picker-config"),
   },
+  config = function(_, opts)
+    require("snacks").setup(opts)
+    -- TODO: review this. Keeping it around cause might help a bit, unsure
+    local ok, rename_mod = pcall(require, "snacks.rename")
+    if ok then
+      rename_mod._rename = function(from, to)
+        local from_p = (vim.fn.fnamemodify(from, ":p"):gsub("[\\/]+$", ""))
+        local to_p = (vim.fn.fnamemodify(to, ":p"):gsub("[\\/]+$", ""))
+
+        vim.notify(("[rename debug] from=%q to=%q"):format(from_p, to_p), vim.log.levels.INFO)
+
+        vim.fn.mkdir(vim.fs.dirname(to_p), "p")
+        local ret = vim.fn.rename(from_p, to_p)
+        vim.notify(
+          ("[rename debug] vim.fn.rename ret=%s v:errmsg=%q"):format(tostring(ret), vim.v.errmsg),
+          vim.log.levels.INFO
+        )
+
+        if ret ~= 0 then
+          Snacks.notify.error("Failed to rename file: `" .. from_p .. "`")
+          return false
+        end
+
+        local from_buf = vim.fn.bufnr(from_p)
+        if from_buf >= 0 then
+          local to_buf = vim.fn.bufadd(to_p)
+          vim.bo[to_buf].buflisted = true
+          for _, win in ipairs(vim.fn.win_findbuf(from_buf)) do
+            vim.api.nvim_win_call(win, function()
+              vim.cmd("buffer " .. to_buf)
+            end)
+          end
+          vim.api.nvim_buf_delete(from_buf, { force = true })
+        end
+        return true
+      end
+    end
+  end,
   keys = {
     -- smart from imode
     {
