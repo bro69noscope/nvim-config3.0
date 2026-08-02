@@ -60,7 +60,7 @@ telescope.setup({
       n = {
         ["="] = insert_absolute_path,
         ["-"] = insert_relative_path,
-        ["<BS>"] = insert_python_import_path,
+        -- ["<BS>"] = insert_python_import_path, NOTE: idk about keeping this
       },
     },
   },

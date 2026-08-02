@@ -125,14 +125,15 @@ return {
         ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
         ["-"] = { "insert_relative_path", mode = { "n" } },
         ["="] = { "insert_absolute_path", mode = { "n" } },
-        ["<bs>"] = { "insert_python_import_path", mode = { "n" } },
+        -- ["<bs>"] = { "insert_python_import_path", mode = { "n" } }, NOTE: idk about keeping this
         ["+"] = { "clip_full_path", mode = { "n" } },
         ["<c-l>"] = { "focus_preview", mode = { "i", "n" } },
         ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
-        -- adjust binds to match ahk remaps (orinal default key in [brackets])
-        ["<Left>"] = { "toggle_hidden", mode = { "i", "n" } }, -- ["<a-h>"]
         ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
+        -- NOTE: currently irrel sice glove80 usage
+        -- adjust binds to match ahk remaps (orinal default key in [brackets])
+        -- ["<Left>"] = { "toggle_hidden", mode = { "i", "n" } }, -- ["<a-h>"]
       },
     },
     list = {

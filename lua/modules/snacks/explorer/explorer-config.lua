@@ -201,6 +201,7 @@ return {
         ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
         ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
         ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
+        ["<BS>"] = false,
         ["<c-j>"] = false,
         ["<c-k>"] = false,
         ["<esc>"] = {
