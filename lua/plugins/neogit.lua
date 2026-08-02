@@ -1,9 +1,9 @@
 return {
   "NeogitOrg/neogit",
-  enabled = true,
+  enabled = false,
   dependencies = {
     "nvim-lua/plenary.nvim", -- required
-    "sindrets/diffview.nvim", -- optional - Diff integration
+    -- "sindrets/diffview.nvim", -- optional (using the dlyongemallo fork rn)
 
     -- Only one of these is needed.
     "nvim-telescope/telescope.nvim", -- optional
