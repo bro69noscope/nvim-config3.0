@@ -30,7 +30,7 @@ M.grep_qf_files = function()
     title = title,
     win = {
       input = {
-        keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(
+        keys = require("modules.snacks.picker.keys.setup-picker-keys").setup_grep_input_keys(
           filetable,
           title
         ),

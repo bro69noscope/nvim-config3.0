@@ -1,3 +1,5 @@
+local M = {}
+
 local NEXT_MODE = {
   smart = "ignore",
   ignore = "sensitive",
@@ -10,7 +12,7 @@ local MODE_LABEL = {
   sensitive = "sensitive",
 }
 
-return function(picker)
+M.toggle_case = function(picker)
   local current = picker.opts.case_mode or "smart"
   local new_mode = NEXT_MODE[current] or "smart"
   picker.opts.case_mode = new_mode
@@ -20,3 +22,5 @@ return function(picker)
 
   picker:find()
 end
+
+return M

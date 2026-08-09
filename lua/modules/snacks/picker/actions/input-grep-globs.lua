@@ -60,7 +60,7 @@ M.make_action = function(dirs, title, source)
   return function(picker)
     local current_search = get_search_text(picker)
     local last_patterns = vim.g.snacks_multigrep_patterns or ""
-    local setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
+    local setup_picker_keys = require("modules.snacks.picker.keys.setup-picker-keys")
 
     picker:close()
 
@@ -77,7 +77,7 @@ M.make_action = function(dirs, title, source)
           config_wo_glob.title = title
         end
         config_wo_glob.win = {
-          input = { keys = setup_all_keys.setup_grep_input_keys(dirs, title, resolved_source) },
+          input = { keys = setup_picker_keys.setup_grep_input_keys(dirs, title, resolved_source) },
         }
         vim.schedule(function()
           Snacks.picker.pick(resolved_source, config_wo_glob)
@@ -101,7 +101,7 @@ M.make_action = function(dirs, title, source)
         config_w_globs.title = title
       end
       config_w_globs.win = {
-        input = { keys = setup_all_keys.setup_grep_input_keys(dirs, title, resolved_source) },
+        input = { keys = setup_picker_keys.setup_grep_input_keys(dirs, title, resolved_source) },
       }
 
       vim.schedule(function()

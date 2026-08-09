@@ -1,12 +1,24 @@
 local M = {}
 M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
-M.setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
+M.setup_picker_keys = require("modules.snacks.picker.keys.setup-picker-keys")
 M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
-M.shared_grep_config = require("modules.snacks.picker.shared-configs")
 M.patched_jumps = require("modules.snacks.picker.finders.patched-jumps")
 M.filter_builtins = require("modules.snacks.picker.filters.filter-builtins")
 M.explorer_config = require("modules.snacks.picker.explorer.explorer-config")
 M.setup_flash = require("modules.snacks.picker.setup-flash")
+M.input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
+M.toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search")
+M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").toggle_case
+
+local shared_deps = {
+  case_aware_grep = M.case_aware_grep,
+  setup_picker_keys = M.setup_picker_keys,
+  input_grep_globs = M.input_grep_globs,
+  toggle_and_search = M.toggle_and_search,
+  toggle_smartcase = M.toggle_smartcase,
+}
+
+M.shared_configs = require("modules.snacks.picker.shared-configs")
 
 return {
   formatters = { file = { truncate = 80, filename_first = true } },
@@ -42,7 +54,7 @@ return {
     grep_buffers = {
       layout = "grep_vertical",
     },
-    grep_word = M.shared_grep_config.make_grep_source("grep_word"),
+    grep_word = M.shared_configs.make_grep_source("grep_word", shared_deps),
     jumps = {
       layout = "grep_vertical",
       finder = M.patched_jumps.patched_jumps_finder,
@@ -62,7 +74,7 @@ return {
       filter = M.filter_builtins.filter_recent,
     },
     explorer = M.explorer_config,
-    grep = M.shared_grep_config.make_grep_source("grep"),
+    grep = M.shared_configs.make_grep_source("grep", shared_deps),
   },
   actions = {
     insert_absolute_path = function(picker)
