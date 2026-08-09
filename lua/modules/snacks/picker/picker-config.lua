@@ -2,6 +2,7 @@ local M = {}
 M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
 M.setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
 M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
+M.shared_grep_config = require("modules.snacks.picker.shared-configs")
 
 ---@param source string explicit source name, e.g. "grep" or "grep_word"
 local function make_grep_source(source)
@@ -59,7 +60,7 @@ return {
     grep_buffers = {
       layout = "grep_vertical",
     },
-    grep_word = make_grep_source("grep_word"),
+    grep_word = M.shared_grep_config.make_grep_source("grep_word"),
     jumps = {
       layout = "grep_vertical",
       finder = function()
@@ -111,7 +112,7 @@ return {
       filter = require("modules.snacks.picker.filters.filter-builtins").filter_recent,
     },
     explorer = require("modules.snacks.explorer.explorer-config"),
-    grep = make_grep_source("grep"),
+    grep = M.shared_grep_config.make_grep_source("grep"),
   },
   actions = {
     insert_absolute_path = function(picker)
