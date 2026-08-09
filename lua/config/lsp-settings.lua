@@ -85,18 +85,16 @@ end
 local function restart_lsp()
   local bufnr = vim.api.nvim_get_current_buf()
   local ft = vim.bo[bufnr].filetype
-
   local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  local candidates = {}
 
+  local candidates = {}
   for _, client in ipairs(clients) do
-    if
-      client.name ~= "copilot"
-      and client.config
-      and client.config.filetypes
-      and vim.tbl_contains(client.config.filetypes, ft)
-    then
-      table.insert(candidates, client)
+    if client.name ~= "copilot" then
+      local config = client.config
+      local is_match = config and config.filetypes and vim.tbl_contains(config.filetypes, ft)
+      if is_match then
+        table.insert(candidates, client)
+      end
     end
   end
 
@@ -105,27 +103,25 @@ local function restart_lsp()
     return
   end
 
-  if #candidates == 1 then
-    local client = candidates[1]
-    vim.lsp.stop_client(client.id)
-    vim.cmd("LspStart " .. client.name)
+  local function do_restart(client)
+    vim.cmd("lsp restart " .. client.name)
     vim.notify("Restarted LSP: " .. client.name, vim.log.levels.INFO)
-    return
   end
 
-  -- multiple language servers match → let user choose
-  vim.ui.select(candidates, {
-    prompt = "Multiple language LSPs found",
-    format_item = function(c)
-      return c.name
-    end,
-  }, function(client)
-    if client then
-      vim.lsp.stop_client(client.id)
-      vim.cmd("LspStart " .. client.name)
-      vim.notify("Restarted LSP: " .. client.name, vim.log.levels.INFO)
-    end
-  end)
+  if #candidates == 1 then
+    do_restart(candidates[1])
+  else
+    vim.ui.select(candidates, {
+      prompt = "Multiple language LSPs found",
+      format_item = function(c)
+        return c.name
+      end,
+    }, function(client)
+      if client then
+        do_restart(client)
+      end
+    end)
+  end
 end
 
 -- LSP keymaps
@@ -136,6 +132,7 @@ vim.keymap.set("n", "]D", next_error)
 vim.keymap.set("n", "[D", prev_error)
 
 vim.keymap.set("n", "<leader>lL", function()
+  vim.cmd("tabnew")
   vim.cmd("edit " .. vim.lsp.get_log_path())
 end, { desc = "Open LSP log" })
 
