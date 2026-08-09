@@ -57,6 +57,12 @@ local tokenize = function(prompt)
 end
 
 local uv = vim.uv or vim.loop
+
+local MODE_FLAGS = {
+  smart = "--smart-case",
+  ignore = "--ignore-case",
+  sensitive = "--case-sensitive",
+}
 ---@class snacks.picker
 ---@field grep fun(opts?: snacks.picker.grep.Config): snacks.Picker
 ---@field grep_word fun(opts?: snacks.picker.grep.Config): snacks.Picker
@@ -72,7 +78,7 @@ local function get_cmd(opts, filter)
     "--with-filename",
     "--line-number",
     "--column",
-    "--smart-case",
+    MODE_FLAGS[opts.case_mode] or MODE_FLAGS.smart,
     "--max-columns=500",
     "--max-columns-preview",
     "-g",

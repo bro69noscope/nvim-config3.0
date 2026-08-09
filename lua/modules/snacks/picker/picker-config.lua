@@ -1,6 +1,7 @@
 local M = {}
 M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
 M.setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
+M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
 return {
   formatters = { file = { truncate = 80, filename_first = true } },
   layouts = require("modules.snacks.picker.layouts.custom-layouts"),
@@ -36,8 +37,17 @@ return {
       layout = "grep_vertical",
     },
     grep_word = {
-      finder = require("modules.snacks.picker.finders.egrepify").egrepify,
+      finder = M.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
       layout = "grep_vertical",
+      win = {
+        input = {
+          keys = M.setup_all_keys.setup_grep_input_keys(),
+        },
+      },
+      actions = {
+        toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search"),
+        toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase"),
+      },
     },
     jumps = {
       layout = "grep_vertical",
@@ -91,7 +101,7 @@ return {
     },
     explorer = require("modules.snacks.explorer.explorer-config"),
     grep = {
-      finder = require("modules.snacks.picker.finders.egrepify").egrepify,
+      finder = M.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
       layout = "grep_vertical",
       win = {
         input = {
@@ -100,6 +110,7 @@ return {
       },
       actions = {
         toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search"),
+        toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase"),
       },
     },
   },

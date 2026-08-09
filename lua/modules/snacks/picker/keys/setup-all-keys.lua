@@ -7,6 +7,7 @@ M.setup_grep_input_keys = function(dirs, title)
   return {
     ["<F1>"] = grep_globs_input.setup_grep_globs_input(dirs, title),
     ["<F2>"] = { "toggle_and_search", mode = { "i", "n" } },
+    ["<F3>"] = { "toggle_smartcase", mode = { "i", "n" } },
   }
 end
 
