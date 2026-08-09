@@ -1,15 +1,19 @@
 local map = require("scripts.ui.whichkey-map").map
 
 -- lateral movement with H and L except in neo-tree
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function()
-    if vim.bo.buftype ~= "neo-tree" then
-      map("n", "H", "15zh", { desc = "Move cursor 15 spaces to the left" })
-      map("n", "L", "15zl", { desc = "Move cursor 15 spaces to the right" })
-    end
-  end,
-})
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "*",
+--   callback = function()
+--     if vim.bo.buftype ~= "neo-tree" then
+--       map("n", "<m-h>", "15zh", { desc = "Move cursor 15 spaces to the left" })
+--       map("n", "<m-l>", "15zl", { desc = "Move cursor 15 spaces to the right" })
+--     end
+--   end,
+-- })
+
+-- lateral movement with m-h and m-l (meta key)
+map("n", "<m-h>", "15zh", { desc = "Move cursor 15 spaces to the left" })
+map("n", "<m-l>", "15zl", { desc = "Move cursor 15 spaces to the right" })
 
 -- better indenting
 map("v", "<", "<gv", { desc = "Indent left and reselect" })
