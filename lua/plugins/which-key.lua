@@ -58,7 +58,7 @@ return {
       { "<leader>w", group = "Window" },
       { "<leader>D", group = "DadBod UI" },
       { "<leader>d", group = "Debug", icon = { icon = "🪲" } },
-      { "<leader>c", group = "QuickFix/Actions" },
+      { "<leader>c", group = "QuickFix/Code Actions" },
       { "<Leader>u", group = "Utilities", icon = { icon = "🛠️" } },
       { "gH", group = "Peek Definitions", icon = { icon = "👁️" } },
       { "gm", group = "Marks", icon = { icon = "✅" } },
