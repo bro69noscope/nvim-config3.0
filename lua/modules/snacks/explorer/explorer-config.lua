@@ -88,6 +88,8 @@ local grep_in_dir = function(picker, item, opts)
   local title = "Grep in: " .. vim.fn.fnamemodify(path, ":~:.")
   local dirs = { path }
 
+  local input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
+
   local config = {
     title = title,
     dirs = dirs,
@@ -95,14 +97,18 @@ local grep_in_dir = function(picker, item, opts)
       input = {
         keys = require("modules.snacks.picker.keys.setup-all-keys").setup_grep_input_keys(
           dirs,
-          title
+          title,
+          "grep"
         ),
       },
+    },
+    actions = {
+      grep_globs_input = input_grep_globs.make_action(dirs, title, "grep"),
     },
   }
 
   if opts and opts.default_grep == true then
-    config.finder = "grep" -- override our default finder (egrep rn)
+    config.finder = "grep"
   end
 
   launch_picker_with_return(Snacks.picker.grep, config)

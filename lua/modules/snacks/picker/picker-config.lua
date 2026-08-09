@@ -2,6 +2,29 @@ local M = {}
 M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
 M.setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
 M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
+
+---@param source string explicit source name, e.g. "grep" or "grep_word"
+local function make_grep_source(source)
+  return {
+    finder = M.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
+    layout = "grep_vertical",
+    win = {
+      input = {
+        keys = M.setup_all_keys.setup_grep_input_keys(nil, nil, source),
+      },
+    },
+    actions = {
+      toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search"),
+      toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase"),
+      grep_globs_input = require("modules.snacks.picker.actions.input-grep-globs").make_action(
+        nil,
+        nil,
+        source
+      ),
+    },
+  }
+end
+
 return {
   formatters = { file = { truncate = 80, filename_first = true } },
   layouts = require("modules.snacks.picker.layouts.custom-layouts"),
@@ -36,19 +59,7 @@ return {
     grep_buffers = {
       layout = "grep_vertical",
     },
-    grep_word = {
-      finder = M.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
-      layout = "grep_vertical",
-      win = {
-        input = {
-          keys = M.setup_all_keys.setup_grep_input_keys(),
-        },
-      },
-      actions = {
-        toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search"),
-        toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase"),
-      },
-    },
+    grep_word = make_grep_source("grep_word"),
     jumps = {
       layout = "grep_vertical",
       finder = function()
@@ -100,19 +111,7 @@ return {
       filter = require("modules.snacks.picker.filters.filter-builtins").filter_recent,
     },
     explorer = require("modules.snacks.explorer.explorer-config"),
-    grep = {
-      finder = M.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
-      layout = "grep_vertical",
-      win = {
-        input = {
-          keys = M.setup_all_keys.setup_grep_input_keys(),
-        },
-      },
-      actions = {
-        toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search"),
-        toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase"),
-      },
-    },
+    grep = make_grep_source("grep"),
   },
   actions = {
     insert_absolute_path = function(picker)
@@ -142,9 +141,6 @@ return {
         ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
-        -- NOTE: currently irrel sice glove80 usage
-        -- adjust binds to match ahk remaps (orinal default key in [brackets])
-        -- ["<Left>"] = { "toggle_hidden", mode = { "i", "n" } }, -- ["<a-h>"]
       },
     },
     list = {
