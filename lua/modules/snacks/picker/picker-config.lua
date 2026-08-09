@@ -3,6 +3,10 @@ M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
 M.setup_all_keys = require("modules.snacks.picker.keys.setup-all-keys")
 M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
 M.shared_grep_config = require("modules.snacks.picker.shared-configs")
+M.patched_jumps = require("modules.snacks.picker.finders.patched-jumps")
+M.filter_builtins = require("modules.snacks.picker.filters.filter-builtins")
+M.explorer_config = require("modules.snacks.picker.explorer.explorer-config")
+M.setup_flash = require("modules.snacks.picker.setup-flash")
 
 return {
   formatters = { file = { truncate = 80, filename_first = true } },
@@ -41,7 +45,7 @@ return {
     grep_word = M.shared_grep_config.make_grep_source("grep_word"),
     jumps = {
       layout = "grep_vertical",
-      finder = require("modules.snacks.picker.finders.patched-jumps").patched_jumps_finder,
+      finder = M.patched_jumps.patched_jumps_finder,
       format = "file",
       main = { current = true },
     },
@@ -55,9 +59,9 @@ return {
       layout = "midscreen_dropdown",
     },
     recent = {
-      filter = require("modules.snacks.picker.filters.filter-builtins").filter_recent,
+      filter = M.filter_builtins.filter_recent,
     },
-    explorer = require("modules.snacks.explorer.explorer-config"),
+    explorer = M.explorer_config,
     grep = M.shared_grep_config.make_grep_source("grep"),
   },
   actions = {
@@ -73,7 +77,7 @@ return {
     clip_full_path = function(picker)
       M.path_inserts.clip_full_path(picker)
     end,
-    flash = require("modules.snacks.picker.setup-flash"),
+    flash = M.setup_flash,
   },
   win = {
     input = {
