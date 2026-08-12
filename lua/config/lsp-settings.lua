@@ -1,3 +1,5 @@
+local map = require("scripts.ui.whichkey-map").map
+
 -- General diagnostic settings
 vim.diagnostic.config({
   virtual_text = false,
@@ -126,30 +128,40 @@ end
 
 -- LSP keymaps
 local next_diag, prev_diag, next_error, prev_error = setup_diagnostic_jumps()
-vim.keymap.set("n", "]d", next_diag)
-vim.keymap.set("n", "[d", prev_diag)
-vim.keymap.set("n", "]D", next_error)
-vim.keymap.set("n", "[D", prev_error)
+map("n", "]d", next_diag, { desc = "Next Diagnostic", icon = { icon = "⚠️", color = "" } })
+map("n", "[d", prev_diag, { desc = "Previous Diagnostic", icon = "⚠️" })
+map(
+  "n",
+  "]D",
+  next_error,
+  { desc = "Next Error Diagnostic", icon = { icon = "", color = "red" } }
+)
+map(
+  "n",
+  "[D",
+  prev_error,
+  { desc = "Previous Error Diagnostic", icon = { icon = "", color = "red" } }
+)
 
-vim.keymap.set("n", "<leader>lL", function()
+map("n", "<leader>lL", function()
   vim.cmd("tabnew")
   vim.cmd("edit " .. vim.lsp.get_log_path())
 end, { desc = "Open LSP log" })
 
-vim.keymap.set("n", "<space>ca", function()
+map("n", "<space>ca", function()
   vim.lsp.buf.code_action({
     filter = code_action_filter,
   })
 end, { desc = "code action (no bloat 🤡)" })
 
-vim.keymap.set("n", "<space>cA", function()
+map("n", "<space>cA", function()
   vim.lsp.buf.code_action()
 end, { desc = "code action (all)" })
 
-vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol under cursor" })
-vim.keymap.set("n", "go", vim.diagnostic.open_float, { desc = "Open Diagnostic Float" })
-vim.keymap.set("n", "<leader>lr", restart_lsp, { desc = "Restart LSP" })
-vim.keymap.set("n", "<leader>li", "<cmd>checkhealth vim.lsp<cr>", { desc = "Show LSP info" })
+map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol under cursor" })
+map("n", "go", vim.diagnostic.open_float, { desc = "Open Diagnostic Float" })
+map("n", "<leader>lr", restart_lsp, { desc = "Restart LSP" })
+map("n", "<leader>li", "<cmd>checkhealth vim.lsp<cr>", { desc = "Show LSP info" })
 
 -- HACK: START: Hide lualine winbar when showing hover docs, since the automatic redrawing of the
 -- winbar is buggy and can cause a displacement of 1 line in the noice lsp hover window.
@@ -158,7 +170,7 @@ local function hover_with_blank_winbar()
   vim.lsp.buf.hover()
 end
 
-vim.keymap.set("n", "K", hover_with_blank_winbar, { desc = "LSP Hover (winbar blanked)" })
+map("n", "K", hover_with_blank_winbar, { desc = "LSP Hover (winbar blanked)" })
 
 vim.api.nvim_create_autocmd("WinClosed", {
   callback = function(args)
