@@ -170,21 +170,25 @@ map("n", "<leader>=", function()
 end, { desc = "Copy unnamed reg to clipboard", icon = "📋" })
 
 -- Various uitilities
+local various_utils = require("scripts.utils.various-utils")
 map("n", "<leader>uf", function()
   require("scripts.ui.transform-windows").make_window_floating()
 end, { desc = "Make window floating" })
 
 map("n", "<Leader>uB", function()
-  require("scripts.utils.various-utils").capture_current_buffer_info()
+  various_utils.capture_current_buffer_info()
 end, { desc = "Capture current buffer name" })
 
 map("n", "<leader>ub", function()
-  local bufinfo =
-    require("scripts.utils.various-utils").capture_current_buffer_info({ silent = true })
+  local bufinfo = various_utils.capture_current_buffer_info({ silent = true })
   local bufname, raw_bufname = bufinfo.bufname, bufinfo.raw_bufname
   vim.notify("path: " .. bufname .. "\n" .. "raw: " .. raw_bufname, vim.log.levels.INFO)
   vim.fn.setreg("+", bufname)
 end, { desc = "Yank current buffer name to clipboard" })
+
+map("n", "<leader>ut", function()
+  various_utils.list_treesitter_installed_parsers()
+end, { desc = "List installed treesitter parsers" })
 
 -- Path quick conversion
 map("n", "<leader>\\", function()

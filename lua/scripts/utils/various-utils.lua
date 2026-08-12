@@ -26,4 +26,9 @@ M.capture_current_buffer_info = function(opts)
   return { bufname = bufname, raw_bufname = raw_bufname, title = title }
 end
 
+M.list_treesitter_installed_parsers = function()
+  local parsers = require("nvim-treesitter").get_installed("parsers")
+  print("Installed Treesitter parsers: " .. vim.inspect(parsers))
+end
+
 return M
