@@ -1,10 +1,16 @@
 for _, c in ipairs({ "(", ")", "[", "]", "{", "}" }) do
   local next = function()
-    vim.fn.search(vim.fn.escape(c, [[\]]), "W")
+    local found = vim.fn.search(vim.fn.escape(c, [[\]]), "W")
+    if found == 0 then
+      vim.notify("No next '" .. c .. "' found", vim.log.levels.WARN)
+    end
   end
 
   local prev = function()
-    vim.fn.search(vim.fn.escape(c, [[\]]), "bW")
+    local found = vim.fn.search(vim.fn.escape(c, [[\]]), "bW")
+    if found == 0 then
+      vim.notify("No previous '" .. c .. "' found", vim.log.levels.WARN)
+    end
   end
 
   next, prev = RepeatablePairs.track_pair(next, prev)
