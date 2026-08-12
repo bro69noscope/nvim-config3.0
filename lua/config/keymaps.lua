@@ -1,5 +1,30 @@
 local map = require("scripts.ui.whichkey-map").map
 
+-- Remove [] bloat
+vim.keymap.del("n", "]t")
+vim.keymap.del("n", "[t")
+vim.keymap.del("n", "]T")
+vim.keymap.del("n", "[T")
+
+vim.keymap.del("n", "]q")
+vim.keymap.del("n", "[q")
+vim.keymap.del("n", "]Q")
+vim.keymap.del("n", "[Q")
+
+vim.keymap.del("n", "]l")
+vim.keymap.del("n", "[l")
+vim.keymap.del("n", "]L")
+vim.keymap.del("n", "[L")
+
+vim.keymap.del("n", "]<C-L>")
+vim.keymap.del("n", "[<C-L>")
+
+vim.keymap.del("n", "[<C-Q>")
+vim.keymap.del("n", "]<C-Q>")
+
+vim.keymap.del("n", "]<C-T>")
+vim.keymap.del("n", "[<C-T>")
+
 -- lateral movement with H and L except in neo-tree
 -- vim.api.nvim_create_autocmd("FileType", {
 --   pattern = "*",
