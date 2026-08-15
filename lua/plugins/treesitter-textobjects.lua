@@ -31,12 +31,12 @@ return {
       ["]U"] = { query = "@comment.inner", desc = "Next comment" },
       ["]i"] = { query = "@conditional.outer", desc = "Next conditional" },
       ["]o"] = { query = "@loop.outer", desc = "Next loop" },
-      ["]z"] = { query = "@function_name", desc = "Next function name" },
-      ["]x"] = { query = "@method_name", desc = "Next method name" },
-      ["]e"] = { query = "@call_name", desc = "Next call name" },
-      ["]h"] = { query = "@return_type", desc = "Next return type" },
-      ["]p"] = { query = "@function_parameters", desc = "Next params" },
-      ["]m"] = { query = "@variable.member.inner", desc = "Next member" },
+      ["]z"] = { query = "@function_name", desc = "🧩 Next function name" },
+      ["]x"] = { query = "@method_name", desc = "🧩 Next method name" },
+      ["]e"] = { query = "@call_name", desc = "🧩 Next call name" },
+      ["]h"] = { query = "@return_type", desc = "🧩 Next return type" },
+      ["]p"] = { query = "@function_parameters", desc = "🧩 Next params" },
+      ["]m"] = { query = "@variable.member.inner", desc = "🧩 Next member" },
       ["]R"] = { query = "@return.inner", desc = "Next return" },
     })
 
@@ -50,11 +50,11 @@ return {
       ["]u"] = { query = "@comment.inner", desc = "Next comment end" },
       ["]I"] = { query = "@conditional.outer", desc = "Next conditional end" },
       ["]O"] = { query = "@loop.outer", desc = "Next loop end" },
-      ["]Z"] = { query = "@function_name", desc = "Next function name end" },
-      ["]X"] = { query = "@method_name", desc = "Next method name end" },
-      ["]E"] = { query = "@call_name", desc = "Next call name end" },
-      ["]H"] = { query = "@return_type", desc = "Next return type end" },
-      ["]P"] = { query = "@function_parameters", desc = "Next params end" },
+      ["]Z"] = { query = "@function_name", desc = "🧩 Next function name end" },
+      ["]X"] = { query = "@method_name", desc = "🧩 Next method name end" },
+      ["]E"] = { query = "@call_name", desc = "🧩 Next call name end" },
+      ["]H"] = { query = "@return_type", desc = "🧩 Next return type end" },
+      ["]P"] = { query = "@function_parameters", desc = "🧩 Next params end" },
     })
 
     map_moves(move.goto_previous_start, {
@@ -67,12 +67,12 @@ return {
       ["[U"] = { query = "@comment.inner", desc = "Prev. comment" },
       ["[i"] = { query = "@conditional.outer", desc = "Prev. conditional" },
       ["[o"] = { query = "@loop.outer", desc = "Prev. loop" },
-      ["[z"] = { query = "@function_name", desc = "Prev. function name" },
-      ["[x"] = { query = "@method_name", desc = "Prev. method name" },
-      ["[e"] = { query = "@call_name", desc = "Prev. call name" },
-      ["[h"] = { query = "@return_type", desc = "Prev. return type" },
-      ["[p"] = { query = "@function_parameters", desc = "Prev. params" },
-      ["[m"] = { query = "@variable.member.inner", desc = "Prev. member" },
+      ["[z"] = { query = "@function_name", desc = "🧩 Prev. function name" },
+      ["[x"] = { query = "@method_name", desc = "🧩 Prev. method name" },
+      ["[e"] = { query = "@call_name", desc = "🧩 Prev. call name" },
+      ["[h"] = { query = "@return_type", desc = "🧩 Prev. return type" },
+      ["[p"] = { query = "@function_parameters", desc = "🧩 Prev. params" },
+      ["[m"] = { query = "@variable.member.inner", desc = "🧩 Prev. member" },
       ["[R"] = { query = "@return.inner", desc = "Prev. return" },
     })
 
@@ -86,11 +86,11 @@ return {
       ["[u"] = { query = "@comment.inner", desc = "Prev. comment end" },
       ["[I"] = { query = "@conditional.outer", desc = "Prev. conditional end" },
       ["[O"] = { query = "@loop.outer", desc = "Prev. loop end" },
-      ["[Z"] = { query = "@function_name", desc = "Prev. function name end" },
-      ["[X"] = { query = "@method_name", desc = "Prev. method name end" },
-      ["[E"] = { query = "@call_name", desc = "Prev. call name end" },
-      ["[H"] = { query = "@return_type", desc = "Prev. return type end" },
-      ["[P"] = { query = "@function_parameters", desc = "Prev. params end" },
+      ["[Z"] = { query = "@function_name", desc = "🧩 Prev. function name end" },
+      ["[X"] = { query = "@method_name", desc = "🧩 Prev. method name end" },
+      ["[E"] = { query = "@call_name", desc = "🧩 Prev. call name end" },
+      ["[H"] = { query = "@return_type", desc = "🧩 Prev. return type end" },
+      ["[P"] = { query = "@function_parameters", desc = "🧩 Prev. params end" },
     })
 
     local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
