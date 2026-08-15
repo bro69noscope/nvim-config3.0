@@ -44,3 +44,16 @@
 
 (member_expression
   property: (property_identifier) @variable.member.inner) @variable.member.outer
+
+; Capture just the function name (not export/function/async keywords)
+(function_declaration
+  name: (identifier) @function.name)
+(generator_function_declaration
+  name: (identifier) @function.name)
+(function_expression
+  name: (identifier) @function.name)
+(method_definition
+  name: (property_identifier) @function.name)
+(variable_declarator
+  name: (identifier) @function.name
+  value: [(arrow_function) (function_expression)])

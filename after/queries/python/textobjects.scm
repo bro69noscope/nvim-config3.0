@@ -1,5 +1,8 @@
 ; extends
 
+(function_definition
+  name: (identifier) @function.name)
+
 ; Capture function names in function calls
 (call
   function: (identifier) @function_name)

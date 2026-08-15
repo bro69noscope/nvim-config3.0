@@ -1,5 +1,12 @@
 ; extends
 
+(method_declaration
+  name: (identifier) @function.name)
+(local_function_statement
+  name: (identifier) @function.name)
+(constructor_declaration
+  name: (identifier) @function.name)
+
 ; Capture function names in function calls
 (invocation_expression
   function: (identifier) @function_name)

@@ -1,5 +1,12 @@
 ; extends
 
+(function_declaration
+  name: [
+    (identifier) @function.name
+    (dot_index_expression field: (identifier) @function.name)
+    (method_index_expression method: (identifier) @function.name)
+  ])
+
 ; Capture function names in function calls
 (function_call
   name: (identifier) @function_name)
@@ -9,7 +16,7 @@
   name: (dot_index_expression
     field: (identifier) @method_name))
 
-; ADD THIS: Capture method names in method calls (colon notation)
+; Capture method names in method calls (colon notation)
 (function_call
   name: (method_index_expression
     method: (identifier) @method_name))
