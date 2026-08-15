@@ -98,6 +98,10 @@ return {
         icon = { icon = "", color = "orange" },
       },
 
+      -- bugfix unbounded keys
+      { "]M", hidden = true },
+      { "[M", hidden = true },
+
       -- Unused but considered:
       -- { "<leader>N", desc = "Toggle No Neck Pain", icon = { icon = "☕", color = "blue" } },
     },

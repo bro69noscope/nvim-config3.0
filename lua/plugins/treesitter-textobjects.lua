@@ -59,12 +59,17 @@ return {
           end
           fn(spec.query, "textobjects")
         end, { desc = spec.desc })
+
+        local ok, wk = pcall(require, "which-key")
+        if ok then
+          wk.add({ { lhs, desc = spec.desc, icon = "🌲" } })
+        end
       end
     end
 
     map_moves(move.goto_next_start, {
       -- ["]f"] = { query = "@function.outer", desc = "Next function start" },
-      ["]f"] = { query = "@function.name", desc = "🧩 Next function name" },
+      ["]f"] = { query = "@function.name", desc = " Next function name" },
       ["]c"] = { query = "@class.outer", desc = "Next class start" },
       ["]a"] = { query = "@parameter.inner", desc = "Next parameter" },
       ["]n"] = { query = "@number.inner", desc = "Next number" },
@@ -74,12 +79,12 @@ return {
       ["]u"] = { query = "@comment.inner", desc = "Next comment" },
       ["]i"] = { query = "@conditional.outer", desc = "Next conditional" },
       ["]o"] = { query = "@loop.outer", desc = "Next loop" },
-      ["]z"] = { query = "@function_name", desc = "🧩 Next function name" },
-      ["]x"] = { query = "@method_name", desc = "🧩 Next method name" },
-      ["]e"] = { query = "@call_name", desc = "🧩 Next call name" },
-      ["]h"] = { query = "@return_type", desc = "🧩 Next return type" },
-      ["]p"] = { query = "@function_parameters", desc = "🧩 Next params" },
-      ["]m"] = { query = "@variable.member.inner", desc = "🧩 Next member" },
+      ["]z"] = { query = "@function_name", desc = " Next function name" },
+      ["]x"] = { query = "@method_name", desc = " Next method name" },
+      ["]e"] = { query = "@call_name", desc = " Next call name" },
+      ["]h"] = { query = "@return_type", desc = " Next return type" },
+      ["]p"] = { query = "@function_parameters", desc = " Next params" },
+      ["]m"] = { query = "@variable.member.inner", desc = " Next member" },
       ["]R"] = { query = "@return.inner", desc = "Next return" },
     })
 
