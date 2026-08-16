@@ -16,6 +16,9 @@ vim.keymap.del("n", "[l")
 vim.keymap.del("n", "]L")
 vim.keymap.del("n", "[L")
 
+vim.keymap.del("n", "]A")
+vim.keymap.del("n", "[A")
+
 vim.keymap.del("n", "]<C-L>")
 vim.keymap.del("n", "[<C-L>")
 
