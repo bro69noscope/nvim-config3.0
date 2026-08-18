@@ -87,6 +87,27 @@ return {
     end
   end,
   keys = {
+    -- grep word bounded
+    {
+      "<leader>sW",
+      function()
+        local word
+        if vim.fn.mode():match("[vV\22]") then
+          vim.cmd('noau normal! "vy"')
+          word = vim.fn.getreg("v")
+        else
+          word = vim.fn.expand("<cword>")
+        end
+        word = vim.fn.escape(word, "\\/.*$^~[]")
+        Snacks.picker.grep_word({
+          regex = true,
+          search = "\\b" .. word .. "\\b",
+          args = {},
+        })
+      end,
+      desc = "Visual selection or word (bounded)",
+      mode = { "n", "x" },
+    },
     -- smart from imode
     {
       "<C-t>",
