@@ -23,6 +23,7 @@ end
 
 M.open_buffers = function()
   local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+  local git_root_name = vim.fn.fnamemodify(git_root, ":t")
   local default_dir = git_root or vim.fn.getcwd()
   local current_file = vim.api.nvim_buf_get_name(0)
   local current_dir = vim.fn.fnamemodify(current_file, ":h")
@@ -32,11 +33,17 @@ M.open_buffers = function()
     current_relative_dir = current_dir:sub(#git_root + 2)
   end
 
+  -- change cwd to get relative paths completions
+  local old_cwd = vim.fn.getcwd()
+  vim.fn.chdir(git_root)
+
   local dir = vim.fn.input({
-    prompt = "Directory (relative to git root): ",
+    prompt = "Directory (relative to git root: " .. git_root_name .. ") ",
     default = current_relative_dir,
     completion = "dir",
   })
+
+  vim.fn.chdir(old_cwd)
 
   if dir == "" then
     return

@@ -400,3 +400,8 @@ local function unalign()
 end
 
 map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space to single" })
+
+-- Run current file ?? (pwsh safe, unsure about why we need the & now...)
+map("n", "<leader>ur", function()
+  vim.cmd('!& "' .. vim.fn.expand("%:p") .. '"')
+end, { desc = "Run script", icon = "🚀" })
