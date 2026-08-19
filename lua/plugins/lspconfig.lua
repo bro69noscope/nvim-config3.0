@@ -27,6 +27,8 @@ return {
         "ruff",
         -- pwsh
         "powershell_es",
+        -- xml
+        "lemminx",
         -- for c#, do ":MasonInstall roslyn / roslyn-nightly"
         -- html, css, json, js
         "html",
@@ -119,6 +121,24 @@ return {
           -- Disable unused variable dimming
           vim.api.nvim_set_hl(0, "DiagnosticUnnecessary", { link = "DiagnosticUnnecessary" })
           -- vim.notify("Lua LSP attached", vim.log.levels.INFO)
+          custom_attach(client, bufnr)
+        end,
+      })
+
+      -- XML LSP setup
+      vim.lsp.config("lemminx", {
+        settings = {
+          xml = {
+            format = {
+              enabled = true,
+              splitAttributes = true,
+              preservedNewlines = 1,
+              maxLineWidth = 80, -- seems to have to be shorter than the actual line length idk
+            },
+          },
+        },
+        capabilities = capabilities,
+        on_attach = function(client, bufnr)
           custom_attach(client, bufnr)
         end,
       })
@@ -242,6 +262,7 @@ return {
         jsonls = true,
         ts_ls = true,
         emmet_ls = true,
+        lemminx = true,
       }
 
       for name, ok in pairs(servers) do
