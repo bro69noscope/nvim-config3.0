@@ -29,13 +29,14 @@ return {
         "powershell_es",
         -- xml
         "lemminx",
-        -- for c#, do ":MasonInstall roslyn / roslyn-nightly"
-        -- html, css, json, js
+        -- web
         "html",
         "cssls",
-        "jsonls",
         "ts_ls",
         "emmet_ls",
+        -- misc
+        "jsonls",
+        -- NOTE: for c#, do ":MasonInstall roslyn / roslyn-nightly". We use lua/plugins/roslyn.lua
       },
     },
   },
@@ -97,164 +98,93 @@ return {
         end, { buffer = bufnr })
       end
 
-      -- Lua LSP setup
+      local lua_ls_config = require("lang.lua.lsp.lua-lsp-settings").lua_ls
       vim.lsp.config("lua_ls", {
-        settings = {
-          Lua = {
-            runtime = {
-              version = "LuaJIT",
-            },
-            diagnostics = {
-              globals = { "vim" },
-            },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-              checkThirdParty = false,
-            },
-            telemetry = {
-              enable = false,
-            },
-          },
-        },
+        settings = lua_ls_config.settings,
         capabilities = capabilities,
         on_attach = function(client, bufnr)
-          -- Disable unused variable dimming
-          vim.api.nvim_set_hl(0, "DiagnosticUnnecessary", { link = "DiagnosticUnnecessary" })
-          -- vim.notify("Lua LSP attached", vim.log.levels.INFO)
+          lua_ls_config.on_attach(client, bufnr)
           custom_attach(client, bufnr)
         end,
       })
 
-      -- XML LSP setup
+      local lemminx_config = require("lang.xml.lsp.xml-lsp-settings").lemminx
       vim.lsp.config("lemminx", {
-        settings = {
-          xml = {
-            format = {
-              enabled = true,
-              splitAttributes = true,
-              preservedNewlines = 1,
-              maxLineWidth = 80, -- seems to have to be shorter than the actual line length idk
-            },
-          },
-        },
+        settings = lemminx_config.settings,
         capabilities = capabilities,
         on_attach = function(client, bufnr)
           custom_attach(client, bufnr)
         end,
       })
 
-      -- Python LSP setups
       -- We use Pyright for completions, hover, signatures (it's faster at interactive stuff)
-      do
-        local config = require("lang.python.lsp.python-lsp-settings").pyright
-        vim.lsp.config("pyright", {
-          capabilities = capabilities,
-          settings = config.settings,
-          on_attach = function(client, bufnr)
-            config.on_attach(client, bufnr)
-            custom_attach(client, bufnr)
-          end,
-        })
-      end
+      local pyright_config = require("lang.python.lsp.python-lsp-settings").pyright
+      vim.lsp.config("pyright", {
+        capabilities = capabilities,
+        settings = pyright_config.settings,
+        on_attach = function(client, bufnr)
+          pyright_config.on_attach(client, bufnr)
+          custom_attach(client, bufnr)
+        end,
+      })
 
       -- BasedPyright for type checking and diagnostics (the GOAT)
-      do
-        local config = require("lang.python.lsp.python-lsp-settings").basedpyright
-        vim.lsp.config("basedpyright", {
-          capabilities = capabilities,
-          settings = config.settings,
-          on_attach = function(client, bufnr)
-            config.on_attach(client, bufnr)
-            custom_attach(client, bufnr)
-          end,
-        })
-      end
-
-      -- pylsp for renaming (it's the only one that can rename module symbols properly AFAIK)
-      do
-        local config = require("lang.python.lsp.python-lsp-settings").pylsp
-        vim.lsp.config("pylsp", {
-          capabilities = capabilities,
-          settings = config.settings,
-          on_attach = function(client, bufnr)
-            config.on_attach(client, bufnr)
-          end,
-        })
-      end
-
-      -- Ruff for formatting and diagnostics
-      do
-        local config = require("lang.python.lsp.python-lsp-settings").ruff
-        vim.lsp.config("ruff", {
-          capabilities = capabilities,
-          init_options = {
-            settings = config.settings,
-          },
-        })
-      end
-
-      -- Windows specific LSPs
-      -- powershell LSP setup
-      vim.lsp.config("powershell_es", {
-        cmd = {
-          "pwsh",
-          "-NoLogo",
-          "-NoProfile",
-          "-Command",
-          "&'"
-            .. vim.fn.stdpath("data")
-            .. "/mason/packages/powershell-editor-services/PowerShellEditorServices/Start-EditorServices.ps1' "
-            .. "-Stdio "
-            .. "-SessionDetailsPath '"
-            .. vim.fn.stdpath("cache")
-            .. "/powershell-es/PowerShellEditorServices.json'",
-        },
-        settings = {
-          powershell = {
-            scriptAnalysis = { enable = true },
-            codeFormatting = { preset = "OTBS" },
-          },
-        },
+      local basedpyright_config = require("lang.python.lsp.python-lsp-settings").basedpyright
+      vim.lsp.config("basedpyright", {
         capabilities = capabilities,
-        --- @diagnostic disable-next-line: unused-local
+        settings = basedpyright_config.settings,
         on_attach = function(client, bufnr)
-          client.server_capabilities.semanticTokensProvider = nil -- conflict with tokyyo-night ?
-          -- vim.notify("PowerShell LSP attached", vim.log.levels.INFO)
+          basedpyright_config.on_attach(client, bufnr)
+          custom_attach(client, bufnr)
         end,
       })
 
-      -- AutoHotkey v2 LSP setup
-      vim.lsp.config("ahk2", {
-        cmd = {
-          "node",
-          vim.fn.expand("~/myfiles/programs/vscode-autohotkey2-lsp/server/dist/server.js"),
-          "--stdio",
-        },
-        filetypes = { "ahk", "autohotkey", "ah2" },
-        single_file_support = true,
-        flags = {
-          debounce_text_changes = 500,
-        },
+      -- pylsp for renaming (it's the only one that can rename module symbols properly AFAIK)
+      local pylsp_config = require("lang.python.lsp.python-lsp-settings").pylsp
+      vim.lsp.config("pylsp", {
+        capabilities = capabilities,
+        settings = pylsp_config.settings,
+        on_attach = function(client, bufnr)
+          pylsp_config.on_attach(client, bufnr)
+        end,
+      })
+
+      -- Ruff for formatting and diagnostics
+      local ruff_config = require("lang.python.lsp.python-lsp-settings").ruff
+      vim.lsp.config("ruff", {
+        capabilities = capabilities,
         init_options = {
-          locale = "en-us",
-          InterpreterPath = "C:/Users/ville/scoop/shims/autohotkey.exe",
-          FormatOptions = {
-            -- preserve_newlines = true,
-            wrap_line_length = 88,
-          },
+          settings = ruff_config.settings,
         },
+      })
+
+      local powershell_es_config =
+        require("lang.powershell.lsp.powershell-lsp-settings").powershell_es
+      vim.lsp.config("powershell_es", {
+        cmd = powershell_es_config.cmd,
+        settings = powershell_es_config.settings,
+        capabilities = capabilities,
+        on_attach = powershell_es_config.on_attach,
+      })
+
+      local ahk2_config = require("lang.autohotkey.lsp.autohotkey-lsp-settings").ahk2
+      vim.lsp.config("ahk2", {
+        cmd = ahk2_config.cmd,
+        filetypes = ahk2_config.filetypes,
+        single_file_support = ahk2_config.single_file_support,
+        flags = ahk2_config.flags,
+        init_options = ahk2_config.init_options,
         capabilities = capabilities,
         on_attach = custom_attach,
       })
 
-      -- Enable/disable LSP servers
       local servers = {
         lua_ls = true,
         pyright = false,
         basedpyright = true,
         pylsp = true,
         ruff = true,
-        roslyn = OnWindows, -- custom mason-registry version
+        roslyn = true, -- custom mason-registry version
         ahk2 = OnWindows,
         powershell_es = OnWindows,
         html = true,
