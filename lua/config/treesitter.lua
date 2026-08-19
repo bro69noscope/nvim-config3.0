@@ -13,6 +13,7 @@ local parsers = {
   "vim",
   "vimdoc",
   "query",
+  "css",
 }
 
 require("nvim-treesitter").install(parsers)
