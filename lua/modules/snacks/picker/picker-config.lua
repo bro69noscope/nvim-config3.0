@@ -9,6 +9,7 @@ M.setup_flash = require("modules.snacks.picker.setup-flash")
 M.input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
 M.toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search")
 M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").toggle_case
+M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").qflist_append
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -89,6 +90,9 @@ return {
     clip_full_path = function(picker)
       M.path_inserts.clip_full_path(picker)
     end,
+    qflist_append = function(picker)
+      M.append_to_qflist(picker)
+    end,
     flash = M.setup_flash,
   },
   win = {
@@ -104,6 +108,7 @@ return {
         ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
       },
     },
     list = {
