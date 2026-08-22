@@ -3,11 +3,17 @@ local M = {}
 M.lemminx = {
   settings = {
     xml = {
+      validation = {
+        noGrammar = "ignore",
+      },
       format = {
         enabled = true,
-        splitAttributes = true,
+        splitAttributes = false,
         preservedNewlines = 1,
-        maxLineWidth = 80, -- seems to have to be shorter than the actual line length idk
+        -- joinContentLines = true,
+
+        -- !!dangerous, can break .props files due to literal line breaks in between tags
+        -- maxLineWidth = 80,
       },
     },
   },
