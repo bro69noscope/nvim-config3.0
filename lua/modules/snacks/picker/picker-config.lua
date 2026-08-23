@@ -10,6 +10,7 @@ M.input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
 M.toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search")
 M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").toggle_case
 M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").qflist_append
+M.persist_flags = require("modules.snacks.picker.persist-flags")
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -94,6 +95,22 @@ return {
       M.append_to_qflist(picker)
     end,
     flash = M.setup_flash,
+    custom_toggle_hidden = function(picker)
+      if not picker or not picker.opts then
+        return
+      end
+      picker.opts.hidden = not picker.opts.hidden
+      M.persist_flags.set("explorer", "hidden", picker.opts.hidden)
+      picker:find()
+    end,
+    custom_toggle_ignored = function(picker)
+      if not picker or not picker.opts then
+        return
+      end
+      picker.opts.ignored = not picker.opts.ignored
+      M.persist_flags.set("explorer", "ignored", picker.opts.ignored)
+      picker:find()
+    end,
   },
   win = {
     input = {
@@ -109,11 +126,15 @@ return {
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
+        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
+        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
       },
     },
     list = {
       keys = {
         ["O"] = { { "pick_win", "jump" } },
+        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
+        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
       },
     },
   },

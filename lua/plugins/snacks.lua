@@ -10,6 +10,7 @@ return {
     require("modules.snacks.toggle.toggle-setup")
     require("modules.snacks.setup-debug")
     require("modules.snacks.picker.explorer.safe-copy").setup()
+    require("modules.snacks.picker.persist-flags").setup()
   end,
   opts = {
     terminal = {
@@ -127,7 +128,7 @@ return {
         if pcall(require, "neo-tree") then
           vim.cmd("Neotree close")
         end
-        require("snacks").explorer()
+        require("modules.snacks.picker.explorer.open-with-flags").open()
       end,
       desc = "Toggle Snacks Explorer",
     },
@@ -138,7 +139,7 @@ return {
         if pcall(require, "neo-tree") then
           vim.cmd("Neotree close")
         end
-        require("snacks").explorer({ follow_file = false })
+        require("modules.snacks.picker.explorer.open-with-flags").open({ follow_file = false })
       end,
       desc = "Toggle Snacks Explorer (No Follow File)",
     },
