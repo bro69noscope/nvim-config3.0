@@ -1,3 +1,6 @@
+require("modules.snacks.picker.explorer.fix-files-follow")
+require("modules.snacks.picker.explorer.fix-input-clear-onsave")
+
 local create_return_action = function(current_win, cursor_pos)
   return function(picker)
     picker:close()
@@ -169,6 +172,9 @@ return {
     focus_right_win = focus_right_win,
     grug_far_refactor_python_imports = grug_far_refactor_imports,
     set_cwd_here = set_cwd_here,
+  },
+  toggles = {
+    no_follow_file = "NF",
   },
   win = {
     list = {

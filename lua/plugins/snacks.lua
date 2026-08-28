@@ -128,7 +128,7 @@ return {
         if pcall(require, "neo-tree") then
           vim.cmd("Neotree close")
         end
-        require("modules.snacks.picker.explorer.open-with-flags").open()
+        require("modules.snacks.picker.explorer.open-with-flags").toggle()
       end,
       desc = "Toggle Snacks Explorer",
     },
