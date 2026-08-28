@@ -3,6 +3,7 @@ return {
   dependencies = {
     "nvim-telescope/telescope.nvim",
   },
+  -- NOTE: "config is in lua/plugins/telescope.lua"
   keys = {
     {
       "<leader>p",

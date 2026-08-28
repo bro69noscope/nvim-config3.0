@@ -210,8 +210,22 @@ return {
         project = {
           mappings = {
             n = {
+              ["b"] = false,
+              ["c"] = false,
+              ["C"] = false,
+              ["d"] = false,
+              ["f"] = false,
               ["r"] = project_actions.recent_project_files,
-              ["R"] = project_actions.rename_project,
+              ["s"] = false,
+              ["w"] = false,
+
+              ["<c-a>"] = project_actions.add_project,
+              ["<c-A>"] = project_actions.add_project_cwd,
+              ["<c-b>"] = project_actions.browse_project_files,
+              ["<c-d>"] = project_actions.delete_project,
+              ["<c-f>"] = project_actions.find_project_files,
+              ["<c-r>"] = project_actions.rename_project,
+              ["<c-s>"] = project_actions.search_in_project_files,
             },
           },
         },
