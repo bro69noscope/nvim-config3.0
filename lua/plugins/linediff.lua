@@ -79,13 +79,13 @@ return {
           silent = true,
         })
 
-        vim.keymap.set("n", "<C-j>", function()
+        vim.keymap.set("n", NextDiffChangeBind, function()
           if vim.wo.diff then
             vim.cmd.normal({ "]c", bang = true })
           end
         end, { buffer = 0 })
 
-        vim.keymap.set("n", "<C-k>", function()
+        vim.keymap.set("n", PreviousDiffChangeBind, function()
           if vim.wo.diff then
             vim.cmd.normal({ "[c", bang = true })
           end
