@@ -150,6 +150,7 @@ local grug_far_refactor_imports = function(picker, item)
 end
 
 local focus_right_win = function()
+  -- Avoids having to go right twice from the input window
   vim.cmd("stopinsert")
   vim.cmd("wincmd l")
   -- if we are still in the Snacks picker list, go right again
@@ -189,6 +190,7 @@ return {
         ["<BS>"] = false,
         ["<c-j>"] = false,
         ["<c-k>"] = false,
+        ["<c-l>"] = false,
         ["<esc>"] = {
           function()
             vim.cmd("wincmd p")

@@ -137,6 +137,13 @@ return {
         ["O"] = { { "pick_win", "jump" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
+        ["<c-l>"] = { "focus_preview", mode = { "i", "n" } },
+        ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
+      },
+    },
+    preview = {
+      keys = {
+        ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
       },
     },
   },
