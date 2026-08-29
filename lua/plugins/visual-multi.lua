@@ -12,15 +12,20 @@ return {
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_start",
       callback = function()
-        require("nvim-autopairs").disable()
+        local ok, autopairs = pcall(require, "nvim-autopairs")
+        if ok then
+          autopairs.disable()
+        end
       end,
     })
-
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_exit",
       callback = function()
-        require("nvim-autopairs").force_attach()
-        require("nvim-autopairs").enable()
+        local ok, autopairs = pcall(require, "nvim-autopairs")
+        if ok then
+          autopairs.force_attach()
+          autopairs.enable()
+        end
       end,
     })
 
