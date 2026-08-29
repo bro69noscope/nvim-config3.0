@@ -405,3 +405,12 @@ map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space
 map("n", "<leader>ur", function()
   vim.cmd('!& "' .. vim.fn.expand("%:p") .. '"')
 end, { desc = "Run script", icon = "🚀" })
+
+-- Close all buffers except current one
+map("n", "<leader>uX", function()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if buf ~= vim.api.nvim_get_current_buf() then
+      vim.api.nvim_buf_delete(buf, {})
+    end
+  end
+end, { desc = "Close all buffers except current", icon = "❌" })
