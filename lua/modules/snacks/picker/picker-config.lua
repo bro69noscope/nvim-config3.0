@@ -123,8 +123,8 @@ return {
         ["="] = { "insert_absolute_path", mode = { "n" } },
         -- ["<bs>"] = { "insert_python_import_path", mode = { "n" } }, NOTE: idk about keeping this
         ["+"] = { "clip_full_path", mode = { "n" } },
-        ["<c-l>"] = { "focus_preview", mode = { "i", "n" } },
-        ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
@@ -137,13 +137,13 @@ return {
         ["O"] = { { "pick_win", "jump" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
-        ["<c-l>"] = { "focus_preview", mode = { "i", "n" } },
-        ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
       },
     },
     preview = {
       keys = {
-        ["<c-h>"] = { "focus_list", mode = { "i", "n" } },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
       },
     },
   },

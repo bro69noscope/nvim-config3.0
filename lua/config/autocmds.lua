@@ -270,10 +270,10 @@ vim.api.nvim_create_autocmd("TermOpen", {
   group = vim.api.nvim_create_augroup("GlobalTermKeymaps", { clear = true }),
   callback = function(args)
     local opts = { buffer = args.buf }
-    vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
-    vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
-    vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
-    vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+    vim.keymap.set("t", LeftWindowBind, [[<Cmd>wincmd h<CR>]], opts)
+    vim.keymap.set("t", DownWindowBind, [[<Cmd>wincmd j<CR>]], opts)
+    vim.keymap.set("t", UpWindowBind, [[<Cmd>wincmd k<CR>]], opts)
+    vim.keymap.set("t", RightWindowBind, [[<Cmd>wincmd l<CR>]], opts)
     vim.keymap.set("t", "<C-Up>", [[<Cmd>resize +2<CR>]], opts)
     vim.keymap.set("t", "<C-Down>", [[<Cmd>resize -2<CR>]], opts)
     vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)

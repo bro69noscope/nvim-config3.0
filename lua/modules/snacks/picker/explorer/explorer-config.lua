@@ -188,9 +188,9 @@ return {
         ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
         ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
         ["<BS>"] = false,
-        ["<c-j>"] = false,
-        ["<c-k>"] = false,
-        ["<c-l>"] = false,
+        [DownWindowBind] = false,
+        [UpWindowBind] = false,
+        [RightWindowBind] = false,
         ["<esc>"] = {
           function()
             vim.cmd("wincmd p")
@@ -213,7 +213,7 @@ return {
           end,
           desc = "Exit to prev window",
         },
-        ["<c-l>"] = { "focus_right_win", desc = "Focus right window", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_right_win", desc = "Focus right window", mode = { "i", "n" } },
       },
     },
   },

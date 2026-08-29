@@ -17,8 +17,8 @@ return {
     require("blink.cmp").setup({
       keymap = {
         preset = "none",
-        ["<C-k>"] = { "select_prev", "fallback" },
-        ["<C-j>"] = { "select_next", "fallback" },
+        [UpWindowBind] = { "select_prev", "fallback" },
+        [DownWindowBind] = { "select_next", "fallback" },
         ["<C-e>"] = { "show", "hide" },
         ["<CR>"] = { "accept", "fallback" },
       },
@@ -92,8 +92,8 @@ return {
         enabled = true,
         keymap = {
           preset = "none",
-          ["<C-k>"] = { "select_prev", "fallback" },
-          ["<C-j>"] = { "select_next", "fallback" },
+          [UpWindowBind] = { "select_prev", "fallback" },
+          [DownWindowBind] = { "select_next", "fallback" },
           ["<C-e>"] = { "show", "hide" },
           ["<Tab>"] = { "accept", "fallback" },
         },

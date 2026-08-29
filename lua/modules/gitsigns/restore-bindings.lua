@@ -1,21 +1,21 @@
 local M = {}
 
 local restore_wezmove_bindings = function(wezmove)
-  vim.keymap.set("n", "<C-j>", function()
+  vim.keymap.set("n", DownWindowBind, function()
     wezmove.move("j")
   end)
 
-  vim.keymap.set("n", "<C-k>", function()
+  vim.keymap.set("n", UpWindowBind, function()
     wezmove.move("k")
   end)
 end
 
 local restore_smart_splits_bindings = function(smartsplits)
-  vim.keymap.set("n", "<C-j>", function()
+  vim.keymap.set("n", DownWindowBind, function()
     smartsplits.move_cursor_down()
   end)
 
-  vim.keymap.set("n", "<C-k>", function()
+  vim.keymap.set("n", UpWindowBind, function()
     smartsplits.move_cursor_up()
   end)
 end

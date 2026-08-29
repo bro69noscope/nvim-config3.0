@@ -10,6 +10,11 @@ NextDiffChangeBind = "<m-j>"
 PreviousDiffChangeBind = "<m-k>"
 HideTerminalBind = "<c-u>"
 
+UpWindowBind = "<c-k>"
+DownWindowBind = "<c-j>"
+LeftWindowBind = "<c-h>"
+RightWindowBind = "<c-l>"
+
 require("config.options")
 require("config.lazy")
 vim.cmd([[colorscheme tokyonight-storm]])

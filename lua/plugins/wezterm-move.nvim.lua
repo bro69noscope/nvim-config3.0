@@ -5,19 +5,19 @@ return {
   -- at the edge.
   keys = {
     {
-      "<C-h>",
+      LeftWindowBind,
       function()
         require("wezterm-move").move("h")
       end,
     },
     {
-      "<C-j>",
+      DownWindowBind,
       function()
         require("wezterm-move").move("j")
       end,
     },
     {
-      "<C-k>",
+      UpWindowBind,
       function()
         require("wezterm-move").move("k")
         -- Check if we landed in neo-tree and auto-move right
@@ -27,7 +27,7 @@ return {
       end,
     },
     {
-      "<C-l>",
+      RightWindowBind,
       function()
         require("wezterm-move").move("l")
       end,

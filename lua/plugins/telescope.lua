@@ -126,13 +126,13 @@ return {
         mappings = {
           n = {
             s = flash,
-            ["<C-l>"] = focus_keymaps.focus_preview,
-            ["<C-h>"] = focus_keymaps.focus_results,
+            [RightWindowBind] = focus_keymaps.focus_preview,
+            [LeftWindowBind] = focus_keymaps.focus_results,
           },
           i = {
             ["<m-s>"] = flash,
-            ["<C-l>"] = focus_keymaps.focus_preview,
-            ["<C-h>"] = focus_keymaps.focus_results,
+            [RightWindowBind] = focus_keymaps.focus_preview,
+            [LeftWindowBind] = focus_keymaps.focus_results,
           },
         },
         sorting_strategy = "ascending",

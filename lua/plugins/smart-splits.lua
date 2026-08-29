@@ -10,28 +10,28 @@ return {
     },
     keys = {
       {
-        "<C-h>",
+        LeftWindowBind,
         function()
           require("smart-splits").move_cursor_left()
         end,
         desc = "Move to left split",
       },
       {
-        "<C-j>",
+        DownWindowBind,
         function()
           require("smart-splits").move_cursor_down()
         end,
         desc = "Move to bottom split",
       },
       {
-        "<C-k>",
+        UpWindowBind,
         function()
           require("smart-splits").move_cursor_up()
         end,
         desc = "Move to top split",
       },
       {
-        "<C-l>",
+        RightWindowBind,
         function()
           require("smart-splits").move_cursor_right()
         end,

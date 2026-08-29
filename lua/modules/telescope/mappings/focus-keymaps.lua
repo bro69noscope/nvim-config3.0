@@ -12,16 +12,16 @@ local function setup_focus_keymaps(prompt_bufnr, bufnr, prompt_win)
     require("telescope.actions").close(prompt_bufnr)
   end, { buffer = bufnr })
 
-  vim.keymap.set("n", "<C-l>", function()
+  vim.keymap.set("n", RightWindowBind, function()
     focus_window(prompt_bufnr, "preview")
   end, { buffer = bufnr })
 
-  vim.keymap.set("n", "<C-h>", function()
+  vim.keymap.set("n", LeftWindowBind, function()
     focus_window(prompt_bufnr, "results")
   end, { buffer = bufnr })
 
-  vim.keymap.set("n", "<C-j>", "<nop>", { buffer = bufnr })
-  vim.keymap.set("n", "<C-k>", "<nop>", { buffer = bufnr })
+  vim.keymap.set("n", UpWindowBind, "<nop>", { buffer = bufnr })
+  vim.keymap.set("n", DownWindowBind, "<nop>", { buffer = bufnr })
 end
 
 focus_window = function(prompt_bufnr, window_type)
