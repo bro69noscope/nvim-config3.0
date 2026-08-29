@@ -115,6 +115,8 @@ return {
   win = {
     input = {
       keys = {
+        ["<Down>"] = { "history_forward", mode = { "i", "n" } },
+        ["<Up>"] = { "history_back", mode = { "i", "n" } },
         ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
         ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
         ["-"] = { "insert_relative_path", mode = { "n" } },
