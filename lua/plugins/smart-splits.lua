@@ -1,8 +1,9 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
-    enabled = not OnWindows and true or OnNeovide, -- We don't use it on Windows (a bit slow, we have an
-    -- alternative plugin)
+    enabled = false and not OnWindows or OnNeovide, -- We don't use it on Windows (a bit slow, for
+    -- wezterm at least, we have an alternative plugin). We do use it on Neovide due to the absence
+    -- of wezterm tabs here.
     lazy = false,
     opts = {
       at_edge = "stop",
@@ -34,7 +35,7 @@ return {
         function()
           if vim.bo.filetype == "snacks_picker_list" then
             local win_config = vim.api.nvim_win_get_config(0)
-            if win_config.zindex == 33 then -- Snack explorer is on same zindex as main window
+            if win_config.zindex == 33 then -- Snack explorer is on same zindex as main nvim window
               vim.cmd("wincmd l")
               Logger.debug("triggered wincmd l in snack explorer list", "smart-splits")
             end

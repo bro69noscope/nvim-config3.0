@@ -1,7 +1,8 @@
 return {
   -- "letieu/wezterm-move.nvim",
-  "woertsposzibllen4me/wezterm-move.nvim",
-  enabled = OnWindows and true and not OnNeovide, -- Better fitted for Windows.  NOTE: forked for custom functionality
+  "woertsposzibllen4me/wezterm-move.nvim", -- forked for custom functionality
+  enabled = true and OnWindows and not OnNeovide, -- Better fitted for Windows. Hangs on neovide when
+  -- at the edge.
   keys = {
     {
       "<C-h>",
