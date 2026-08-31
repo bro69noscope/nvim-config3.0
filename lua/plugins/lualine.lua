@@ -42,6 +42,29 @@ return {
         return loc .. (excluded_ft[vim.bo.filetype] and "" or " ")
       end
 
+      local function truncate_path()
+        local filename = vim.fn.expand("%:t")
+        local relative_path = vim.fn.expand("%:.")
+        local dir = vim.fn.fnamemodify(relative_path, ":h")
+        local separator = OnWindows and "\\" or "/"
+        local full_path_len = #vim.fn.expand("%:p")
+
+        if dir ~= "." and full_path_len > 100 then
+          local parts = vim.split(dir, separator, { plain = true })
+          local parents_kept = 2
+          local shorten_len = full_path_len > 140 and 3 or 5
+
+          if #parts > parents_kept then
+            for i = 1, #parts - parents_kept do
+              parts[i] = parts[i]:sub(1, shorten_len)
+            end
+          end
+          dir = table.concat(parts, separator)
+        end
+
+        return table.concat({ dir, separator, "%#LualineFilename#", filename, "%*" })
+      end
+
       config.options.theme = "tokyonight"
 
       config.sections.lualine_b = {
@@ -89,21 +112,7 @@ return {
           end,
         },
         {
-          function()
-            local filename = vim.fn.expand("%:t")
-            local relative_path = vim.fn.expand("%:.")
-            local dir = vim.fn.fnamemodify(relative_path, ":h")
-            local separator = OnWindows and "\\" or "/"
-            local full_path_len = #vim.fn.expand("%:p")
-
-            if full_path_len > 140 then
-              dir = vim.fn.pathshorten(dir, 3)
-            elseif full_path_len > 100 then
-              dir = vim.fn.pathshorten(dir, 5)
-            end
-
-            return table.concat({ dir, separator, "%#LualineFilename#", filename, "%*" })
-          end,
+          truncate_path,
           cond = function()
             return not status_line_ovverridden()
           end,
