@@ -1,6 +1,7 @@
 return {
+  --NOTE: this seem to cause quite a bit of lag starting 300lines & up. Might need settings tuning
   "andymass/vim-matchup",
-  enabled = true,
+  enabled = false,
   opts = {
     treesitter = {
       stopline = 500,
