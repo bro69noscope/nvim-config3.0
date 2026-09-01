@@ -144,6 +144,17 @@ function M.start_lazygit(opts)
   local current_buffer = vim.api.nvim_get_current_buf()
   local float_term = lg_float_term(opts)
 
+  -- Disable window navigation keybinds in the terminal buffer
+  for _, key in ipairs({ UpWindowBind, DownWindowBind, LeftWindowBind, RightWindowBind }) do
+    vim.api.nvim_buf_set_keymap(
+      float_term.buf,
+      "t",
+      key,
+      "<Nop>",
+      { noremap = true, silent = true }
+    )
+  end
+
   -- Keybind to edit the file in the current nvim instance
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
