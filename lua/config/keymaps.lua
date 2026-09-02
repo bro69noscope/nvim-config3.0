@@ -58,6 +58,13 @@ map({ "n", "v" }, "<leader>qo", "<cmd>tabonly<cr>", { desc = "Close other tabs",
 
 -- save with C-S
 map("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
+-- cannot differentiate between C-S and C-s.
+map(
+  "n",
+  "<leader><C-s>",
+  "<cmd>noa w<cr><esc>",
+  { desc = "Save file (no autocommands)", silent = true }
+)
 
 -- Center after most code navigation commands
 map("n", "G", "Gzz", { desc = "Go to end and center" })
