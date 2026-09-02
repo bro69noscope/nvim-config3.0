@@ -60,6 +60,7 @@ local grep_for_filename = function(picker, item)
     title = "Grep for: " .. filename,
     search = filename,
     cwd = picker:cwd(),
+    show_empty = true,
   })
 end
 
@@ -73,6 +74,7 @@ local grep_for_filename_with_ext = function(picker, item)
     title = "Grep for: " .. filename,
     search = filename,
     cwd = picker:cwd(),
+    show_empty = true,
   })
 end
 
