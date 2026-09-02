@@ -1,3 +1,5 @@
+-- Powershell_es is bad at finding scoped variables, theyre all globals basically. This is a
+-- workaround to find the first occurence of a variable in the current function body.
 vim.keymap.set("n", "g;", function()
   local word = vim.fn.expand("<cWORD>"):match("%$[%w_:]+") or vim.fn.expand("<cword>")
   local start = vim.fn.search([[^\s*\(function\|filter\)\s]], "bnW")
