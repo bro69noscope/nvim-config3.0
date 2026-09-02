@@ -1,31 +1,26 @@
 ; extends
 
 (function_definition
-  name: (identifier) @function.name)
+  name: (identifier) @definition.name)
 
-; Capture function names in function calls
 (call
-  function: (identifier) @function_name)
+  function: (identifier) @call.function_name)
 
-; Capture method names in method calls
 (call
   function: (attribute
-    attribute: (identifier) @method_name))
+    attribute: (identifier) @call.method_name))
 
-; Capture both function name or method name
 (call
   function: [
-    (identifier) @call_name
-    (attribute attribute: (identifier) @call_name)
+    (identifier) @call.name
+    (attribute attribute: (identifier) @call.name)
   ])
 
-; Capture return type annotations
 (function_definition
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 
-; Capture function parameters
 (function_definition
-  parameters: (parameters) @function_parameters
+  parameters: (parameters) @definition.params
   !return_type)
 
 (attribute

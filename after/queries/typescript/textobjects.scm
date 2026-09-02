@@ -1,59 +1,53 @@
 ; extends
 
-; Capture function names in function calls
 (call_expression
-  function: (identifier) @function_name)
+  function: (identifier) @call.function_name)
 
-; Capture method names in method calls
 (call_expression
   function: (member_expression
-    property: (property_identifier) @method_name))
+    property: (property_identifier) @call.method_name))
 
-; Capture both function name or method name
 (call_expression
   function: [
-    (identifier) @call_name
-    (member_expression property: (property_identifier) @call_name)
+    (identifier) @call.name
+    (member_expression property: (property_identifier) @call.name)
   ])
 
-; Capture return type annotations
 (function_declaration
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 (function_expression
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 (arrow_function
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 (method_definition
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 (generator_function_declaration
-  return_type: (_) @return_type)
+  return_type: (_) @definition.return_type)
 
-; Capture function parameters (no return type)
 (function_declaration
-  parameters: (formal_parameters) @function_parameters
+  parameters: (formal_parameters) @definition.params
   !return_type)
 (function_expression
-  parameters: (formal_parameters) @function_parameters
+  parameters: (formal_parameters) @definition.params
   !return_type)
 (arrow_function
-  parameters: (formal_parameters) @function_parameters
+  parameters: (formal_parameters) @definition.params
   !return_type)
 (method_definition
-  parameters: (formal_parameters) @function_parameters
+  parameters: (formal_parameters) @definition.params
   !return_type)
 
 (member_expression
   property: (property_identifier) @variable.member.inner) @variable.member.outer
 
-; Capture just the function name (not export/function/async keywords)
 (function_declaration
-  name: (identifier) @function.name)
+  name: (identifier) @definition.name)
 (generator_function_declaration
-  name: (identifier) @function.name)
+  name: (identifier) @definition.name)
 (function_expression
-  name: (identifier) @function.name)
+  name: (identifier) @definition.name)
 (method_definition
-  name: (property_identifier) @function.name)
+  name: (property_identifier) @definition.name)
 (variable_declarator
-  name: (identifier) @function.name
+  name: (identifier) @definition.name
   value: [(arrow_function) (function_expression)])
