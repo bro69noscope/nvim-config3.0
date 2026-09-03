@@ -278,6 +278,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
     vim.keymap.set("t", "<C-Down>", [[<Cmd>resize -2<CR>]], opts)
     vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)
     vim.keymap.set("t", "<C-Right>", [[<Cmd>vertical resize +2<CR>]], opts)
+    vim.keymap.set("t", ToggleClaudeBind, [[<Cmd>ClaudeCode<CR>]], opts)
   end,
 })
 

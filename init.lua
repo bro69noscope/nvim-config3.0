@@ -16,6 +16,7 @@ LeftWindowBind = "<c-h>"
 RightWindowBind = "<c-l>"
 
 MacroBind = "Z"
+ToggleClaudeBind = "<c-t>"
 
 require("config.options")
 require("config.lazy")
