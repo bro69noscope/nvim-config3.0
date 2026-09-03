@@ -15,6 +15,8 @@ DownWindowBind = "<c-j>"
 LeftWindowBind = "<c-h>"
 RightWindowBind = "<c-l>"
 
+MacroBind = "Z"
+
 require("config.options")
 require("config.lazy")
 vim.cmd([[colorscheme tokyonight-storm]])

@@ -84,8 +84,8 @@ map("n", "#", "#zz", { desc = "Search word under cursor backward and center" })
 map("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy", icon = "󰒲" })
 
 -- Rebind macro key cause mistakes are made too often lol
-map("n", "q", "", { desc = "Disabled (use Q for macros)" })
-map("n", "Q", "q", { desc = "Record macro" })
+map("n", "q", "", { desc = "Quit things (use " .. MacroBind .. " for macros)" })
+map("n", MacroBind, "q", { desc = "Record macro" })
 
 -- Delete whole word with ctrl+backspace (interpreted as <C-h> in terminal)
 map("i", "<C-h>", "<C-w>", { desc = "Delete word backward" })
