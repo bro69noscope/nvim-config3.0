@@ -88,6 +88,11 @@ return {
     end
   end,
   keys = {
+    -- toggle explorer without loosing focus
+    {
+      ToggleExplorerBind,
+      "<cmd>ExplorerToggleNoFocus<cr>",
+    },
     -- grep word bounded
     {
       "<leader>sW",

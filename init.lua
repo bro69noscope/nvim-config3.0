@@ -17,6 +17,7 @@ RightWindowBind = "<c-l>"
 
 MacroBind = "Z"
 ToggleClaudeBind = "<c-t>"
+ToggleExplorerBind = "<c-e>" -- no focus mode
 
 require("config.options")
 require("config.lazy")
@@ -39,3 +40,4 @@ require("scripts.ux.lazygit-terminal")
 require("scripts.ux.diagnose-multiple-buffers")
 require("scripts.ux.better-tabclose")
 require("scripts.ux.find-next-brackets")
+require("modules.snacks.picker.explorer.toggle-without-focus")

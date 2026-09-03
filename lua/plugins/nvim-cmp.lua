@@ -89,8 +89,8 @@ return {
             fallback()
           end
         end),
-        ["<C-g>"] = cmp.mapping.complete(),
-        ["<C-e>"] = cmp.mapping.close(),
+        ["<C-f>"] = cmp.mapping.complete(),
+        ["<C-f>"] = cmp.mapping.close(),
         ["<CR>"] = cmp.mapping.confirm({
           select = true,
         }),

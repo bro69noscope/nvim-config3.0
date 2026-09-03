@@ -19,7 +19,7 @@ return {
         preset = "none",
         [UpWindowBind] = { "select_prev", "fallback" },
         [DownWindowBind] = { "select_next", "fallback" },
-        ["<C-e>"] = { "show", "hide" },
+        ["<C-f>"] = { "show", "hide" },
         ["<CR>"] = { "accept", "fallback" },
       },
 
@@ -94,7 +94,7 @@ return {
           preset = "none",
           [UpWindowBind] = { "select_prev", "fallback" },
           [DownWindowBind] = { "select_next", "fallback" },
-          ["<C-e>"] = { "show", "hide" },
+          ["<C-f>"] = { "show", "hide" },
           ["<Tab>"] = { "accept", "fallback" },
         },
         -- Configure sources for different command line modes
