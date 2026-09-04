@@ -33,7 +33,7 @@ return {
       "",
     }
 
-    local snacks = _G.Snacks
+    local snacks = Snacks
       or setmetatable({}, {
         __index = function(_, key)
           return setmetatable({}, {

@@ -35,18 +35,18 @@ return {
     ------------------------------------------------------------------------------------------------
   end,
   vim.keymap.set("n", "<leader>=ro", function()
-    _G.Bufresize.resize_open()
+    Bufresize.resize_open()
   end, { desc = "resize_open" }),
 
   vim.keymap.set("n", "<leader>=rc", function()
-    _G.Bufresize.resize_close()
+    Bufresize.resize_close()
   end, { desc = "resize_close" }),
 
   vim.keymap.set("n", "<leader>=rb", function()
-    _G.Bufresize.block_register()
+    Bufresize.block_register()
   end, { desc = "block_register" }),
 
   vim.keymap.set("n", "<leader>=rr", function()
-    _G.Bufresize.register()
+    Bufresize.register()
   end, { desc = "register" }),
 }

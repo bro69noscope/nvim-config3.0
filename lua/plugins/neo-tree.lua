@@ -43,32 +43,32 @@ return {
     }
 
     -- Add bufresize event handlers if the plugin is loaded
-    if _G.Bufresize then
+    if Bufresize then
       local handlers = {
         {
           event = "neo_tree_window_before_open",
           handler = function()
-            _G.Bufresize.register()
-            _G.Bufresize.block_register()
+            Bufresize.register()
+            Bufresize.block_register()
           end,
         },
         {
           event = "neo_tree_window_after_open",
           handler = function()
-            _G.Bufresize.resize_open()
+            Bufresize.resize_open()
           end,
         },
         {
           event = "neo_tree_window_before_close",
           handler = function()
-            _G.Bufresize.register()
-            _G.Bufresize.block_register()
+            Bufresize.register()
+            Bufresize.block_register()
           end,
         },
         {
           event = "neo_tree_window_after_close",
           handler = function()
-            _G.Bufresize.resize_close()
+            Bufresize.resize_close()
           end,
         },
       }
