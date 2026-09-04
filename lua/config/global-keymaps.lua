@@ -8,5 +8,5 @@ _G.LeftWindowBind = "<c-h>"
 _G.RightWindowBind = "<c-l>"
 
 _G.MacroBind = "Z"
-_G.ToggleClaudeBind = "<c-t>"
-_G.ToggleExplorerBind = "<c-e>" -- no focus mode
+_G.ToggleClaudeBind = "<m-t>"
+_G.ToggleExplorerBind = "<m-n>" -- no focus mode
