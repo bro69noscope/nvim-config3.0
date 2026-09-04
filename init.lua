@@ -6,19 +6,8 @@ _G.OnNeovide = require("config.neovide")
 Logger.init()
 Logger.set_level("DEBUG")
 RepeatablePairs.setup()
-NextDiffChangeBind = "<m-j>"
-PreviousDiffChangeBind = "<m-k>"
-HideTerminalBind = "<c-u>"
 
-UpWindowBind = "<c-k>"
-DownWindowBind = "<c-j>"
-LeftWindowBind = "<c-h>"
-RightWindowBind = "<c-l>"
-
-MacroBind = "Z"
-ToggleClaudeBind = "<c-t>"
-ToggleExplorerBind = "<c-e>" -- no focus mode
-
+require("config.global-keymaps")
 require("config.os-config")
 require("config.options")
 require("config.lazy")
