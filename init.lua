@@ -19,6 +19,7 @@ MacroBind = "Z"
 ToggleClaudeBind = "<c-t>"
 ToggleExplorerBind = "<c-e>" -- no focus mode
 
+require("config.os-config")
 require("config.options")
 require("config.lazy")
 vim.cmd([[colorscheme tokyonight-storm]])
