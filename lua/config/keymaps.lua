@@ -421,3 +421,26 @@ map("n", "<leader>uX", function()
     end
   end
 end, { desc = "Close all buffers except current", icon = "❌" })
+
+-- Pipe git diff to clipboard
+map("n", "<leader>ug", function()
+  local file = vim.fn.expand("%:t")
+
+  if vim.bo.buftype ~= "" or file == "" then
+    vim.notify("No valid file to diff", vim.log.levels.WARN)
+    return
+  end
+
+  vim.cmd("silent !git diff -- % | " .. ClipExecutable)
+
+  if vim.v.shell_error ~= 0 then
+    vim.notify("git diff failed for " .. file, vim.log.levels.ERROR)
+    return
+  end
+
+  vim.notify("Git diff for " .. file .. " copied to clipboard", vim.log.levels.INFO)
+end, {
+  silent = true,
+  desc = "Pipe git diff to clipboard",
+  icon = { icon = "", hl = "DevIconGitLogo" },
+})
