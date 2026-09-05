@@ -168,41 +168,39 @@ end
 map("v", "gW", format_with_width, { desc = "Format with custom width" })
 
 -- Clipboard operations
+local clip_utils = require("scripts.utils.clipboard-functions")
+
 map({ "n", "v" }, "<C-c>", function()
   vim.fn.feedkeys('"+y')
 end, { desc = "Yank to system clipboard" })
 
+map({ "n", "v" }, "<m-y>", function()
+  clip_utils.append_yank_to_system_reg()
+end, { desc = "Yank and append to system clipboard" })
+
 map("n", "<leader>ya", function()
-  require("scripts.utils.clipboard-functions").copy_file_to_system_register()
+  clip_utils.copy_file_to_system_register()
 end, { desc = "Copy file content to system clipboard" })
 
 map("n", "<leader>yA", function()
-  require("scripts.utils.clipboard-functions").append_file_to_system_register()
+  clip_utils.append_file_to_system_register()
 end, { desc = "Append file content to system clipboard" })
 
 map("n", "<leader>yc", function()
-  require("scripts.utils.clipboard-functions").copy_code_to_system_register()
+  clip_utils.copy_code_to_system_register()
 end, { desc = "Copy file content with header to system clipboard" })
 
 map("n", "<leader>yC", function()
-  require("scripts.utils.clipboard-functions").append_code_to_system_register()
+  clip_utils.append_code_to_system_register()
 end, { desc = "Append file content with header to system clipboard" })
 
 map("n", "<leader>yq", function()
-  require("scripts.utils.clipboard-functions").copy_qf_code_to_register()
+  clip_utils.copy_qf_code_to_register()
 end, { desc = "Copy quickfix code to system clipboard" })
 
 map("n", "<leader>yQ", function()
-  require("scripts.utils.clipboard-functions").append_qf_code_to_register()
+  clip_utils.append_qf_code_to_register()
 end, { desc = "Append quickfix code to system clipboard" })
-
-map("n", "<leader>+", function()
-  require("scripts.utils.clipboard-functions").append_unnamed_reg_to_system_reg()
-end, { desc = "Append unnamed reg to clipboard", icon = "📋" })
-
-map("n", "<leader>=", function()
-  vim.fn.setreg("+", vim.fn.getreg('"'))
-end, { desc = "Copy unnamed reg to clipboard", icon = "📋" })
 
 -- Various uitilities
 local various_utils = require("scripts.utils.various-utils")

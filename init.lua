@@ -6,6 +6,7 @@ _G.OnNeovide = require("config.neovide")
 Logger.init()
 Logger.set_level("DEBUG")
 RepeatablePairs.setup()
+_G.Scratch_registers = { "z", "y", "x" } -- reserved scratch registers for temporary use
 
 require("config.global-keymaps")
 require("config.os-config")

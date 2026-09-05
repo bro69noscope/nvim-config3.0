@@ -95,13 +95,15 @@ M.append_code_to_system_register = function()
   )
 end
 
-M.append_unnamed_reg_to_system_reg = function()
-  local unnamed_register = vim.fn.getreg('"')
+M.append_yank_to_system_reg = function()
+  local reg = Scratch_registers[1]
+  vim.cmd('normal! "' .. reg .. "y")
+  local yanked = vim.fn.getreg(reg)
   local system_register = vim.fn.getreg("+")
-  local new_register_content = system_register .. "\n" .. unnamed_register
+  local new_register_content = system_register .. "\n" .. yanked
   vim.fn.setreg("+", new_register_content)
 
-  local lines_added = count_lines(unnamed_register)
+  local lines_added = count_lines(yanked)
   local total_lines = count_lines(new_register_content)
   vim.notify(
     string.format(
