@@ -163,7 +163,7 @@ map("n", "go", vim.diagnostic.open_float, { desc = "Open Diagnostic Float" })
 map("n", "<leader>lr", restart_lsp, { desc = "Restart LSP" })
 map("n", "<leader>li", "<cmd>checkhealth vim.lsp<cr>", { desc = "Show LSP info" })
 
--- HACK: START: Hide lualine winbar when showing hover docs, since the automatic redrawing of the
+-- HACK: Hide lualine winbar when showing hover docs, since the automatic redrawing of the
 -- winbar is buggy and can cause a displacement of 1 line in the noice lsp hover window.
 local function hover_with_blank_winbar()
   require("lualine").hide({ place = { "winbar" } })
@@ -181,4 +181,3 @@ vim.api.nvim_create_autocmd("WinClosed", {
     end
   end,
 })
--- HACK: END
