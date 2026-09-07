@@ -10,7 +10,7 @@ return {
       ["jsonc"] = { "prettier" },
       ["json5"] = { "prettier" },
       ["html"] = { "prettier" },
-      ["xml"] = { "lemminx" },
+      ["xml"] = { lsp_format = "prefer" },
       ["css"] = { "prettier" },
       ["scss"] = { "prettier" },
       ["less"] = { "prettier" },
@@ -21,6 +21,7 @@ return {
       ["zsh"] = { "beautysh" },
       ["sh"] = { "shfmt" },
       ["cs"] = { "csharpier" },
+      ["ps1"] = { lsp_format = "prefer" },
     },
     formatters = {
       beautysh = {
@@ -29,7 +30,7 @@ return {
     },
     format_on_save = {
       timer = 500,
-      lsp_fallback = true,
+      lsp_fallback = false, -- prefer failing loudly
     },
   },
 }
