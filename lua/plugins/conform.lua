@@ -22,6 +22,7 @@ return {
       ["sh"] = { "shfmt" },
       ["cs"] = { "csharpier" },
       ["ps1"] = { lsp_format = "prefer" },
+      ["autohotkey"] = { lsp_format = "prefer" },
     },
     formatters = {
       beautysh = {
