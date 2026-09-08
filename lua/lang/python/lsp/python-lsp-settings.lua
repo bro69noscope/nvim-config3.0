@@ -1,13 +1,21 @@
 local M = {}
 local python_ignore_paths = {
-  -- windows (requires the drive : character)
+  -- windows (sometimes requires the drive character)
   "*:/**/Python*/Lib/**",
   "*:/**/python*/lib/**",
   "*:/**/site-packages/**",
-  -- linux (requires the / at the start)
+  -- without the drive character
+  "**/Python*/Lib/**",
+  "**/python*/lib/**",
+  "**/site-packages/**",
+  -- linux (sometimes requires the forward slash)
   "/**/nvim/mason/packages/**",
   "/**/lib/python*/**",
   "/**/site-packages/**",
+  -- without the forward slash
+  "**/nvim/mason/packages/**",
+  "**/lib/python*/**",
+  "**/site-packages/**",
 }
 local ignore_all_paths = {
   "*:/*",
