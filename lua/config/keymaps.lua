@@ -174,9 +174,16 @@ map({ "n", "v" }, "<C-c>", function()
   vim.fn.feedkeys('"+y')
 end, { desc = "Yank to system clipboard" })
 
-map({ "n", "v" }, "<m-y>", function()
-  clip_utils.append_yank_to_system_reg()
+-- enable omode <m-y><m-y> to yank current line and append to system clipboard
+map("o", "<m-y>", "_", { desc = "current line (<m-y> doubled)" })
+
+map("n", "<m-y>", function()
+  clip_utils.append_yank_to_system_reg_op()
 end, { desc = "Yank and append to system clipboard" })
+
+map("v", "<m-y>", function()
+  clip_utils.append_yank_to_system_reg_visual()
+end, { desc = "Yank selection and append to system clipboard" })
 
 map("n", "<leader>ya", function()
   clip_utils.copy_file_to_system_register()

@@ -1,4 +1,7 @@
 local M = {}
+
+local op_yank_start_view = nil
+
 local function get_file_header()
   local path = vim.fn.expand("%:p")
   if path == "" then
@@ -29,85 +32,11 @@ local function get_qf_files()
   return files
 end
 
-M.copy_file_to_system_register = function()
-  local view = vim.fn.winsaveview()
-  vim.cmd('normal! ggVG"+y')
-  vim.fn.winrestview(view)
-end
-
-M.append_file_to_system_register = function()
-  local view = vim.fn.winsaveview()
-  vim.cmd('normal! ggVG"my')
-  vim.fn.winrestview(view)
-  local current_clipboard = vim.fn.getreg("+")
-  local m_register = vim.fn.getreg("m")
-  local new_register_content = current_clipboard .. m_register
-  vim.fn.setreg("+", new_register_content)
-
-  local lines_added = count_lines(m_register)
-  local total_lines = count_lines(new_register_content)
+local function notify_register_update(lines_added, total_lines, preface)
   vim.notify(
     string.format(
-      "Appended file content to system clipboard\nAdded %d %s | Total lines: %d",
-      lines_added,
-      lines_added == 1 and "line" or "lines",
-      total_lines
-    ),
-    vim.log.levels.INFO,
-    { title = "Clipboard" }
-  )
-end
-
-M.copy_code_to_system_register = function()
-  local view = vim.fn.winsaveview()
-  vim.cmd('normal! ggVG"+y')
-  local content = vim.fn.getreg("+")
-  vim.fn.setreg("+", get_file_header() .. content)
-  vim.fn.winrestview(view)
-  vim.notify(
-    "Copied file content to system clipboard",
-    vim.log.levels.INFO,
-    { title = "Clipboard" }
-  )
-end
-
-M.append_code_to_system_register = function()
-  local view = vim.fn.winsaveview()
-  vim.cmd('normal! ggVG"my')
-  local m_register = vim.fn.getreg("m")
-  local current_clipboard = vim.fn.getreg("+")
-  local addition = get_file_header() .. m_register
-  local new_register_content = current_clipboard .. "\n\n" .. addition
-  vim.fn.setreg("+", new_register_content)
-  vim.fn.winrestview(view)
-
-  local lines_added = count_lines(m_register)
-  local total_lines = count_lines(new_register_content)
-  vim.notify(
-    string.format(
-      "Appended file content to system clipboard\nAdded %d %s | Total lines: %d",
-      lines_added,
-      lines_added == 1 and "line" or "lines",
-      total_lines
-    ),
-    vim.log.levels.INFO,
-    { title = "Clipboard" }
-  )
-end
-
-M.append_yank_to_system_reg = function()
-  local reg = Scratch_registers[1]
-  vim.cmd('normal! "' .. reg .. "y")
-  local yanked = vim.fn.getreg(reg)
-  local system_register = vim.fn.getreg("+")
-  local new_register_content = system_register .. "\n" .. yanked
-  vim.fn.setreg("+", new_register_content)
-
-  local lines_added = count_lines(yanked)
-  local total_lines = count_lines(new_register_content)
-  vim.notify(
-    string.format(
-      "Added %d %s to system register\nTotal lines: %d",
+      '%sAdded %d %s to "+ \nTotal lines: %d',
+      preface and (preface .. "\n") or "",
       lines_added,
       lines_added == 1 and "line" or "lines",
       total_lines
@@ -115,6 +44,112 @@ M.append_yank_to_system_reg = function()
     vim.log.levels.INFO,
     { title = "Register Update" }
   )
+end
+
+M.yank_silently = function(cmd)
+  _G.Suppress_reg_feedback = true
+  vim.cmd("silent " .. cmd)
+  _G.Suppress_reg_feedback = false
+end
+
+M.copy_file_to_system_register = function()
+  local view = vim.fn.winsaveview()
+  M.yank_silently('normal! ggVG"+y')
+  vim.fn.winrestview(view)
+  vim.notify('Copied file content to "+', vim.log.levels.INFO, { title = "Clipboard" })
+end
+
+M.append_file_to_system_register = function()
+  local reg = Scratch_registers[1]
+  local view = vim.fn.winsaveview()
+  M.yank_silently('normal! ggVG"' .. reg .. "y")
+  vim.fn.winrestview(view)
+  local system_register = vim.fn.getreg("+")
+  local scratch_register = vim.fn.getreg(reg)
+  local new_register_content = system_register .. scratch_register
+  vim.fn.setreg("+", new_register_content)
+
+  notify_register_update(
+    count_lines(scratch_register),
+    count_lines(new_register_content),
+    'Appended file content to "+'
+  )
+end
+
+M.copy_code_to_system_register = function()
+  local view = vim.fn.winsaveview()
+  M.yank_silently('normal! ggVG"+y')
+  local content = vim.fn.getreg("+")
+  vim.fn.setreg("+", get_file_header() .. content)
+  vim.fn.winrestview(view)
+  vim.notify('Copied file content and path to "+', vim.log.levels.INFO, { title = "Clipboard" })
+end
+
+M.append_code_to_system_register = function()
+  local reg = Scratch_registers[1]
+  local view = vim.fn.winsaveview()
+  M.yank_silently('normal! ggVG"' .. reg .. "y")
+  local scratch_register = vim.fn.getreg(reg)
+  local system_register = vim.fn.getreg("+")
+  local addition = get_file_header() .. scratch_register
+  local new_register_content = system_register .. "\n\n" .. addition
+  vim.fn.setreg("+", new_register_content)
+  vim.fn.winrestview(view)
+
+  notify_register_update(
+    count_lines(scratch_register),
+    count_lines(new_register_content),
+    'Appended file content and path to "+'
+  )
+end
+
+-- Visual-mode only: yanks the current selection
+M.append_yank_to_system_reg_visual = function()
+  local reg = Scratch_registers[1]
+  M.yank_silently('normal! "' .. reg .. "y")
+
+  local yanked = vim.fn.getreg(reg)
+  local system_register = vim.fn.getreg("+")
+  local new_register_content = system_register .. "\n" .. yanked
+  vim.fn.setreg("+", new_register_content)
+
+  notify_register_update(count_lines(yanked), count_lines(new_register_content))
+end
+
+-- Normal-mode only: operator-pending, works with motions/text-objects
+M.append_yank_to_system_reg_op = function(motion_type)
+  local reg = Scratch_registers[1]
+
+  if motion_type == nil then
+    op_yank_start_view = vim.fn.winsaveview()
+    vim.o.operatorfunc =
+      "v:lua.require'scripts.utils.clipboard-functions'.append_yank_to_system_reg_op"
+    vim.api.nvim_feedkeys("g@", "n", false)
+    return
+  end
+
+  local sel_cmd
+  if motion_type == "line" then
+    sel_cmd = "'[V']"
+  elseif motion_type == "block" then
+    sel_cmd = "`[\22`]" -- <C-v>
+  else -- "char"
+    sel_cmd = "`[v`]"
+  end
+
+  M.yank_silently("normal! " .. sel_cmd .. '"' .. reg .. "y")
+
+  if op_yank_start_view then
+    vim.fn.winrestview(op_yank_start_view)
+    op_yank_start_view = nil
+  end
+
+  local yanked = vim.fn.getreg(reg)
+  local system_register = vim.fn.getreg("+")
+  local new_register_content = system_register .. "\n" .. yanked
+  vim.fn.setreg("+", new_register_content)
+
+  notify_register_update(count_lines(yanked), count_lines(new_register_content))
 end
 
 M.copy_qf_code_to_register = function()

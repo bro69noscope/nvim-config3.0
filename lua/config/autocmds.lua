@@ -287,10 +287,14 @@ vim.api.nvim_create_autocmd("TermOpen", {
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = vim.api.nvim_create_augroup("RegFeedback", {}),
   callback = function()
+    if Suppress_reg_feedback then
+      return
+    end
+
     local reg = vim.v.event.regname
     if reg == "" then
       return
-    end -- skip unnamed/default register noise
+    end
 
     local op = vim.v.event.operator
     local verb = (op == "y" and "yanked")
