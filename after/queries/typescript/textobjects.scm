@@ -51,3 +51,8 @@
 (variable_declarator
   name: (identifier) @definition.name
   value: [(arrow_function) (function_expression)])
+
+(lexical_declaration
+  "const"
+  (variable_declarator
+    name: (identifier) @constant.inner)) @constant.outer
