@@ -5,7 +5,7 @@ return {
   dependencies = "nvim-tree/nvim-web-devicons",
   event = { "BufReadPost", "BufNewFile" },
   keys = {
-    { "<leader>-", "<cmd>BufferLinePick<CR>", desc = "Pick Tab" },
+    { "<leader><BS>", "<cmd>BufferLinePick<CR>", desc = "Pick Tab" },
   },
   opts = {
     options = {
