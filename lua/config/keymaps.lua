@@ -134,9 +134,13 @@ map("n", "<leader>wc", function()
   focus_win.quickfix()
 end, { desc = "Focus quickfix window" })
 
-map("n", "<leader>wx", function()
+map("n", "<leader>we", function()
   focus_win.snacks_explorer()
 end, { desc = "Focus snacks explorer window" })
+
+map("n", "<leader>wt", function()
+  focus_win.terminal()
+end, { desc = "Focus terminal window" })
 
 -- Quickfix navigation
 map("n", "<Up>", function()

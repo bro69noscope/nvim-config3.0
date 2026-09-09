@@ -8,11 +8,11 @@ return {
   end,
   keys = {
     {
-      "<leader>we",
+      "<leader>wR",
       "<cmd>WinResizerStartResize<CR>",
       mode = "n",
       silent = true,
-      desc = "Start window edit mode",
+      desc = "Start window resize mode",
     },
   },
 }

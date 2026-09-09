@@ -41,4 +41,10 @@ M.snacks_explorer = function()
   end)
 end
 
+M.terminal = function()
+  focus_window(function(_, buf)
+    return vim.bo[buf].buftype == "terminal"
+  end)
+end
+
 return M
