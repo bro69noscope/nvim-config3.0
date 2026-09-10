@@ -217,6 +217,7 @@ return {
     { "<leader>sw", function() Snacks.picker.grep_word({
       regex = true,
       args = {},
+      show_empty = true,
     }) end, desc = "Visual selection or word", mode = { "n", "x" } },
     { '<leader>s"', function() Snacks.picker.registers() end, desc = "Registers" },
     { '<leader>s/', function() Snacks.picker.search_history() end, desc = "Search History" },
