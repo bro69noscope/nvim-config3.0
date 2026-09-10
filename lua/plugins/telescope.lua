@@ -174,7 +174,7 @@ return {
               ["w"] = false,
 
               ["<c-a>"] = project_actions.add_project,
-              ["<c-A>"] = project_actions.add_project_cwd,
+              ["<c-p>"] = project_actions.add_project_cwd,
               ["<c-b>"] = project_actions.browse_project_files,
               ["<c-d>"] = project_actions.delete_project,
               ["<c-f>"] = project_actions.find_project_files,
