@@ -460,3 +460,8 @@ end, {
   desc = "Pipe quickfix git diff to clipboard",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
+
+-- show full path of current buffer in floating window (for long paths)
+map("n", "<leader>up", function()
+  require("scripts.ui.show-buffer-fullpath").show_fullpath()
+end, { desc = "Show full path of current buffer", icon = "📂" })
