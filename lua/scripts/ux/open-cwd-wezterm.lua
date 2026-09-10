@@ -11,4 +11,17 @@ M.new_cwd_wezterm_tab = function()
   }, { detach = true })
   vim.notify("Opened new WezTerm tab in cwd:\n" .. cwd, vim.log.levels.INFO)
 end
+
+M.new_cwd_this_file_wezterm_tab = function()
+  local cwd = vim.fn.expand("%:p:h")
+
+  vim.fn.jobstart({
+    "wezterm",
+    "cli",
+    "spawn",
+    "--cwd",
+    cwd,
+  }, { detach = true })
+  vim.notify("Opened new WezTerm tab in cwd:\n" .. cwd, vim.log.levels.INFO)
+end
 return M

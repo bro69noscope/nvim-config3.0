@@ -341,6 +341,10 @@ map("n", "<leader>to", function()
   require("scripts.ux.open-cwd-wezterm").new_cwd_wezterm_tab()
 end, { desc = "Open WezTerm tab at cwd" })
 
+map("n", "<leader>tO", function()
+  require("scripts.ux.open-cwd-wezterm").new_cwd_this_file_wezterm_tab()
+end, { desc = "Open WezTerm tab at current file's cwd" })
+
 -- Try to format lines too long without lsp/formatter
 map(
   "n",
