@@ -87,9 +87,6 @@ map("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy", icon = "󰒲" })
 map("n", "q", "", { desc = "Quit things (use " .. MacroBind .. " for macros)" })
 map("n", MacroBind, "q", { desc = "Record macro" })
 
--- Delete whole word with ctrl+backspace (interpreted as <C-h> in terminal)
-map("i", "<C-h>", "<C-w>", { desc = "Delete word backward" })
-
 -- Close (non-focused) floating windows and disable search hl with ESC
 map("n", "<esc>", function()
   local current_win = vim.api.nvim_get_current_win()
@@ -106,10 +103,6 @@ end, { desc = "Close floating windows/disable search highlight" })
 map("n", "<leader>wo", function()
   require("scripts.ui.close-other-windows").solo_window_with_filetree()
 end, { desc = "Close others (and opens File Explorer)", icon = "" })
-
--- force C-n and C-p to navigate cmd/search history (fixes cmp issues)
-map("c", "<C-n>", "<C-Down>", { desc = "Navigate cmd history (next)" })
-map("c", "<C-p>", "<C-Up>", { desc = "Navigate cmd history (previous)" })
 
 -- Search within visual selection
 map("x", "<leader>/", "<Esc>/\\%V", { desc = "Search within selection" })
