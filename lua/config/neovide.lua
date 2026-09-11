@@ -1,7 +1,8 @@
 if vim.g.neovide == true then
   vim.o.guifont = "BerkeleyMono Nerd Font"
   -- local zoomed_scale = 1.225
-  local zoomed_scale = 0.87
+  local zoomed_scale = 0.87 -- this gives 150 cols with OS scale set to 175% —
+  -- increasing to even 0.88 makes us loose 4 cols
   local function paste()
     vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
   end
