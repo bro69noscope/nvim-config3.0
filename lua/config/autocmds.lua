@@ -305,3 +305,29 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     vim.notify(string.format('%s to "%s', verb, reg), vim.log.levels.INFO)
   end,
 })
+
+-- close diff tabs with q or Q (special handlings)
+vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
+  callback = function(args)
+    if vim.wo.diff then
+      vim.keymap.set("n", "q", function()
+        vim.cmd("TabcloseBetter")
+      end, { buffer = args.buf, silent = true })
+
+      vim.keymap.set("n", "Q", function()
+        local cursor_pos = vim.api.nvim_win_get_cursor(0)
+        local current_file = vim.api.nvim_buf_get_name(0)
+
+        vim.cmd("TabcloseBetter")
+
+        vim.schedule(function()
+          local prev_buf_name = vim.api.nvim_buf_get_name(0)
+          if current_file == prev_buf_name then
+            vim.api.nvim_win_set_cursor(0, cursor_pos)
+            vim.cmd("normal! zz")
+          end
+        end)
+      end, { buffer = args.buf, silent = true, desc = "Close diff tab" })
+    end
+  end,
+})

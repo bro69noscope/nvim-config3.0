@@ -49,29 +49,9 @@ return {
       -- end)
 
       -- Helper function for setting tab-specific keymaps
+      -- NOTE: this is a fucking mess of now mostly useless code, harmless but cleanup later.
       local function set_diff_tab_keymaps(new_tab, created_buffers)
         local diff_tab_nr = vim.api.nvim_tabpage_get_number(new_tab)
-
-        map("n", "q", function()
-          vim.cmd("TabcloseBetter")
-        end)
-
-        -- close diff tab and jump to current change position
-        map("n", "Q", function()
-          local cursor_pos = vim.api.nvim_win_get_cursor(0)
-          local current_file = vim.api.nvim_buf_get_name(0)
-
-          vim.cmd("TabcloseBetter")
-
-          -- Jump to the same position in the previous tab if it's the same file
-          vim.schedule(function()
-            local prev_buf_name = vim.api.nvim_buf_get_name(0)
-            if current_file == prev_buf_name then
-              vim.api.nvim_win_set_cursor(0, cursor_pos)
-              vim.cmd("normal! zz")
-            end
-          end)
-        end, { desc = "Close diff tab" })
 
         map("n", NextDiffChangeBind, function()
           vim.cmd.normal({ "]c", bang = true })
