@@ -13,7 +13,7 @@ vim.api.nvim_create_autocmd("CmdlineEnter", {
   end,
 })
 
--- Better, floating, command line window
+-- Better, floating, command line window (c-f hotkey, left for grep, dont overwrite in cmode)
 vim.api.nvim_create_autocmd("CmdwinEnter", {
   pattern = "*",
   callback = function()
