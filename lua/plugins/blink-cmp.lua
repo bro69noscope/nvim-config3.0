@@ -19,7 +19,7 @@ return {
         preset = "none",
         ["<Up>"] = { "select_prev", "fallback" },
         ["<Down>"] = { "select_next", "fallback" },
-        ["<C-f>"] = { "show", "hide" },
+        ["<C-g>"] = { "show", "hide" },
         ["<CR>"] = { "accept", "fallback" },
       },
 
@@ -94,7 +94,7 @@ return {
           preset = "none",
           ["<Up>"] = { "select_prev", "fallback" },
           ["<Down>"] = { "select_next", "fallback" },
-          ["<C-f>"] = { "show", "hide" },
+          ["<C-g>"] = { "show", "hide" },
           ["<Tab>"] = { "accept", "fallback" },
         },
         -- Configure sources for different command line modes
