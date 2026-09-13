@@ -102,7 +102,7 @@ return {
     { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
     { "<leader>dw", function() require("dap.ui.widgets").hover() end, desc = "Widgets" },
     { "<leader>dL", function() require("osv").launch({ port = 8086 }) end, desc = "Launch nlua OSV" },
-    { "<leader>dt", function() require("osv").run_this() end, desc = "Run nlua OSV directly" },
+    { "<leader>dR", function() require("osv").run_this() end, desc = "Run nlua OSV directly" },
     { "<leader>df", function() require("dap.ui.widgets").centered_float(require("dap.ui.widgets").frames) end, desc = "Frames" },
   },
 }
