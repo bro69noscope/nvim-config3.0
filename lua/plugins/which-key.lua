@@ -59,11 +59,14 @@ return {
       { "<leader>D", group = "DadBod UI" },
       { "<leader>d", group = "Debug", icon = { icon = "🪲" } },
       { "<leader>c", group = "QuickFix/Code Actions" },
-      { "<Leader>u", group = "Utilities", icon = { icon = "🛠️" } },
       { "gH", group = "Peek Definitions", icon = { icon = "👁️" } },
       { "gm", group = "Marks", icon = { icon = "✅" } },
 
       -- hierarchical groups
+      -- Utilities
+      { "<Leader>u", group = "Utilities", icon = { icon = "🛠️" } },
+      { "<Leader>ur", group = "Replace file extension", icon = { icon = "" } },
+
       { "<leader>l", group = "Line diffs/LSP", icon = { icon = "󰈙 󰒒", color = "blue" } },
       -- Linediff
       {
