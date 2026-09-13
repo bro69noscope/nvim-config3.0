@@ -259,8 +259,12 @@ map("n", "<leader>wr", function()
 end, { desc = "Restore window size" })
 
 map("n", "<leader>wh", function()
-  require("scripts.ui.resize-windows").half_size_window()
-end, { desc = "Set window to half size" })
+  require("scripts.ui.resize-windows").half_size_window_horizontal()
+end, { desc = "Set window to half the horizontal size" })
+
+map("n", "<leader>wH", function()
+  require("scripts.ui.resize-windows").half_size_window_vertical()
+end, { desc = "Set window to half the vertical size" })
 
 -- Yank buffer's paths to clipboard
 map("n", "<leader>yp", function()
@@ -384,10 +388,14 @@ map("n", "<leader>cl", function()
   })
 end, { desc = "Add current line to quickfix" })
 
--- serch visual selection in explorer
+-- search visual selection in snacks pickers
 map("x", "<leader>se", function()
-  require("scripts.ux.search-with-explorer").open_selection_in_explorer()
-end, { desc = "Open selected path in explorer" })
+  require("scripts.ux.open-selection-in-picker").open_selection_in_explorer()
+end, { desc = "Open selection in explorer", icon = "󱥰" })
+
+map("x", "<leader>s;", function()
+  require("scripts.ux.open-selection-in-picker").open_selection_in_files()
+end, { desc = "Open selection in files", icon = "󱥰" })
 
 -- Repeatable movement for misspelled words
 local function next_spell()

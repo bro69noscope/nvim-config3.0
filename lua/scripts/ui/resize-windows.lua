@@ -26,14 +26,20 @@ M.maximize_window = function()
   vim.cmd("wincmd |")
 end
 
-M.half_size_window = function()
+M.half_size_window_vertical = function()
+  M.restore_window()
+  local win_id = M.set_window()
+  local max_height = vim.api.nvim_win_get_height(win_id)
+  vim.api.nvim_win_set_height(win_id, math.floor(max_height / 2))
+  M.maximize_window()
+end
+
+M.half_size_window_horizontal = function()
   M.restore_window()
   local win_id = M.set_window()
   M.maximize_window()
   local max_width = vim.api.nvim_win_get_width(win_id)
-  local max_height = vim.api.nvim_win_get_height(win_id)
   vim.api.nvim_win_set_width(win_id, math.floor(max_width / 2))
-  vim.api.nvim_win_set_height(win_id, math.floor(max_height / 2))
 end
 
 return M

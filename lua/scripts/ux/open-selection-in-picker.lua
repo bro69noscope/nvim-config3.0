@@ -15,4 +15,15 @@ M.open_selection_in_explorer = function()
     Snacks.picker.explorer({ pattern = path })
   end
 end
+
+M.open_selection_in_files = function()
+  local vstart = vim.fn.getpos("v")
+  local vend = vim.fn.getpos(".")
+  local lines = vim.fn.getregion(vstart, vend, { type = vim.fn.mode() })
+  local raw = table.concat(lines, "\n")
+  vim.cmd("normal! \27")
+  local path = raw:gsub("[\r\n]", ""):gsub("\\", "/")
+  Snacks.picker.files({ pattern = path })
+end
+
 return M
