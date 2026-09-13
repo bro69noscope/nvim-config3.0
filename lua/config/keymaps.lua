@@ -50,11 +50,16 @@ map("v", ">", ">gv", { desc = "Indent right and reselect" })
 -- Exit terminal mode
 map("t", "<C-q>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
--- leader qq to quit all
+-- quit commands
 map({ "n", "v" }, "<leader>qq", ":<C-u>qa<CR>", { desc = "Quit all", silent = true })
 map({ "n", "v" }, "<leader>qf", ":<C-u>cq<CR>", { desc = "Quit and fail", silent = true })
 map({ "n", "v" }, "<leader>qt", "<cmd>TabcloseBetter<cr>", { desc = "Close tab", silent = true })
 map({ "n", "v" }, "<leader>qo", "<cmd>tabonly<cr>", { desc = "Close other tabs", silent = true })
+map("n", "<leader>q<BS>", function()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  vim.fn.setreg("+", table.concat(lines, "\n"))
+  vim.cmd("qa!")
+end, { desc = "Clip buffer content & quit", icon = "📋", silent = true })
 
 -- save with C-S
 map("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
