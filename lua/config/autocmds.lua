@@ -25,13 +25,11 @@ vim.api.nvim_create_autocmd("CmdwinEnter", {
     -- quit with q
     vim.keymap.set("n", "q", "<cmd>q<cr>", { buffer = buf, silent = true })
 
-    -- Backspace: close cmdwin but keep its current input in the cmdline
-    vim.keymap.set("n", "<BS>", function()
+    -- nmode CR: close cmdwin but keep its current input in the cmdline
+    vim.keymap.set("n", "<CR>", function()
       local line = vim.api.nvim_get_current_line() or ""
       vim.cmd("q")
-      -- feedkeys wants termcodes; also escape any special key notation
-      local keys = ":" .. vim.fn.escape(line, [[\]])
-      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", true)
+      vim.api.nvim_feedkeys(":" .. line, "n", false)
     end, { buffer = buf, silent = true })
 
     -- float config
