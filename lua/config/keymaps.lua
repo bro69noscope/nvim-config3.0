@@ -225,7 +225,7 @@ end, { desc = "Yank current buffer name to clipboard" })
 
 map("n", "<leader>ut", function()
   various_utils.list_treesitter_installed_parsers()
-end, { desc = "List installed treesitter parsers" })
+end, { desc = "List installed treesitter parsers", icon = "🌲" })
 
 -- Path quick conversion
 map("n", "<leader>\\", function()
@@ -422,8 +422,8 @@ end
 
 map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space to single" })
 
--- Run current file ?? (pwsh safe, unsure about why we need the & now...)
-map("n", "<leader>ur", function()
+-- Run current file ?? (pwsh safe, unsure about why we need the `&` now...)
+map("n", "<leader>uR", function()
   vim.cmd('!& "' .. vim.fn.expand("%:p") .. '"')
 end, { desc = "Run script", icon = "🚀" })
 
