@@ -35,6 +35,19 @@ local function setup_tabs()
 end
 
 if launched_as_scratch then
+  local scratch_tabs = {}
+
+  vim.api.nvim_create_autocmd("TabClosed", {
+    callback = function()
+      for tab in pairs(scratch_tabs) do
+        if not vim.api.nvim_tabpage_is_valid(tab) then
+          scratch_tabs[tab] = nil
+          vim.fn.writefile({}, done_flag)
+        end
+      end
+    end,
+  })
+
   map("n", "<localleader>x", function()
     if vim.t.custom_tabname == "dontclose" then
       vim.notify("refusing to close the dontclose tab", vim.log.levels.WARN)
@@ -43,7 +56,6 @@ if launched_as_scratch then
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     vim.fn.setreg("+", table.concat(lines, "\n"))
     vim.cmd("tabclose!")
-    vim.fn.writefile({}, done_flag)
   end, { desc = "Close scratch tab, copy its content to clipboard, signal AHK", icon = "💃" })
 
   local watcher = assert(vim.uv.new_timer(), "failed to create scratch-buffer timer")
@@ -58,6 +70,7 @@ if launched_as_scratch then
       vim.fn.delete(req_file)
       vim.cmd("tabnew " .. vim.fn.fnameescape(file))
       vim.t.custom_tabname = "scratch"
+      scratch_tabs[vim.api.nvim_get_current_tabpage()] = true
     end)
   )
 end
