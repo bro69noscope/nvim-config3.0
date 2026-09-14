@@ -14,17 +14,17 @@ return {
   event = { "BufReadPost", "BufNewFile" },
   cmd = "Grapple",
   keys = {
-    { "<leader>A", "<cmd>Grapple toggle<cr>", desc = "Grapple toggle tag" },
+    { "gA", "<cmd>Grapple toggle<cr>", desc = "Grapple toggle tag" },
     {
-      "<leader>G",
+      "gG",
       function()
         require("grapple").reset()
         require("grapple").tag()
       end,
       desc = "Grapple wipe tags and add current file",
     },
-    { "<leader>H", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
-    { "<leader>Q", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
+    { "gH", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
+    { "gQ", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
     { "g1", "<cmd>Grapple select index=1<cr>", desc = "Grapple select 1" },
     { "g2", "<cmd>Grapple select index=2<cr>", desc = "Grapple select 2" },
     { "g3", "<cmd>Grapple select index=3<cr>", desc = "Grapple select 3" },
