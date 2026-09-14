@@ -95,7 +95,7 @@ return {
 
       -- single actions
       {
-        "<leader>p",
+        PickProjectBind,
         icon = { icon = "", color = "orange" },
       },
 

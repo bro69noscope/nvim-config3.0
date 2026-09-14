@@ -6,7 +6,7 @@ return {
   -- NOTE: "config is in lua/plugins/telescope.lua"
   keys = {
     {
-      "<leader>p",
+      PickProjectBind,
       function()
         require("telescope").extensions.project.project({})
       end,
