@@ -176,6 +176,10 @@ map({ "n", "v" }, "<C-c>", function()
   vim.fn.feedkeys('"+y')
 end, { desc = "Yank to system clipboard" })
 
+vim.keymap.set({ "n", "v" }, "<C-Insert>", function()
+  vim.fn.feedkeys('"+y')
+end, { desc = "Yank to system clipboard" })
+
 -- enable omode <m-y><m-y> to yank current line and append to system clipboard
 map("o", "<m-y>", "_", { desc = "current line (<m-y> doubled)" })
 
