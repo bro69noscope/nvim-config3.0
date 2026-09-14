@@ -14,12 +14,12 @@ return {
   config = function(_, opts)
     require("trouble").setup(opts)
     -- Navigate trouble only
-    vim.keymap.set("n", "<M-Up>", function()
+    vim.keymap.set("n", "<S-Up>", function()
       ---@ diagnostic disable-next-line: missing-fields, missing-parameter
       require("trouble").prev({ skip_groups = true, jump = true })
     end, { desc = "Previous Trouble Item" })
 
-    vim.keymap.set("n", "<M-Down>", function()
+    vim.keymap.set("n", "<S-Down>", function()
       ---@ diagnostic disable-next-line: missing-fields, missing-parameter
       require("trouble").next({ skip_groups = true, jump = true })
     end, { desc = "Next Trouble Item" })
