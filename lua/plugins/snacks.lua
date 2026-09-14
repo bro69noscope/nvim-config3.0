@@ -149,6 +149,23 @@ return {
       desc = "Toggle Snacks Explorer (No Follow File)",
     },
 
+    {
+      "<M-r>",
+      function()
+        local win = vim.api.nvim_get_current_win()
+        local bufname = vim.api.nvim_buf_get_name(0)
+        pcall(Snacks.explorer.reveal, { file = bufname })
+        vim.schedule(function()
+          if vim.api.nvim_win_is_valid(win) then
+            vim.schedule(function()
+              vim.api.nvim_set_current_win(win)
+            end)
+          end
+        end)
+      end,
+      desc = "Reveal current file in explorer",
+    },
+
     -- Words
     {
       "]r",

@@ -1,5 +1,12 @@
 require("modules.snacks.picker.explorer.fix-files-follow")
 require("modules.snacks.picker.explorer.fix-input-clear-onsave")
+local open_with_flags = require("modules.snacks.picker.explorer.open-with-flags")
+
+local toggle_no_follow = function()
+  local persist_flags = require("modules.snacks.picker.persist-flags")
+  local no_follow = persist_flags.get("explorer", "no_follow", false)
+  open_with_flags.open({ follow_file = no_follow })
+end
 
 local create_return_action = function(current_win, cursor_pos)
   return function(picker)
@@ -175,6 +182,7 @@ return {
     focus_right_win = focus_right_win,
     grug_far_refactor_python_imports = grug_far_refactor_imports,
     set_cwd_here = set_cwd_here,
+    toggle_no_follow = toggle_no_follow,
   },
   toggles = {
     no_follow_file = "NF",
@@ -199,6 +207,7 @@ return {
           end,
           desc = "Exit to prev window",
         },
+        ["<M-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
       },
     },
     input = {
@@ -216,6 +225,7 @@ return {
           desc = "Exit to prev window",
         },
         [RightWindowBind] = { "focus_right_win", desc = "Focus right window", mode = { "i", "n" } },
+        ["<M-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
       },
     },
   },

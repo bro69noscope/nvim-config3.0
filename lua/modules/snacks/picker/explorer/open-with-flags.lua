@@ -1,5 +1,6 @@
 local M = {}
 local persist_flags = require("modules.snacks.picker.persist-flags")
+local map = require("scripts.ui.whichkey-map").map
 
 local function apply_opts(opts)
   opts = opts or {}
@@ -70,5 +71,25 @@ M.open = function(opts)
     end
   end)
 end
+
+map("n", "<M-R>", function()
+  persist_flags.set("explorer", "hidden", false)
+  persist_flags.set("explorer", "ignored", false)
+  persist_flags.set("explorer", "no_follow", false)
+
+  local explorer = Snacks.picker.get({ source = "explorer" })[1]
+  if explorer then
+    pcall(explorer.close, explorer)
+  end
+  local win = vim.api.nvim_get_current_win()
+  require("modules.snacks.picker.explorer.open-with-flags").open()
+  vim.schedule(function()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.schedule(function()
+        vim.api.nvim_set_current_win(win)
+      end)
+    end
+  end)
+end, { desc = "Reset explorer flags" })
 
 return M
