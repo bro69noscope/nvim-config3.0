@@ -46,7 +46,7 @@ if launched_as_scratch then
     vim.fn.writefile({}, done_flag)
   end, { desc = "Close scratch tab, copy its content to clipboard, signal AHK", icon = "💃" })
 
-  local watcher = vim.uv.new_timer()
+  local watcher = assert(vim.uv.new_timer(), "failed to create scratch-buffer timer")
   watcher:start(
     0,
     50,
