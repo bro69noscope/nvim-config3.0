@@ -48,8 +48,6 @@ return {
       { "gu", desc = "lowercase", icon = { icon = "🔡" }, mode = { "n", "v" } },
 
       -- Standalone groups
-      { "<leader>f", group = "Find (Telescope)" },
-      { "<leader>.", group = "Change Project", icon = { icon = "🔭", hl = "DevIconGitLogo" } },
       { "<leader>t", group = "Terminal", icon = { icon = "", color = "blue" } },
       { "<leader>o", group = "Open..", icon = { icon = "", color = "yellow" } },
       { "<leader>q", group = "Quit/Session", mode = { "n", "v" } },
