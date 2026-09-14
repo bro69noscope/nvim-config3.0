@@ -186,6 +186,7 @@ return {
       desc = "Previous Snacks Word",
     },
     -- Custom pickers
+    -- Grep quickfix files
     {
       "<leader>c/",
       function()
@@ -194,6 +195,7 @@ return {
       end,
       desc = "Grep Quickfix Files",
     },
+    -- git branches with branch: prefix, for ez checkout
     {
       "<leader>gm",
       function()
