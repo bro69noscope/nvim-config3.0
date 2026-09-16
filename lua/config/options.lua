@@ -42,7 +42,6 @@ vim.opt.spellfile = vim.fn.stdpath("config") .. "/spell/en.utf-8.add"
 
 vim.opt.smartcase = true
 vim.opt.ignorecase = true
-vim.opt.smartindent = true
 vim.opt.termguicolors = true
 
 -- In general, tab = 2 spaces
