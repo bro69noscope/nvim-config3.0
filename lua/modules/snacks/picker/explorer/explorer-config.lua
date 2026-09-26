@@ -170,6 +170,13 @@ local focus_right_win = function()
   end)
 end
 
+local open_with_system = function(picker, item)
+  if not item then
+    return
+  end
+  vim.ui.open(item.file)
+end
+
 return {
   actions = {
     grep_filename = grep_for_filename,
@@ -183,6 +190,7 @@ return {
     grug_far_refactor_python_imports = grug_far_refactor_imports,
     set_cwd_here = set_cwd_here,
     toggle_no_follow = toggle_no_follow,
+    open_with_system = open_with_system,
   },
   toggles = {
     no_follow_file = "NF",
@@ -196,6 +204,7 @@ return {
         ["gD"] = { "grep_in_dir_default", desc = "Grep in dir (default)" },
         ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
         ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
+        ["go"] = { "open_with_system", desc = "Open with system" },
         ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
         ["<BS>"] = false,
         [DownWindowBind] = false,
