@@ -35,5 +35,15 @@ vim.api.nvim_create_autocmd("User", {
 
     local trt = require("modules.snacks.toggle.custom-toggles.trouble-win").trouble_toggle
     trt:map("<leader>X")
+
+    do
+      local tog = require("modules.snacks.toggle.custom-toggles.vim-options").smartindent_toggle
+      tog:map("<leader>ui")
+    end
+
+    do
+      local tog = require("modules.snacks.toggle.custom-toggles.vim-options").expandtab_toggle
+      tog:map("<leader>u<tab>")
+    end
   end,
 })
