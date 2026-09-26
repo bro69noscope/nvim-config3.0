@@ -236,6 +236,7 @@ map("n", "<leader>ut", function()
   various_utils.list_treesitter_installed_parsers()
 end, { desc = "List installed treesitter parsers", icon = "🌲" })
 
+map("n", "<leader>ud", "<cmd>diffthis<CR>", { desc = "diffthis", icon = "󰆊" })
 -- Path quick conversion
 map("n", "<leader>\\", function()
   require("scripts.edit.edit-path-separators").convert_path_separators()
