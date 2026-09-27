@@ -1,5 +1,7 @@
 return {
-  "https://git.sr.ht/~marcc/BufferBrowser",
+  -- "https://git.sr.ht/~marcc/BufferBrowser",
+  "bro69noscope/nvim-buffer-browser", -- has fixes
+  enabled = true,
   config = function()
     require("buffer_browser").setup({
       filetype_filters = { "gitcommit", "TelescopePrompt" },
