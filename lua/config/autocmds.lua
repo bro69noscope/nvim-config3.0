@@ -308,15 +308,21 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
   callback = function(args)
     if vim.wo.diff then
-      vim.keymap.set("n", "q", function()
+      local function close_diff_tab()
+        pcall(vim.keymap.del, "n", "q", { buffer = args.buf })
+        pcall(vim.keymap.del, "n", "Q", { buffer = args.buf })
         vim.cmd("TabcloseBetter")
-      end, { buffer = args.buf, silent = true })
+      end
+
+      vim.keymap.set("n", "q", function()
+        close_diff_tab()
+      end, { buffer = args.buf, silent = true, desc = "Close diff tab" })
 
       vim.keymap.set("n", "Q", function()
         local cursor_pos = vim.api.nvim_win_get_cursor(0)
         local current_file = vim.api.nvim_buf_get_name(0)
 
-        vim.cmd("TabcloseBetter")
+        close_diff_tab()
 
         vim.schedule(function()
           local prev_buf_name = vim.api.nvim_buf_get_name(0)
@@ -325,7 +331,7 @@ vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
             vim.cmd("normal! zz")
           end
         end)
-      end, { buffer = args.buf, silent = true, desc = "Close diff tab" })
+      end, { buffer = args.buf, silent = true, desc = "Close diff tab and jump to line" })
     end
   end,
 })
