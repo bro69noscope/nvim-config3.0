@@ -91,6 +91,9 @@ return {
     clip_full_path = function(picker)
       M.path_inserts.clip_full_path(picker)
     end,
+    yank_filename = function(picker)
+      M.path_inserts.yank_filename(picker)
+    end,
     qflist_append = function(picker)
       M.append_to_qflist(picker)
     end,
@@ -121,6 +124,7 @@ return {
         ["="] = { "insert_absolute_path", mode = { "n" } },
         -- ["<bs>"] = { "insert_python_import_path", mode = { "n" } }, NOTE: idk about keeping this
         ["+"] = { "clip_full_path", mode = { "n" } },
+        ["gy"] = { "yank_filename", mode = { "n" } },
         [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
         [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
@@ -132,6 +136,7 @@ return {
     },
     list = {
       keys = {
+        ["gy"] = { "yank_filename", mode = { "n" } },
         ["O"] = { { "pick_win", "jump" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },

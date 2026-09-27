@@ -64,6 +64,20 @@ M.clip_full_path = function(picker)
   picker:close()
 end
 
+M.yank_filename = function(picker)
+  local item = picker:current()
+
+  if not item or not item.file then
+    vim.notify("No file selected to yank", vim.log.levels.WARN)
+    return
+  end
+
+  local filename = vim.fn.fnamemodify(item.file, ":t")
+  vim.fn.setreg("+", filename)
+  vim.fn.setreg('"', filename)
+  vim.notify("Yanked: " .. filename)
+end
+
 -- Register custom actions with Snacks
 M.insert_absolute_path = function(picker)
   insert_path(picker, false, false)
