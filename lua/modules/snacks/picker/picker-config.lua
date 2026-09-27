@@ -11,6 +11,7 @@ M.toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-sea
 M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").toggle_case
 M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").qflist_append
 M.persist_flags = require("modules.snacks.picker.persist-flags")
+M.grep_actions = require("modules.snacks.picker.actions.grep-actions")
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -79,6 +80,12 @@ return {
     grep = M.shared_configs.make_grep_source("grep", shared_deps),
   },
   actions = {
+    grep_filename = function(picker, item)
+      M.grep_actions.grep_for_filename(picker, item)
+    end,
+    grep_full_filename = function(picker, item)
+      M.grep_actions.grep_for_filename_with_ext(picker, item)
+    end,
     insert_absolute_path = function(picker)
       M.path_inserts.insert_absolute_path(picker)
     end,
@@ -120,15 +127,17 @@ return {
       keys = {
         ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
         ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
-        ["-"] = { "insert_relative_path", mode = { "n" } },
-        ["="] = { "insert_absolute_path", mode = { "n" } },
-        -- ["<bs>"] = { "insert_python_import_path", mode = { "n" } }, NOTE: idk about keeping this
-        ["+"] = { "clip_full_path", mode = { "n" } },
-        ["gy"] = { "yank_filename", mode = { "n" } },
+        ["-"] = { "insert_relative_path" },
+        ["="] = { "insert_absolute_path" },
+        -- ["<bs>"] = { "insert_python_import_path",  }, NOTE: idk about keeping this
+        ["+"] = { "clip_full_path" },
+        ["gy"] = { "yank_filename" },
+        ["gf"] = { "grep_filename", desc = "Grep fname" },
+        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
         [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
-        ["O"] = { { "pick_win", "jump" }, mode = { "n" } },
+        ["O"] = { { "pick_win", "jump" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
@@ -136,7 +145,9 @@ return {
     },
     list = {
       keys = {
-        ["gy"] = { "yank_filename", mode = { "n" } },
+        ["gy"] = { "yank_filename" },
+        ["gf"] = { "grep_filename", desc = "Grep fname" },
+        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["O"] = { { "pick_win", "jump" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },

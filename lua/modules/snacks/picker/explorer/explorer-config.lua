@@ -1,6 +1,7 @@
 require("modules.snacks.picker.explorer.fix-files-follow")
 require("modules.snacks.picker.explorer.fix-input-clear-onsave")
 local open_with_flags = require("modules.snacks.picker.explorer.open-with-flags")
+local grep_actions = require("modules.snacks.picker.actions.grep-actions")
 
 local toggle_no_follow = function()
   local persist_flags = require("modules.snacks.picker.persist-flags")
@@ -31,7 +32,7 @@ local set_cwd_here = function(picker, item)
 end
 
 -- Wrapper function to launch any picker with return-to-explorer capability
-local launch_picker_with_return = function(picker_fn, config)
+local launch_picker_with_explorer_return = function(picker_fn, config)
   local current_win = vim.api.nvim_get_current_win()
   local cursor_pos = vim.api.nvim_win_get_cursor(current_win)
 
@@ -54,35 +55,6 @@ local launch_picker_with_return = function(picker_fn, config)
 
     picker_fn(config)
   end)
-end
-
-local grep_for_filename = function(picker, item)
-  if not item or not item.file then
-    return
-  end
-
-  local filename = vim.fn.fnamemodify(item.file, ":t:r")
-
-  launch_picker_with_return(Snacks.picker.grep_word, {
-    title = "Grep for: " .. filename,
-    search = filename,
-    cwd = picker:cwd(),
-    show_empty = true,
-  })
-end
-
-local grep_for_filename_with_ext = function(picker, item)
-  if not item or not item.file then
-    return
-  end
-  local filename = vim.fn.fnamemodify(item.file, ":t")
-
-  launch_picker_with_return(Snacks.picker.grep_word, {
-    title = "Grep for: " .. filename,
-    search = filename,
-    cwd = picker:cwd(),
-    show_empty = true,
-  })
 end
 
 local grep_in_dir = function(picker, item, opts)
@@ -123,7 +95,7 @@ local grep_in_dir = function(picker, item, opts)
     config.finder = "grep"
   end
 
-  launch_picker_with_return(Snacks.picker.grep, config)
+  launch_picker_with_explorer_return(Snacks.picker.grep, config)
 end
 
 local search_files_in_dir = function(picker, item)
@@ -139,7 +111,7 @@ local search_files_in_dir = function(picker, item)
   local title = "Search files in: " .. vim.fn.fnamemodify(path, ":~:.")
   local dirs = { path }
 
-  launch_picker_with_return(Snacks.picker.files, {
+  launch_picker_with_explorer_return(Snacks.picker.files, {
     title = title,
     dirs = dirs,
   })
@@ -179,8 +151,16 @@ end
 
 return {
   actions = {
-    grep_filename = grep_for_filename,
-    grep_full_filename = grep_for_filename_with_ext,
+    grep_filename = function(picker, item)
+      grep_actions.grep_for_filename(picker, item, { launch = launch_picker_with_explorer_return })
+    end,
+    grep_full_filename = function(picker, item)
+      grep_actions.grep_for_filename_with_ext(
+        picker,
+        item,
+        { launch = launch_picker_with_explorer_return }
+      )
+    end,
     grep_in_dir = grep_in_dir,
     grep_in_dir_default = function(picker, item)
       return grep_in_dir(picker, item, { default_grep = true })
