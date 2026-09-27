@@ -1,4 +1,15 @@
 -- local terms_width = 60
+local dashboard_width = 42
+
+local function shorten_path(path, max)
+  if vim.fn.strdisplaywidth(path) <= max then
+    return path
+  end
+  return "…" .. vim.fn.strcharpart(path, vim.fn.strchars(path) - (max - 1))
+end
+
+local cwd_display = shorten_path(vim.fn.fnamemodify(vim.fn.getcwd(), ":~"), dashboard_width - 8)
+
 local left_girl_header = ""
 local right_girl_header = ""
 local headers = nil
@@ -46,7 +57,7 @@ end
 local panes = get_panes()
 return {
   enabled = true,
-  width = 42,
+  width = dashboard_width,
   pane_gap = 4,
   preset = {
     keys = {
@@ -61,7 +72,7 @@ return {
       {
         icon = "📁",
         key = "f",
-        desc = "Find File",
+        desc = "Files",
         action = function()
           vim.cmd("lua Snacks.picker.files()")
         end,
@@ -69,7 +80,7 @@ return {
       {
         icon = "🔤",
         key = "/",
-        desc = "Find Word",
+        desc = "Grep",
         action = function()
           vim.cmd("lua Snacks.picker.grep()")
         end,
@@ -100,9 +111,17 @@ return {
       },
       {
         icon = "💾",
-        key = "S",
-        desc = "Restore Session",
+        key = "R",
+        desc = "Resume where left off, in:\n(" .. cwd_display .. ")",
         section = "session",
+      },
+      {
+        icon = "🗂️",
+        key = "S",
+        desc = "Select Session",
+        action = function()
+          require("persistence").select()
+        end,
       },
       {
         icon = "📂",
