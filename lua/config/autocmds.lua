@@ -335,3 +335,22 @@ vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
     end
   end,
 })
+
+-- Q mark from wherever we were before opening a quickfix window, so we can jump back to it with `Q
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+    if vim.fn.getqflist({ size = 0 }).size == 0 then
+      return
+    end
+
+    local prev = vim.fn.win_getid(vim.fn.winnr("#"))
+    if prev == 0 or not vim.api.nvim_win_is_valid(prev) then
+      return
+    end
+
+    local pos = vim.api.nvim_win_get_cursor(prev)
+    local buf = vim.api.nvim_win_get_buf(prev)
+    vim.api.nvim_buf_set_mark(buf, "Q", pos[1], pos[2], {})
+  end,
+})
