@@ -174,46 +174,58 @@ local clip_utils = require("scripts.utils.clipboard-functions")
 
 map({ "n", "v" }, "<C-c>", function()
   vim.fn.feedkeys('"+y')
-end, { desc = "Yank to system clipboard" })
+end, { desc = "Yank to clipboard" })
 
 vim.keymap.set({ "n", "v" }, "<C-Insert>", function()
   vim.fn.feedkeys('"+y')
-end, { desc = "Yank to system clipboard" })
+end, { desc = "Yank to clipboard" })
 
--- enable omode <m-y><m-y> to yank current line and append to system clipboard
+-- enable omode <m-y><m-y> to yank current line and append to clipboard
 map("o", "<m-y>", "_", { desc = "current line (<m-y> doubled)" })
 
 map("n", "<m-y>", function()
   clip_utils.append_yank_to_system_reg_op()
-end, { desc = "Yank and append to system clipboard" })
+end, { desc = "Yank and append to clipboard" })
 
 map("v", "<m-y>", function()
   clip_utils.append_yank_to_system_reg_visual()
-end, { desc = "Yank selection and append to system clipboard" })
+end, { desc = "Yank selection and append to clipboard" })
 
 map("n", "<leader>ya", function()
   clip_utils.copy_file_to_system_register()
-end, { desc = "Copy file content to system clipboard" })
+end, { desc = "Copy file content to clipboard" })
 
 map("n", "<leader>yA", function()
   clip_utils.append_file_to_system_register()
-end, { desc = "Append file content to system clipboard" })
+end, { desc = "Append file content to clipboard" })
 
 map("n", "<leader>yc", function()
   clip_utils.copy_code_to_system_register()
-end, { desc = "Copy file content with header to system clipboard" })
+end, { desc = "Copy file content with header to clipboard" })
 
 map("n", "<leader>yC", function()
   clip_utils.append_code_to_system_register()
-end, { desc = "Append file content with header to system clipboard" })
+end, { desc = "Append file content with header to clipboard" })
 
 map("n", "<leader>yq", function()
   clip_utils.copy_qf_code_to_register()
-end, { desc = "Copy quickfix code to system clipboard" })
+end, { desc = "Copy quickfix code to clipboard" })
 
 map("n", "<leader>yQ", function()
   clip_utils.append_qf_code_to_register()
 end, { desc = "Append quickfix code to system clipboard" })
+
+map("n", "<leader>yf", function()
+  local file_name = vim.fn.expand("%:t:r")
+  vim.fn.setreg("+", file_name)
+  vim.notify("File name copied to clipboard: " .. file_name, vim.log.levels.INFO)
+end, { desc = "Yank current file name to clipboard" })
+
+map("n", "<leader>yF", function()
+  local file_name = vim.fn.expand("%:t")
+  vim.fn.setreg("+", file_name)
+  vim.notify("File path copied to clipboard: " .. file_name, vim.log.levels.INFO)
+end, { desc = "Yank current file name (with ext.) to clipboard" })
 
 -- Various uitilities
 local various_utils = require("scripts.utils.various-utils")
@@ -223,14 +235,14 @@ end, { desc = "Make window floating" })
 
 map("n", "<Leader>uB", function()
   various_utils.capture_current_buffer_info()
-end, { desc = "Capture current buffer name" })
+end, { desc = "Get current buffer info" })
 
 map("n", "<leader>ub", function()
   local bufinfo = various_utils.capture_current_buffer_info({ silent = true })
   local bufname, raw_bufname = bufinfo.bufname, bufinfo.raw_bufname
   vim.notify("path: " .. bufname .. "\n" .. "raw: " .. raw_bufname, vim.log.levels.INFO)
   vim.fn.setreg("+", bufname)
-end, { desc = "Yank current buffer name to clipboard" })
+end, { desc = "Yank current buffer path to clipboard" })
 
 map("n", "<leader>ut", function()
   various_utils.list_treesitter_installed_parsers()
