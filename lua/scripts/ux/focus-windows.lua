@@ -14,7 +14,7 @@ end
 M.largest = function()
   local largest_win, largest_area = nil, 0
 
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
     if vim.api.nvim_win_get_config(win).relative == "" then
       local area = vim.api.nvim_win_get_width(win) * vim.api.nvim_win_get_height(win)
       if area > largest_area then
