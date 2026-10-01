@@ -247,6 +247,12 @@ return {
     { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
     { "<leader>;", function() Snacks.picker.files() end, desc = "Find Files" },
+    {
+      "<leader>;",
+      function() Snacks.picker.files({ pattern = Snacks.picker.util.visual().text }) end,
+      mode = "x",
+      desc = "Find Files (selection)",
+    },
     { "<leader>sh", function() Snacks.picker.help() end, desc = "Help Pages" },
     { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlights" },
     { "<leader>si", function() Snacks.picker.icons() end, desc = "Icons" },
