@@ -53,6 +53,10 @@ return {
     local grug = require("grug-far")
     grug.setup({
       headerMaxWidth = 80,
+      keymaps = {
+        nextInput = false, -- <tab> by default, causes all sorts of conflicts
+        prevInput = false,
+      },
     })
   end,
 }
