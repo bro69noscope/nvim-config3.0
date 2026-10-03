@@ -2,26 +2,14 @@ require("modules.snacks.picker.explorer.fix-files-follow")
 require("modules.snacks.picker.explorer.fix-input-clear-onsave")
 local open_with_flags = require("modules.snacks.picker.explorer.open-with-flags")
 local grep_actions = require("modules.snacks.picker.actions.grep-actions")
+local explorer_actions = require("modules.snacks.picker.explorer.actions.actions")
+local launch_picker_with_explorer_return =
+  require("modules.snacks.picker.explorer.actions.launch-with-explorer-return")
 
 local toggle_no_follow = function()
   local persist_flags = require("modules.snacks.picker.persist-flags")
   local no_follow = persist_flags.get("explorer", "no_follow", false)
   open_with_flags.open({ follow_file = no_follow })
-end
-
-local create_return_action = function(current_win, cursor_pos, explorer, list_state)
-  return function(picker)
-    picker:close()
-    vim.api.nvim_set_current_win(current_win)
-    vim.api.nvim_win_set_cursor(current_win, cursor_pos)
-
-    -- follow-file re-targets the list asynchronously, so re-apply afterwards
-    vim.schedule(function()
-      if explorer and not explorer.closed then
-        explorer.list:view(list_state.cursor, list_state.top)
-      end
-    end)
-  end
 end
 
 local set_cwd_here = function(picker, item)
@@ -38,114 +26,6 @@ local set_cwd_here = function(picker, item)
   vim.cmd("cd " .. vim.fn.fnameescape(path))
 end
 
--- Wrapper function to launch any picker with return-to-explorer capability
-local launch_picker_with_explorer_return = function(picker_fn, config)
-  local current_win = vim.api.nvim_get_current_win()
-  local cursor_pos = vim.api.nvim_win_get_cursor(current_win)
-  local explorer = Snacks.picker.get({ source = "explorer" })[1]
-  local list_state = explorer and { cursor = explorer.list.cursor, top = explorer.list.top } or {}
-
-  vim.schedule(function()
-    -- Fix a visual bug that happens if we run another Snacks picker while having the Snacks
-    -- explorer in focus right before their launch.
-    vim.cmd("wincmd p")
-
-    -- Merge the return action into the config
-    config.actions = config.actions or {}
-    config.actions.return_to_explorer =
-      create_return_action(current_win, cursor_pos, explorer, list_state)
-
-    -- Add "return with explorer in focus" escape key mapping
-    config.win = config.win or {}
-    config.win.input = config.win.input or {}
-    config.win.input.keys = config.win.input.keys or {}
-    if not config.win.input.keys["<esc>"] then
-      config.win.input.keys["<esc>"] = "return_to_explorer"
-    else
-      vim.notify(
-        "Warning: <esc> key mapping detected in Snacks picker input window. "
-          .. "This key is supposed to be reserved for the 'return to explorer' action.",
-        vim.log.levels.WARN
-      )
-    end
-
-    picker_fn(config)
-  end)
-end
-
-local grep_in_dir = function(picker, item, opts)
-  if not item or not item.file then
-    return
-  end
-
-  local path
-  if vim.fn.isdirectory(item.file) == 1 then
-    path = item.file
-  else
-    path = vim.fn.fnamemodify(item.file, ":h")
-  end
-
-  local title = "Grep in: " .. vim.fn.fnamemodify(path, ":~:.")
-  local dirs = { path }
-
-  local input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
-
-  local config = {
-    title = title,
-    dirs = dirs,
-    win = {
-      input = {
-        keys = require("modules.snacks.picker.keys.setup-picker-keys").setup_grep_input_keys(
-          dirs,
-          title,
-          "grep"
-        ),
-      },
-    },
-    actions = {
-      grep_globs_input = input_grep_globs.make_action(dirs, title, "grep"),
-    },
-  }
-
-  if opts and opts.default_grep == true then
-    config.finder = "grep"
-  end
-
-  launch_picker_with_explorer_return(Snacks.picker.grep, config)
-end
-
-local search_files_in_dir = function(picker, item)
-  if not item or not item.file then
-    return
-  end
-  local path
-  if vim.fn.isdirectory(item.file) == 1 then
-    path = item.file
-  else
-    path = vim.fn.fnamemodify(item.file, ":h")
-  end
-  local title = "Search files in: " .. vim.fn.fnamemodify(path, ":~:.")
-  local dirs = { path }
-
-  launch_picker_with_explorer_return(Snacks.picker.files, {
-    title = title,
-    dirs = dirs,
-  })
-end
-
-local grug_far_refactor_imports = function(picker, item)
-  if not item or not item.file then
-    return
-  end
-
-  local is_directory = vim.fn.isdirectory(item.file) == 1
-  local relative_path = vim.fn.fnamemodify(item.file, ":.")
-  local grug_far_astgrep = require("lang.python.grugfar-refactor.imports.init")
-  --TODO:WIP
-
-  grug_far_astgrep.grug_refactor_python_imports(relative_path, is_directory)
-end
-
 local focus_right_win = function()
   -- Avoids having to go right twice from the input window
   vim.cmd("stopinsert")
@@ -158,15 +38,12 @@ local focus_right_win = function()
   end)
 end
 
-local open_with_system = function(picker, item)
-  if not item then
-    return
-  end
-  vim.ui.open(item.file)
-end
-
 return {
   actions = {
+    -- fundamentals
+    focus_right_win = focus_right_win,
+    set_cwd_here = set_cwd_here,
+    toggle_no_follow = toggle_no_follow,
     grep_filename = function(picker, item)
       grep_actions.grep_for_filename(picker, item, { launch = launch_picker_with_explorer_return })
     end,
@@ -177,16 +54,15 @@ return {
         { launch = launch_picker_with_explorer_return }
       )
     end,
-    grep_in_dir = grep_in_dir,
+    -- from actions/
+    grep_in_dir = explorer_actions.grep_in_dir,
     grep_in_dir_default = function(picker, item)
-      return grep_in_dir(picker, item, { default_grep = true })
+      return explorer_actions.grep_in_dir(picker, item, { default_grep = true })
     end,
-    search_files_in_dir = search_files_in_dir,
-    focus_right_win = focus_right_win,
-    grug_far_refactor_python_imports = grug_far_refactor_imports,
-    set_cwd_here = set_cwd_here,
-    toggle_no_follow = toggle_no_follow,
-    open_with_system = open_with_system,
+    search_files_in_dir = explorer_actions.search_files_in_dir,
+    grug_far_refactor_python_imports = explorer_actions.grug_far_refactor_imports,
+    open_with_system = explorer_actions.open_with_system,
+    expand_recursive = explorer_actions.expand_recursive,
   },
   toggles = {
     no_follow_file = "NF",
@@ -201,6 +77,7 @@ return {
         ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
         ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
         ["go"] = { "open_with_system", desc = "Open with system" },
+        ["X"] = { "expand_recursive", desc = "Expand recursively" },
         ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
         ["<BS>"] = false,
         [DownWindowBind] = false,
