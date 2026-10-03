@@ -1,5 +1,11 @@
 return {
   "seblyng/roslyn.nvim",
+  enabled = true,
+
+  -- TODO: update after a while or try after/lsp again as suggested in
+  -- https://github.com/seblyng/roslyn.nvim/issues/385#issuecomment-5717213750
+  commit = "de9a98d61ed3fd01b5016eea5fe9e32f1a4c7cfb",
+
   ft = "cs",
   opts = {
     settings = {
