@@ -468,6 +468,14 @@ end, {
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
+map("n", "<leader>g<leader>F", function()
+  pipe_git_diff.file_diff({ staged = true })
+end, {
+  silent = true,
+  desc = "Pipe file diff to clipboard (incl. staged)",
+  icon = { icon = "", hl = "DevIconGitLogo" },
+})
+
 map("n", "<leader>g<leader>d", function()
   pipe_git_diff.cwd_diff()
 end, {
@@ -476,11 +484,27 @@ end, {
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
+map("n", "<leader>g<leader>D", function()
+  pipe_git_diff.cwd_diff({ staged = true })
+end, {
+  silent = true,
+  desc = "Pipe cwd diff to clipboard (incl. staged)",
+  icon = { icon = "", hl = "DevIconGitLogo" },
+})
+
 map("n", "<leader>g<leader>q", function()
   pipe_git_diff.qf_list()
 end, {
   silent = true,
   desc = "Pipe quickfix git diff to clipboard",
+  icon = { icon = "", hl = "DevIconGitLogo" },
+})
+
+map("n", "<leader>g<leader>Q", function()
+  pipe_git_diff.qf_list({ staged = true })
+end, {
+  silent = true,
+  desc = "Pipe quickfix diff to clipboard (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 

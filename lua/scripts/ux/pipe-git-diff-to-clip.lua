@@ -1,7 +1,19 @@
 -- Pipe git diffs to clipboard
 local M = {}
 
-M.file_diff = function()
+-- opts.staged: false/nil = unstaged only, true = staged + unstaged (vs HEAD)
+-- opts.cached: true = staged only
+local function diff_cmd(opts)
+  opts = opts or {}
+  if opts.cached then
+    return "git diff --cached"
+  elseif opts.staged then
+    return "git diff HEAD"
+  end
+  return "git diff"
+end
+
+M.file_diff = function(opts)
   local file = vim.fn.expand("%:t")
 
   if vim.bo.buftype ~= "" or file == "" then
@@ -9,7 +21,7 @@ M.file_diff = function()
     return
   end
 
-  vim.cmd("silent !git diff -- % | " .. ClipExecutable)
+  vim.cmd("silent !" .. diff_cmd(opts) .. " -- % | " .. ClipExecutable)
 
   if vim.v.shell_error ~= 0 then
     vim.notify("git diff failed for " .. file, vim.log.levels.ERROR)
@@ -19,8 +31,8 @@ M.file_diff = function()
   vim.notify("Git diff for " .. file .. " copied to clipboard", vim.log.levels.INFO)
 end
 
-M.cwd_diff = function()
-  vim.cmd("silent !git diff | " .. ClipExecutable)
+M.cwd_diff = function(opts)
+  vim.cmd("silent !" .. diff_cmd(opts) .. " | " .. ClipExecutable)
 
   if vim.v.shell_error ~= 0 then
     vim.notify("git diff failed", vim.log.levels.ERROR)
@@ -30,7 +42,7 @@ M.cwd_diff = function()
   vim.notify("Cwd Git diff copied to clipboard", vim.log.levels.INFO)
 end
 
-M.qf_list = function()
+M.qf_list = function(opts)
   local qflist = vim.fn.getqflist()
 
   if #qflist == 0 then
@@ -56,7 +68,9 @@ M.qf_list = function()
     return
   end
 
-  vim.cmd("silent !git diff -- " .. table.concat(files, " ") .. " | " .. ClipExecutable)
+  vim.cmd(
+    "silent !" .. diff_cmd(opts) .. " -- " .. table.concat(files, " ") .. " | " .. ClipExecutable
+  )
 
   if vim.v.shell_error ~= 0 then
     vim.notify("git diff failed for quickfix files", vim.log.levels.ERROR)
