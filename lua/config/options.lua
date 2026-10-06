@@ -2,6 +2,7 @@ Linelength_by_ft = {
   lua = 100,
   python = 88,
   autohotkey = 88,
+  cs = 100, --csharpier default
   ps1 = 100,
   psm1 = 100,
   markdown = 100,
