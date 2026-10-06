@@ -30,8 +30,8 @@ return {
       },
     },
     format_on_save = {
-      timer = 500,
-      lsp_fallback = false, -- prefer failing loudly
+      timeout_ms = 500,
+      lsp_format = "never", -- prefer failing loudly
     },
   },
 }
