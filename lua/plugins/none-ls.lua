@@ -18,6 +18,7 @@ return {
         "prettier",
         "shfmt",
         "beautysh",
+        "csharpier",
       },
       automatic_installation = true,
     })
