@@ -90,6 +90,7 @@ return {
           desc = "Exit to prev window",
         },
         ["<M-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
+        ["<C-t>"] = { "tab" },
       },
     },
     input = {
