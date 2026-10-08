@@ -3,10 +3,10 @@ if vim.g.neovide == true then
   -- local zoomed_scale = 1.225
 
   -- this gives 150 cols with 1440p, 175% OS scale
-  -- local zoomed_scale = 0.87
+  local zoomed_scale = 0.87
 
   -- this gives 150 cols with 1080p, 150% OS scale
-  local zoomed_scale = 0.76
+  -- local zoomed_scale = 0.76
 
   local function paste()
     vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
