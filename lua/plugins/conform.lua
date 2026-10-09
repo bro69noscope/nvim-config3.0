@@ -29,9 +29,6 @@ return {
         prepend_args = { "--indent-size", "2" },
       },
     },
-    format_on_save = {
-      timeout_ms = 500,
-      lsp_format = "never", -- prefer failing loudly
-    },
+    format_on_save = {}, -- the key existing means it is enabled
   },
 }
