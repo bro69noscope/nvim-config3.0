@@ -15,11 +15,18 @@ require("config.lazy")
 vim.cmd([[colorscheme tokyonight-storm]])
 require("config.keymaps")
 require("config.autocmds")
+
+-- complicated autocmds
 require("config.complex-autocmds.horizontal-diff-separator")
+require("config.complex-autocmds.better-cmdline-window")
+
+-- advanced configuration
 require("config.highlight-groups")
 require("config.lsp-settings")
 require("config.custom-logging")
 require("config.treesitter")
+
+-- scripts
 require("scripts.edit.flip-flop-comments")
 require("scripts.edit.swap-true-false-keywords")
 require("scripts.edit.edit-path-separators")
@@ -33,5 +40,7 @@ require("scripts.ux.diagnose-multiple-buffers")
 require("scripts.ux.better-tabclose")
 require("scripts.ux.find-next-brackets")
 require("scripts.ux.change-file-extension").setup()
+
+-- misc
 require("modules.snacks.picker.explorer.toggle-without-focus")
 require("inter-process.scratch-buffer")
