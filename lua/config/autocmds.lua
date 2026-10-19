@@ -28,8 +28,10 @@ vim.api.nvim_create_autocmd("CmdwinEnter", {
     -- nmode CR: close cmdwin but keep its current input in the cmdline
     vim.keymap.set("n", "<CR>", function()
       local line = vim.api.nvim_get_current_line() or ""
+      local t = vim.fn.getcmdwintype()
+      local prefix = (t == "?" or t == "/") and "/" or ":"
       vim.cmd("q")
-      vim.api.nvim_feedkeys(":" .. line, "n", false)
+      vim.api.nvim_feedkeys(prefix .. line, "n", false)
     end, { buffer = buf, silent = true })
 
     -- float config
