@@ -509,6 +509,10 @@ end, {
 })
 
 -- show full path of current buffer in floating window (for long paths)
-map("n", "<leader>up", function()
+map("n", "<leader>uP", function()
   require("scripts.ui.show-buffer-fullpath").show_fullpath()
 end, { desc = "Show full path of current buffer", icon = "📂" })
+
+map("n", "<leader>up", function()
+  require("scripts.ui.show-buffer-fullpath").show_fullpath_cwd()
+end, { desc = "Show path of current buffer (git root)", icon = "" })
