@@ -44,8 +44,12 @@ map("n", "<m-h>", "15zh", { desc = "Move cursor 15 spaces to the left" })
 map("n", "<m-l>", "15zl", { desc = "Move cursor 15 spaces to the right" })
 
 -- better indenting
-map("v", "<", "<gv", { desc = "Indent left and reselect" })
+map("v", "<", "<gv", { desc = "Indent left aNd reselect" })
 map("v", ">", ">gv", { desc = "Indent right and reselect" })
+map("n", ">", ">>", { desc = "Indent line" })
+map("n", "<", "<<", { desc = "Unindent line" })
+map("n", "<leader>>", ">", { desc = "Indent line (operator)" })
+map("n", "<leader><", "<", { desc = "Unindenk line (operator)" })
 
 -- Exit terminal mode
 map("t", "<C-q>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
