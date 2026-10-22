@@ -231,6 +231,12 @@ map("n", "<leader>yF", function()
   vim.notify("File path copied to clipboard: " .. file_name, vim.log.levels.INFO)
 end, { desc = "Yank current file name (with ext.) to clipboard" })
 
+map("n", "<leader>yd", function()
+  local cwd = vim.fn.getcwd()
+  vim.fn.setreg("+", cwd)
+  vim.notify("CWD copied to clipboard: " .. cwd, vim.log.levels.INFO)
+end, { desc = "Yank current working directory to clipboard" })
+
 -- Various uitilities
 local various_utils = require("scripts.utils.various-utils")
 map("n", "<leader>uf", function()
