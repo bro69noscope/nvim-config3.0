@@ -243,16 +243,9 @@ map("n", "<leader>uf", function()
   require("scripts.ui.transform-windows").make_window_floating()
 end, { desc = "Make window floating" })
 
-map("n", "<Leader>uB", function()
+map("n", "<Leader>ub", function()
   various_utils.capture_current_buffer_info()
 end, { desc = "Get current buffer info" })
-
-map("n", "<leader>ub", function()
-  local bufinfo = various_utils.capture_current_buffer_info({ silent = true })
-  local bufname, raw_bufname = bufinfo.bufname, bufinfo.raw_bufname
-  vim.notify("path: " .. bufname .. "\n" .. "raw: " .. raw_bufname, vim.log.levels.INFO)
-  vim.fn.setreg("+", bufname)
-end, { desc = "Yank current buffer path to clipboard" })
 
 map("n", "<leader>ut", function()
   various_utils.list_treesitter_installed_parsers()
