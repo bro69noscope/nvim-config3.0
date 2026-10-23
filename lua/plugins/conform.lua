@@ -23,10 +23,15 @@ return {
       ["cs"] = { "csharpier" },
       ["ps1"] = { lsp_format = "prefer" },
       ["autohotkey"] = { lsp_format = "prefer" },
+      ["qss"] = { "prettier_qss" },
     },
     formatters = {
       beautysh = {
         prepend_args = { "--indent-size", "2" },
+      },
+      prettier_qss = {
+        inherit = "prettier",
+        prepend_args = { "--parser", "css" },
       },
     },
     format_on_save = {}, -- the key existing means it is enabled

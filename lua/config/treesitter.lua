@@ -17,4 +17,7 @@ local parsers = {
   "javascript",
 }
 
+vim.filetype.add({ extension = { qss = "qss" } })
+vim.treesitter.language.register("css", "qss")
+
 require("nvim-treesitter").install(parsers)
