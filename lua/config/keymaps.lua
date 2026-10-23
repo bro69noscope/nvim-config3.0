@@ -526,3 +526,8 @@ end, { desc = "Show full path of current buffer", icon = "📂" })
 map("n", "<leader>up", function()
   require("scripts.ui.show-buffer-fullpath").show_fullpath_cwd()
 end, { desc = "Show path of current buffer (git root)", icon = "" })
+
+-- toggle a window into a maximized floating one
+map({ "n", "t", "i" }, "<m-m>", function()
+  require("scripts.ux.maximize-to-float").toggle_max_float()
+end, { desc = "Toggle maximized terminal", icon = "" })
