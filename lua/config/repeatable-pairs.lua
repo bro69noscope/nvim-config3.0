@@ -65,10 +65,10 @@ function M.track_pair(func1, func2)
 end
 
 --- Keybinds used only in case of unavailability of nvim-treesitter.textobjects.repeatable_move
---- Because we cannot bind Ctrl+; and Ctrl+, directly in Neovim we use virtual keys for it.
+--- These Keybinds require wezterm to use the `config.enable_kitty_keyboard = true` option
 function M.setup()
-  vim.keymap.set({ "n", "t" }, "<F13>", repeat_last, { desc = "Repeat last" })
-  vim.keymap.set({ "n", "t" }, "<S-F13>", repeat_opposite, { desc = "Repeat opposite" })
+  vim.keymap.set({ "n", "t" }, "<C-;>", repeat_last, { desc = "Repeat last" })
+  vim.keymap.set({ "n", "t" }, "<C-,>", repeat_opposite, { desc = "Repeat opposite" })
 end
 
 return M
