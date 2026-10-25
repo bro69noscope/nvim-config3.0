@@ -5,4 +5,7 @@
 _G.Scratch_registers = { "z", "y", "x" }
 
 -- reserved marks set programmatically
-_G.Automated_marks = { "Q" }
+_G.Automated_marks = {
+  qf_jumps = { key = "Q", desc = "return to location pre qf jumps" },
+  search_jumps = { key = "o", desc = "return to location pre word search jumps" },
+}

@@ -302,7 +302,7 @@ vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
   end,
 })
 
--- Q mark from wherever we were before opening a quickfix window, so we can jump back to it with `Q
+-- Mark our location before opening a quickfix window, so we can jump back to it
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()
@@ -317,6 +317,15 @@ vim.api.nvim_create_autocmd("FileType", {
 
     local pos = vim.api.nvim_win_get_cursor(prev)
     local buf = vim.api.nvim_win_get_buf(prev)
-    vim.api.nvim_buf_set_mark(buf, "Q", pos[1], pos[2], {})
+    vim.api.nvim_buf_set_mark(buf, Automated_marks.qf_jumps.key, pos[1], pos[2], {})
   end,
 })
+
+-- Mark our location before a */# jump, so we can jump back to it
+for _, key in ipairs({ "*", "#", "g*", "g#" }) do
+  vim.keymap.set("n", key, function()
+    local pos = vim.api.nvim_win_get_cursor(0)
+    vim.api.nvim_buf_set_mark(0, Automated_marks.search_jumps.key, pos[1], pos[2], {})
+    vim.cmd.normal({ vim.v.count1 .. key, bang = true })
+  end, { desc = "Search word and mark origin with s" })
+end
