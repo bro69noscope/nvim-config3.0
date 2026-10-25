@@ -73,6 +73,9 @@ return {
     search_history = {
       layout = "midscreen_dropdown",
     },
+    marks = {
+      layout = "grep_vertical",
+    },
     recent = {
       filter = M.filter_builtins.filter_recent,
     },
