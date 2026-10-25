@@ -10,7 +10,16 @@ return {
     local repeat_reverse = require("modules.buffer-browser.repeat-reverse")
     local next_buf, prev_buf = repeat_reverse.setup_buffer_browser()
 
-    vim.keymap.set("n", "]b", next_buf, { desc = "Next [B]uffer" })
-    vim.keymap.set("n", "[b", prev_buf, { desc = "Previous [B]uffer" })
+    vim.keymap.set("n", "]b", function()
+      local pos = vim.api.nvim_win_get_cursor(0)
+      vim.api.nvim_buf_set_mark(0, Automated_marks.buffer_browser_jumps.key, pos[1], pos[2], {})
+      next_buf()
+    end, { desc = "Next [B]uffer" })
+
+    vim.keymap.set("n", "[b", function()
+      local pos = vim.api.nvim_win_get_cursor(0)
+      vim.api.nvim_buf_set_mark(0, Automated_marks.buffer_browser_jumps.key, pos[1], pos[2], {})
+      prev_buf()
+    end, { desc = "Previous [B]uffer" })
   end,
 }
