@@ -1,7 +1,11 @@
 return {
-  --NOTE: this seem to cause quite a bit of lag starting 300lines & up. Might need settings tuning
   "andymass/vim-matchup",
   enabled = true,
+  init = function()
+    vim.g.matchup_matchparen_deferred = 1 -- helps reduce lag a lot.
+    vim.g.matchup_matchparen_deferred_show_delay = 50 -- ms, default 50
+    vim.g.matchup_matchparen_deferred_hide_delay = 700 -- ms, default 700
+  end,
   opts = {
     treesitter = {
       stopline = 500,
