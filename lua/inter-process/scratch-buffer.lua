@@ -1,4 +1,4 @@
--- pieced with: windows\autohotkey\utils-script\nvim-scratch\scratch.ahk
+-- pieced with: windows\autohotkey\utils-script\apps\nvim-scratch\scratch.ahk
 local map = require("scripts.ui.whichkey-map").map
 
 local scratch_dir = vim.fn.expand("$TEMP"):gsub("\\", "/") .. "/nvim-scratch"
