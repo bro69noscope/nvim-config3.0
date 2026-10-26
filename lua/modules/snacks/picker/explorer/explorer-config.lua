@@ -1,8 +1,14 @@
 require("modules.snacks.picker.explorer.fix-files-follow")
 require("modules.snacks.picker.explorer.fix-input-clear-onsave")
+
 local open_with_flags = require("modules.snacks.picker.explorer.open-with-flags")
 local grep_actions = require("modules.snacks.picker.actions.grep-actions")
 local explorer_actions = require("modules.snacks.picker.explorer.actions.actions")
+
+-- Default width is 40. Smaller value helps with wezterm in OS scale 150% 1080p with 100 char ll.
+-- On neovide, we have a bit more space.
+local explorer_width = vim.g.neovide and 41 or 39
+
 local launch_picker_with_explorer_return =
   require("modules.snacks.picker.explorer.actions.launch-with-explorer-return")
 
@@ -39,6 +45,12 @@ local focus_right_win = function()
 end
 
 return {
+  layout = {
+    layout = {
+      width = explorer_width,
+      min_width = explorer_width,
+    },
+  },
   actions = {
     -- fundamentals
     focus_right_win = focus_right_win,
