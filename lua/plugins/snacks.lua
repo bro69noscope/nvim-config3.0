@@ -201,6 +201,21 @@ return {
       desc = "Checkout Branch",
     },
 
+    -- git status scoped to cwd
+    {
+      "<leader>g.",
+      function()
+        local cwd = vim.fs.normalize(vim.uv.cwd())
+        Snacks.picker.git_status({
+          transform = function(item)
+            local abs = vim.fs.normalize(item.cwd .. "/" .. item.file)
+            return vim.startswith(abs, cwd .. "/")
+          end,
+        })
+      end,
+      desc = "Git Status (cwd)",
+    },
+
     -- marks with only user marks a-z / A-Z. Exclude automated marks
     {
       "<leader>sm",
