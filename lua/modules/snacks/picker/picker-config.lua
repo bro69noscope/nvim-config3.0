@@ -12,6 +12,7 @@ M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").t
 M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").qflist_append
 M.persist_flags = require("modules.snacks.picker.persist-flags")
 M.grep_actions = require("modules.snacks.picker.actions.grep-actions")
+M.git_status_all = require("modules.snacks.picker.sources.git-status-all")
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -36,6 +37,7 @@ return {
     },
   },
   sources = {
+    git_status_all = M.git_status_all,
     lsp_definitions = {
       jump = { reuse_win = false }, -- Prevent using a different window for gd, etc.
     },

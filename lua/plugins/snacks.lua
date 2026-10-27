@@ -216,6 +216,15 @@ return {
       desc = "Git Status (cwd)",
     },
 
+    -- git status including submodules
+    {
+      "<leader>ge",
+      function()
+        Snacks.picker.git_status_all()
+      end,
+      desc = "Git Status (+submodules)",
+    },
+
     -- marks with only user marks a-z / A-Z. Exclude automated marks
     {
       "<leader>sm",
