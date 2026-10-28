@@ -13,6 +13,7 @@ M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").q
 M.persist_flags = require("modules.snacks.picker.persist-flags")
 M.grep_actions = require("modules.snacks.picker.actions.grep-actions")
 M.git_status_all = require("modules.snacks.picker.sources.git-status-all")
+M.rescope_picker = require("modules.snacks.picker.actions.rescope-picker").rescope
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -85,6 +86,15 @@ return {
     grep = M.shared_configs.make_grep_source("grep", shared_deps),
   },
   actions = {
+    scope_to_git = function(picker)
+      M.rescope_picker(picker, "git root")
+    end,
+    scope_to_cwd = function(picker)
+      M.rescope_picker(picker, "cwd")
+    end,
+    scope_to_all = function(picker)
+      M.rescope_picker(picker, "all")
+    end,
     grep_filename = function(picker, item)
       M.grep_actions.grep_for_filename(picker, item)
     end,
@@ -146,6 +156,9 @@ return {
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
+        ["<F4>"] = { "scope_to_git", mode = { "n", "i" } },
+        ["<F5>"] = { "scope_to_cwd", mode = { "n", "i" } },
+        ["<F6>"] = { "scope_to_all", mode = { "n", "i" } },
       },
     },
     list = {
