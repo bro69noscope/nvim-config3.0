@@ -190,6 +190,7 @@ M.egrepify = function(opts, ctx)
     notify = false, -- never notify on grep errors, since it's impossible to know if the error is due to the search pattern
     cmd = cmd,
     args = args,
+    cwd = cwd,
 
     ---@param item snacks.picker.finder.Item
     transform = function(item)
