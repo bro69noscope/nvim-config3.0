@@ -88,17 +88,34 @@ return {
     end
   end,
   keys = {
-    -- buffers scoped to cwd
+    -- buffers scoped to cwd, without gitignored files
     {
       "<leader>;",
       function()
+        local cwd = vim.fn.getcwd()
+        local ignored_cache = {}
         Snacks.picker.buffers({
           title = "Buffers (cwd)",
-          cwd = vim.fn.getcwd(),
+          cwd = cwd,
           filter = { cwd = true },
+          transform = function(item)
+            local file = item.file
+            if not file then
+              return
+            end
+            local cached = ignored_cache[file]
+            if cached == nil then
+              local res = vim.system({ "git", "-C", cwd, "check-ignore", "-q", "--", file }):wait()
+              cached = res.code == 0
+              ignored_cache[file] = cached
+            end
+            if cached then
+              return false
+            end
+          end,
         })
       end,
-      desc = "Buffers (cwd)",
+      desc = "Buffers (clean)",
     },
     -- toggle explorer without loosing focus
     {
