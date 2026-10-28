@@ -90,7 +90,7 @@ return {
   keys = {
     -- buffers scoped to cwd
     {
-      "<leader>-",
+      "<leader>;",
       function()
         Snacks.picker.buffers({
           title = "Buffers (cwd)",
@@ -296,9 +296,9 @@ return {
     { "<leader>sc", function() Snacks.picker.commands() end, desc = "Commands" },
     { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
-    { "<leader>;", function() Snacks.picker.files() end, desc = "Find Files" },
+    { "<leader>-", function() Snacks.picker.files() end, desc = "Find Files" },
     {
-      "<leader>;",
+      "<leader>-",
       function() Snacks.picker.files({ pattern = Snacks.picker.util.visual().text }) end,
       mode = "x",
       desc = "Find Files (selection)",
