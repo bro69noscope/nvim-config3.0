@@ -51,6 +51,21 @@ local function get_search_text(picker)
   return ""
 end
 
+---@param picker snacks.Picker
+---@param config table
+---@param base? string
+local function carry_scope(picker, config, base)
+  local o = picker.opts
+  config.cwd = o.cwd
+  config._scope = o._scope
+  config.filter = type(o.filter) == "table" and o.filter or nil
+  base = base or o._base_title
+  config._base_title = base
+  if base then
+    config.title = require("modules.snacks.picker.actions.rescope-picker").title(base, o._scope)
+  end
+end
+
 --- Builds a named action (picker) -> () usable in a source's `actions` table.
 ---@param dirs? table<string>
 ---@param title? string
@@ -73,9 +88,7 @@ M.make_action = function(dirs, title, source)
         if dirs then
           config_wo_glob.dirs = dirs
         end
-        if title then
-          config_wo_glob.title = title
-        end
+        carry_scope(picker, config_wo_glob, title)
         config_wo_glob.win = {
           input = { keys = setup_picker_keys.setup_grep_input_keys(dirs, title, resolved_source) },
         }
@@ -95,11 +108,11 @@ M.make_action = function(dirs, title, source)
       if dirs then
         config_w_globs.dirs = dirs
       end
+      local base = title
       if #patterns > 0 then
-        config_w_globs.title = (title or "Grep") .. " (" .. table.concat(patterns, ", ") .. ")"
-      else
-        config_w_globs.title = title
+        base = (title or "Grep") .. " (" .. table.concat(patterns, ", ") .. ")"
       end
+      carry_scope(picker, config_w_globs, base)
       config_w_globs.win = {
         input = { keys = setup_picker_keys.setup_grep_input_keys(dirs, title, resolved_source) },
       }
