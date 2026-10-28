@@ -88,6 +88,18 @@ return {
     end
   end,
   keys = {
+    -- buffers scoped to cwd
+    {
+      "<leader>-",
+      function()
+        Snacks.picker.buffers({
+          title = "Buffers (cwd)",
+          cwd = vim.fn.getcwd(),
+          filter = { cwd = true },
+        })
+      end,
+      desc = "Buffers (cwd)",
+    },
     -- toggle explorer without loosing focus
     {
       ToggleExplorerBind,
