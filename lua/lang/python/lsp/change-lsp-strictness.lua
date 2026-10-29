@@ -1,12 +1,7 @@
 local M = {}
 
-local TYPE_CHECKING_STANDARD = 'typeCheckingMode = "standard"'
-local TYPE_CHECKING_RECOMMENDED = 'typeCheckingMode = "recommended"'
-local SELECT_ALL = 'select = ["ALL"]'
-
-local function type_checking_line(normal)
-  return normal and TYPE_CHECKING_STANDARD or TYPE_CHECKING_RECOMMENDED
-end
+local STRICTNESS_SCRIPT = "src/scripts/lsp_strictness.py"
+local STRICT_MARKER = "basedpyrightconfig.json"
 
 local function restart_clients(names)
   for _, name in ipairs(names) do
@@ -34,25 +29,10 @@ function M.find_pyproject()
   return found[1]
 end
 
+-- Relaxed ("normal") = no override files; pyproject.toml applies as written.
 function M.is_currently_normal(toml_path)
-  local lines = vim.fn.readfile(toml_path)
-  for _, line in ipairs(lines) do
-    if line:match(TYPE_CHECKING_STANDARD) then
-      return true
-    end
-  end
-  return false
-end
-
-local function insert_after_section(lines, section_pattern, new_line)
-  for i, line in ipairs(lines) do
-    if line:match(section_pattern) then
-      table.insert(lines, i + 1, new_line)
-      return true
-    end
-  end
-  vim.notify("Section " .. section_pattern .. " not found in pyproject.toml", vim.log.levels.WARN)
-  return false
+  local root = vim.fs.dirname(toml_path)
+  return vim.uv.fs_stat(root .. "/" .. STRICT_MARKER) == nil
 end
 
 function M.set_lsp_strictness(normal)
@@ -62,34 +42,22 @@ function M.set_lsp_strictness(normal)
     return
   end
 
-  local lines = vim.fn.readfile(toml_path)
-  local found_type_checking = false
-  local found_select = false
-  local new_lines = {}
-
-  for _, line in ipairs(lines) do
-    if line:match("typeCheckingMode") then
-      table.insert(new_lines, type_checking_line(normal))
-      found_type_checking = true
-    elseif line:match("^%s*select%s*=") then
-      found_select = true
-      if not normal then
-        table.insert(new_lines, SELECT_ALL)
-      end
-    else
-      table.insert(new_lines, line)
-    end
+  local root = vim.fs.dirname(toml_path)
+  local script = root .. "/" .. STRICTNESS_SCRIPT
+  if vim.uv.fs_stat(script) == nil then
+    vim.notify(STRICTNESS_SCRIPT .. " not found in " .. root, vim.log.levels.ERROR)
+    return
   end
 
-  if not found_type_checking then
-    insert_after_section(new_lines, "^%[tool%.basedpyright%]", type_checking_line(normal))
+  local python = vim.fn.executable("python3") == 1 and "python3" or "python"
+  local result = vim
+    .system({ python, script, normal and "relaxed" or "strict", "--root", root }, { text = true })
+    :wait()
+  if result.code ~= 0 then
+    vim.notify("lsp_strictness failed: " .. (result.stderr or ""), vim.log.levels.ERROR)
+    return
   end
 
-  if not found_select and not normal then
-    insert_after_section(new_lines, "^%[tool%.ruff%.lint%]", SELECT_ALL)
-  end
-
-  vim.fn.writefile(new_lines, toml_path)
   restart_clients({ "basedpyright", "ruff" })
 end
 
