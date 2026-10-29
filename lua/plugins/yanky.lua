@@ -19,14 +19,6 @@ return {
       desc = "Open Yank History",
     },
     {
-      "<c-o>",
-      function()
-        require("telescope").extensions.yank_history.yank_history({})
-      end,
-      mode = { "i" },
-      desc = "Open Yank History",
-    },
-    {
       "<c-h>",
       function()
         require("telescope").extensions.yank_history.yank_history({})
