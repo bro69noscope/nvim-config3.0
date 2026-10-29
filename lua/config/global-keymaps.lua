@@ -1,6 +1,6 @@
 _G.NextDiffChangeBind = "<m-j>"
 _G.PreviousDiffChangeBind = "<m-k>"
-_G.HideTerminalBind = "<c-u>"
+_G.HideTerminalBind = "<c-o>"
 
 _G.UpWindowBind = "<c-k>"
 _G.DownWindowBind = "<c-j>"
