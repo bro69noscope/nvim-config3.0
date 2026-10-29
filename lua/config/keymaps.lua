@@ -512,14 +512,18 @@ end, {
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
--- show full path of current buffer in floating window (for long paths)
+-- show path of current buffer/cwd in floating window
 map("n", "<leader>uP", function()
   require("scripts.ui.show-buffer-fullpath").show_fullpath()
-end, { desc = "Show full path of current buffer", icon = "📂" })
+end, { desc = "Show current buffer full path", icon = "󰇘" })
 
 map("n", "<leader>up", function()
   require("scripts.ui.show-buffer-fullpath").show_fullpath_cwd()
-end, { desc = "Show path of current buffer (git root)", icon = "" })
+end, { desc = "Show current buffer path (git root)", icon = "󰇘" })
+
+map("n", "<leader>u.", function()
+  require("scripts.ui.show-buffer-fullpath").show_cwd()
+end, { desc = "Show current cwd" })
 
 -- toggle a window into a maximized floating one
 map({ "n", "t", "i" }, "<m-m>", function()

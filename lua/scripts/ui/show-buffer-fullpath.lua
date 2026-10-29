@@ -51,6 +51,10 @@ M.show_fullpath_cwd = function()
   show_float(path)
 end
 
+M.show_cwd = function()
+  show_float((vim.fn.getcwd():gsub("\\", "/")))
+end
+
 M.show_fullpath = function()
   show_float(buffer_path())
 end
