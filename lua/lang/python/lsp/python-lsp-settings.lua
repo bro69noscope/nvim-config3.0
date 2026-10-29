@@ -1,22 +1,30 @@
 local M = {}
-local python_ignore_paths = {
-  -- windows (sometimes requires the drive character)
-  "*:/**/Python*/Lib/**",
-  "*:/**/python*/lib/**",
-  "*:/**/site-packages/**",
-  -- without the drive character
-  "**/Python*/Lib/**",
-  "**/python*/lib/**",
-  "**/site-packages/**",
-  -- linux (sometimes requires the forward slash)
-  "/**/nvim/mason/packages/**",
-  "/**/lib/python*/**",
-  "/**/site-packages/**",
-  -- without the forward slash
-  "**/nvim/mason/packages/**",
-  "**/lib/python*/**",
-  "**/site-packages/**",
+local ignored_dirs = {
+  "Python*/Lib",
+  "python*/lib",
+  "miniforge*/Lib",
+  "mambaforge*/Lib",
+  "miniconda*/Lib",
+  "anaconda*/Lib",
+  "micromamba*/Lib",
+  "lib/python*",
+  "site-packages",
+  "nvim/mason/packages",
 }
+
+local ignore_prefixes = {
+  "*:/**/", -- windows (sometimes requires the drive character)
+  "**/", -- without the drive character / forward slash
+  "/**/", -- linux (sometimes requires the forward slash)
+}
+
+local python_ignore_paths = {}
+for _, prefix in ipairs(ignore_prefixes) do
+  for _, dir in ipairs(ignored_dirs) do
+    table.insert(python_ignore_paths, prefix .. dir .. "/**")
+  end
+end
+
 local ignore_all_paths = {
   "*:/*",
   "/*",
