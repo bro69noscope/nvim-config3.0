@@ -284,6 +284,7 @@ return {
     { "<leader><space>", function() Snacks.picker.smart() end, desc = "Smart Find Files" },
     { "<leader>,", function() Snacks.picker.buffers() end, desc = "Buffers" },
     { "<leader>/", function() Snacks.picker.grep() end, desc = "Grep" },
+    { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
     { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>sl", function() Snacks.picker.files({

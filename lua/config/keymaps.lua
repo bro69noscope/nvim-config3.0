@@ -115,6 +115,7 @@ end, { desc = "Close others (and opens File Explorer)", icon = "" })
 
 -- Search within visual selection
 map("x", "<leader>/", "<Esc>/\\%V", { desc = "Search within selection" })
+map("x", "<leader>%", "<Esc>/\\%V", { desc = "Search within selection" }) -- duplicate for enthium layout
 
 -- Open file in PyCharm at current line
 map("n", "<leader>oP", function()
