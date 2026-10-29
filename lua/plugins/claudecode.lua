@@ -19,6 +19,8 @@ return {
           claude_hide = {
             HideTerminalBind,
             function(self)
+              -- if we made the terminal a maximized float, close it
+              require("scripts.ux.maximize-to-float").close_float()
               self:hide()
             end,
             mode = "t",
