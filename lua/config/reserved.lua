@@ -9,6 +9,7 @@ _G.Automated_marks = {
   -- global
   qf_jumps = { key = "Q", desc = "return to location pre qf jumps" },
   buffer_browser_jumps = { key = "B", desc = "return to location pre buffer browser jump" },
+  claude_notes_step = { key = "N", desc = "last visited step of the claude notes qf list" },
   -- local
   search_jumps = { key = "s", desc = "return to location pre word search jumps" },
   snacks_words_jumps = { key = "r", desc = "return to location pre snacks words jumps" },

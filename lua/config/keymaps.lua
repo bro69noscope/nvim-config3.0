@@ -417,12 +417,24 @@ map("n", "<leader>cl", function()
 end, { desc = "Add current line to quickfix" })
 
 -- open claude/ai generated quickfix list file
-map(
-  "n",
-  "<leader>cf",
-  "<cmd>cfile cc-qf.txt | copen<cr>",
-  { desc = "Open ai qf.txt in quickfix", icon = "" }
-)
+map("n", "<leader>cn", function()
+  require("scripts.ui.claude-notes-nav").open()
+end, { desc = "Open ai notes with qflist at last step", icon = "" })
+
+-- back to the ai notes list (kept in the qf stack) and the last step visited, e.g. after a detour
+map("n", "<leader>cr", function()
+  require("scripts.ui.claude-notes-nav").resume()
+end, { desc = "Resume ai notes at last step" })
+
+-- show the ai note on the cursor line as real text in a float
+map("n", "<leader>cs", function()
+  require("scripts.ui.expand-claude-note").peek()
+end, { desc = "Peek ai note as real text" })
+
+-- clear the ai notes virtual text
+map("n", "<leader>cq", function()
+  require("scripts.ui.claude-notes-nav").clear()
+end, { desc = "Clear claude notes" })
 
 -- search visual selection in snacks pickers
 map("x", "<leader>se", function()
