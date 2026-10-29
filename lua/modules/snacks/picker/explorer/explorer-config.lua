@@ -7,7 +7,7 @@ local explorer_actions = require("modules.snacks.picker.explorer.actions.actions
 
 -- Default width is 40. Smaller value helps with wezterm in OS scale 150% 1080p with 100 char ll.
 -- On neovide, we have a bit more space.
-local explorer_width = vim.g.neovide and 41 or 39
+local explorer_width = OnNeovide and 41 or 39
 
 local launch_picker_with_explorer_return =
   require("modules.snacks.picker.explorer.actions.launch-with-explorer-return")
