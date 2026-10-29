@@ -24,7 +24,7 @@ M.toggle_max_float = function()
   end
 
   local w = math.floor(vim.o.columns * 0.9)
-  local h = math.floor(vim.o.lines * 0.9)
+  local h = math.floor(vim.o.lines * 1)
   float_win = vim.api.nvim_open_win(vim.api.nvim_get_current_buf(), true, {
     relative = "editor",
     width = w,
