@@ -12,6 +12,7 @@ Linelength_by_ft = {
 vim.opt.undofile = true
 vim.opt.clipboard = ""
 vim.opt.swapfile = false -- Annoying as fuck so testing temporary disable
+vim.opt.shortmess:append("s") -- Don't show "search hit BOTTOM, continuing at TOP" messages
 
 vim.opt.wrap = true
 vim.opt.scrolloff = 14
@@ -45,7 +46,7 @@ vim.opt.smartcase = true
 vim.opt.ignorecase = true
 vim.opt.termguicolors = true
 
--- In general, tab = 2 spaces
+-- In general, tab = 2 spaces, like any sane person would have it.
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
