@@ -1,6 +1,7 @@
 local M = {}
 
 local STRICTNESS_SCRIPT = "src/scripts/lsp_strictness.py"
+local BUNDLED_SCRIPT = "scripts/lsp_strictness.py" -- relative to stdpath("config")
 local STRICT_MARKER = "basedpyrightconfig.json"
 
 local function restart_clients(names)
@@ -43,9 +44,16 @@ function M.set_lsp_strictness(normal)
   end
 
   local root = vim.fs.dirname(toml_path)
+  -- Prefer the project's own copy, else the one bundled with this nvim config.
   local script = root .. "/" .. STRICTNESS_SCRIPT
   if vim.uv.fs_stat(script) == nil then
-    vim.notify(STRICTNESS_SCRIPT .. " not found in " .. root, vim.log.levels.ERROR)
+    script = vim.fn.stdpath("config") .. "/" .. BUNDLED_SCRIPT
+  end
+  if vim.uv.fs_stat(script) == nil then
+    vim.notify(
+      "lsp_strictness.py not found in " .. root .. " or the nvim config",
+      vim.log.levels.ERROR
+    )
     return
   end
 
