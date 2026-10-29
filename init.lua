@@ -42,4 +42,5 @@ require("scripts.ux.change-file-extension").setup()
 
 -- misc
 require("modules.snacks.picker.explorer.toggle-without-focus")
+require("modules.claudecode.toggle-without-focus")
 require("inter-process.scratch-buffer")
