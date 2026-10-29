@@ -2,6 +2,14 @@ local M = {}
 local persist_flags = require("modules.snacks.picker.persist-flags")
 local map = require("scripts.ui.whichkey-map").map
 
+local function snacks_available()
+  if pcall(require, "snacks") then
+    return true
+  end
+  vim.notify("snacks.nvim is not available (disabled or not installed)", vim.log.levels.ERROR)
+  return false
+end
+
 local function apply_opts(opts)
   opts = opts or {}
   local no_follow = opts.follow_file == false
@@ -76,6 +84,9 @@ local function watch_close(explorer)
 end
 
 M.toggle = function(opts)
+  if not snacks_available() then
+    return
+  end
   local existing = Snacks.picker.get({ source = "explorer" })[1]
   local remembered_width = existing and capture_width(existing) or nil
 
@@ -92,6 +103,9 @@ M.toggle = function(opts)
 end
 
 M.open = function(opts)
+  if not snacks_available() then
+    return
+  end
   local existing = Snacks.picker.get({ source = "explorer" })[1]
   local merged, no_follow = apply_opts(opts)
 
@@ -121,6 +135,9 @@ M.open = function(opts)
 end
 
 map("n", "<M-R>", function()
+  if not snacks_available() then
+    return
+  end
   persist_flags.set("explorer", "hidden", false)
   persist_flags.set("explorer", "ignored", false)
   persist_flags.set("explorer", "no_follow", false)
