@@ -1,6 +1,5 @@
 -- Enhanced map function that handles both vim keymaps and which-key
 local M = {}
-local has_wk, wk = pcall(require, "which-key")
 M.map = function(mode, lhs, rhs, options)
   options = options or {}
 
@@ -10,10 +9,10 @@ M.map = function(mode, lhs, rhs, options)
 
   vim.keymap.set(mode, lhs, rhs, vim_options)
 
+  local has_wk, wk = pcall(require, "which-key")
   if has_wk and options.icon then
     local wk_spec = {
       lhs,
-      rhs,
       desc = options.desc,
       icon = icon,
       mode = mode,
