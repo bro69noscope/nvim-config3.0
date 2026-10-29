@@ -416,6 +416,14 @@ map("n", "<leader>cl", function()
   })
 end, { desc = "Add current line to quickfix" })
 
+-- open claude/ai generated quickfix list file
+map(
+  "n",
+  "<leader>cf",
+  "<cmd>cfile cc-qf.txt | copen<cr>",
+  { desc = "Open ai qf.txt in quickfix", icon = "" }
+)
+
 -- search visual selection in snacks pickers
 map("x", "<leader>se", function()
   require("scripts.ux.open-selection-in-picker").open_selection_in_explorer()
