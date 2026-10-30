@@ -49,15 +49,28 @@ if launched_as_scratch then
     end,
   })
 
-  map("n", "<localleader>q", function()
+  local function close_and_clip(vmode)
     if vim.t.custom_tabname == dontclose_tabname then
       vim.notify("refusing to close the " .. dontclose_tabname .. " tab", vim.log.levels.WARN)
       return
     end
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local lines
+    if vmode then
+      lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })
+    else
+      lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    end
     vim.fn.setreg("+", table.concat(lines, "\n"))
     vim.cmd("tabclose!")
+  end
+
+  map("n", "<localleader>q", function()
+    close_and_clip(false)
   end, { desc = "Close scratch, clip contents, signal AHK", icon = "💃" })
+
+  map("x", "<localleader>q", function()
+    close_and_clip(true)
+  end, { desc = "Close scratch, clip selection, signal AHK", icon = "💃" })
 
   local watcher = assert(vim.uv.new_timer(), "failed to create scratch-buffer timer")
   watcher:start(
