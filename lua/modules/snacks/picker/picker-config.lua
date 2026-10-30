@@ -38,6 +38,9 @@ return {
     },
   },
   sources = {
+    files = {
+      matcher = { frecency = true },
+    },
     git_status_all = M.git_status_all,
     lsp_definitions = {
       jump = { reuse_win = false }, -- Prevent using a different window for gd, etc.
