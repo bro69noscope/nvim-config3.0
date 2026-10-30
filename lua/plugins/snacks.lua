@@ -286,7 +286,7 @@ return {
     { "<leader><space>", function() Snacks.picker.smart() end, desc = "Smart Find Files" },
     { "<leader>,", function() Snacks.picker.buffers() end, desc = "Buffers" },
     { "<leader>/", function() Snacks.picker.grep() end, desc = "Grep" },
-    { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
+    -- { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
     { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>sl", function() Snacks.picker.files({
@@ -318,9 +318,9 @@ return {
     { "<leader>sc", function() Snacks.picker.commands() end, desc = "Commands" },
     { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
-    { "<leader>-", function() Snacks.picker.files() end, desc = "Find Files" },
+    { "<leader>\"", function() Snacks.picker.files() end, desc = "Find Files" },
     {
-      "<leader>-",
+      "<leader>\"",
       function() Snacks.picker.files({ pattern = Snacks.picker.util.visual().text }) end,
       mode = "x",
       desc = "Find Files (selection)",

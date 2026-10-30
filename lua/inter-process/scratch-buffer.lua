@@ -64,11 +64,11 @@ if launched_as_scratch then
     vim.cmd("tabclose!")
   end
 
-  map("n", "<localleader>q", function()
+  map("n", "<localleader>x", function()
     close_and_clip(false)
   end, { desc = "Close scratch, clip contents, signal AHK", icon = "💃" })
 
-  map("x", "<localleader>q", function()
+  map("x", "<localleader>x", function()
     close_and_clip(true)
   end, { desc = "Close scratch, clip selection, signal AHK", icon = "💃" })
 
