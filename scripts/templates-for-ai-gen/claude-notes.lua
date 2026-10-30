@@ -16,15 +16,17 @@ local notes = {
   },
 }
 
-local ns = vim.api.nvim_create_namespace("claude")
+-- for proper nvim ui navigation capabilities, these must match in the config with:
+-- lua/scripts/ui/claude-notes/navigate.lua
+-- this script must be saved as ".claude-notes.lua" (NOTES_FILE in navigate.lua)
+local NAMESPACE = vim.api.nvim_create_namespace("claude_notes")
+local QFLIST_TITLE = "claude_notes_qf"
+
 for _, b in ipairs(vim.api.nvim_list_bufs()) do
-  vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
+  vim.api.nvim_buf_clear_namespace(b, NAMESPACE, 0, -1)
 end
 
 local MAX_WIDTH = 100
-
--- must match the title used in lua/scripts/ui/claude-notes-nav.lua
-local QFLIST_TITLE = "claude_notes_qf"
 
 local function wrap(text, width)
   local lines = {}
@@ -66,7 +68,7 @@ for _, n in ipairs(notes) do
     table.insert(virt_lines, { { indent .. text, "DiagnosticVirtualTextHint" } })
   end
 
-  local ok = pcall(vim.api.nvim_buf_set_extmark, buf, ns, n.line - 1, 0, {
+  local ok = pcall(vim.api.nvim_buf_set_extmark, buf, NAMESPACE, n.line - 1, 0, {
     virt_lines = virt_lines,
     virt_lines_above = not is_end,
   })

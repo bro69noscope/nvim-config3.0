@@ -38,7 +38,7 @@ require("scripts.ux.diagnose-multiple-buffers")
 require("scripts.ux.better-tabclose")
 require("scripts.ux.find-next-brackets")
 require("scripts.ux.change-file-extension").setup()
-require("scripts.ui.claude-notes-nav").setup()
+require("scripts.ui.claude-notes.navigate").setup()
 
 -- misc
 require("modules.snacks.picker.explorer.toggle-without-focus")
