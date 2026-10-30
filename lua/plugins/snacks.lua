@@ -135,7 +135,7 @@ return {
         end
         word = vim.fn.escape(word, "\\/.*$^~[]")
         Snacks.picker.grep_word({
-          regex = true,
+          regex = false,
           search = "\\b" .. word .. "\\b",
           args = {},
         })
@@ -302,7 +302,7 @@ return {
     { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
     { "<leader>s,", function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
     { "<leader>sw", function() Snacks.picker.grep_word({
-      regex = true,
+      regex = false,
       args = {},
       show_empty = true,
     }) end, desc = "Visual selection or word", mode = { "n", "x" } },
