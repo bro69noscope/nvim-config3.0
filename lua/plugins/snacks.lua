@@ -135,9 +135,9 @@ return {
         end
         word = vim.fn.escape(word, "\\/.*$^~[]")
         Snacks.picker.grep_word({
-          title = "Grep word (bounded)",
-          _root_title = "Grep word (bounded)",
-          regex = false,
+          title = "Grep bounded word",
+          _root_title = "Grep bounded word",
+          regex = true,
           search = "\\b" .. word .. "\\b",
           args = {},
         })

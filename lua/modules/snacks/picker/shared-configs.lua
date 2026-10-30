@@ -6,6 +6,13 @@ M.make_grep_source = function(source, deps)
   return {
     finder = deps.case_aware_grep.wrap(require("modules.snacks.picker.finders.egrepify").egrepify),
     layout = "grep_vertical",
+
+    -- AND search rewrites each space into the regex `.*` (see egrepify.lua). With
+    -- `regex = false` rg runs with --fixed-strings, so `.*` is matched literally and
+    -- multi-word searches find nothing. grep_word defaults AND off either way, so a
+    -- selected phrase is matched as-is (also keeps regex = true callers exact, e.g.
+    -- "Grep bounded word" which wraps the word in \b).
+    and_search = source ~= "grep_word",
     win = {
       input = {
         keys = deps.setup_picker_keys.setup_grep_input_keys(nil, nil, source),

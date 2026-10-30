@@ -60,6 +60,7 @@ local function carry_scope(picker, config, base)
   config.show_empty = o.show_empty
   config.regex = o.regex
   config.args = o.args
+  config.and_search = o.and_search
   config._root_title = o._root_title
   config._scope = o._scope
   config.filter = type(o.filter) == "table" and o.filter or nil
