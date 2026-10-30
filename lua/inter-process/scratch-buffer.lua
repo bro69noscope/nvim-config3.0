@@ -5,6 +5,7 @@ local scratch_dir = vim.fn.expand("$TEMP"):gsub("\\", "/") .. "/nvim-scratch"
 local scratch_pattern = scratch_dir .. "/scratch_*"
 local done_flag = scratch_dir .. "/done.flag"
 local req_file = scratch_dir .. "/request.txt"
+local dontclose_tabname = "scratch__dontclose"
 
 vim.api.nvim_create_autocmd("BufNewFile", {
   pattern = scratch_pattern,
@@ -20,7 +21,7 @@ local launched_as_scratch = vim.g.nvim_scratch == 1
 
 local function setup_tabs()
   if launched_as_scratch then
-    vim.t.custom_tabname = "dontclose"
+    vim.t.custom_tabname = dontclose_tabname
     -- fresh buffer to replace whatever a dashboard plugin could have opened at startup
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(
@@ -48,15 +49,15 @@ if launched_as_scratch then
     end,
   })
 
-  map("n", "<localleader>x", function()
-    if vim.t.custom_tabname == "dontclose" then
-      vim.notify("refusing to close the dontclose tab", vim.log.levels.WARN)
+  map("n", "<localleader>q", function()
+    if vim.t.custom_tabname == dontclose_tabname then
+      vim.notify("refusing to close the " .. dontclose_tabname .. " tab", vim.log.levels.WARN)
       return
     end
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     vim.fn.setreg("+", table.concat(lines, "\n"))
     vim.cmd("tabclose!")
-  end, { desc = "Close scratch tab, copy its content to clipboard, signal AHK", icon = "💃" })
+  end, { desc = "Close scratch, clip contents, signal AHK", icon = "💃" })
 
   local watcher = assert(vim.uv.new_timer(), "failed to create scratch-buffer timer")
   watcher:start(
