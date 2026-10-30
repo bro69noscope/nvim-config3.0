@@ -57,7 +57,7 @@ end
 ---Show the claude note(s) on the cursor line as real text in a float, so they can be selected
 ---and grepped. Closes itself once the source window is navigated away from.
 function M.peek()
-  local ns = require("scripts.ui.claude-notes.navigate").NAMESPACE
+  local ns = require("scripts.ui.claude-qf-notes.navigate").NAMESPACE
   local row = vim.api.nvim_win_get_cursor(0)[1] - 1
   local marks = vim.api.nvim_buf_get_extmarks(0, ns, { row, 0 }, { row, -1 }, { details = true })
 

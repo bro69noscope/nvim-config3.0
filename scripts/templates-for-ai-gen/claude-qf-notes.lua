@@ -17,10 +17,10 @@ local notes = {
 }
 
 -- for proper nvim ui navigation capabilities, these must match in the config with:
--- lua/scripts/ui/claude-notes/navigate.lua
--- this script must be saved as ".claude-notes.lua" (NOTES_FILE in navigate.lua)
-local NAMESPACE = vim.api.nvim_create_namespace("claude_notes")
-local QFLIST_TITLE = "claude_notes_qf"
+-- lua/scripts/ui/claude-qf-notes/navigate.lua
+-- this script must be saved as ".claude-qf-notes.lua" (NOTES_FILE in navigate.lua)
+local NAMESPACE = vim.api.nvim_create_namespace("claude_qf_notes")
+local QFLIST_TITLE = "claude_qf_notes"
 
 for _, b in ipairs(vim.api.nvim_list_bufs()) do
   vim.api.nvim_buf_clear_namespace(b, NAMESPACE, 0, -1)

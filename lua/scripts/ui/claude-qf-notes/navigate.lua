@@ -1,13 +1,13 @@
 local M = {}
 
 -- these must match the values in the template script:
--- scripts/templates-for-ai-gen/claude-notes.lua
-M.NAMESPACE = vim.api.nvim_create_namespace("claude_notes")
-local QFLIST_TITLE = "claude_notes_qf"
-local NOTES_FILE = ".claude-notes.lua"
+-- scripts/templates-for-ai-gen/claude-qf-notes.lua
+M.NAMESPACE = vim.api.nvim_create_namespace("claude_qf_notes")
+local QFLIST_TITLE = "claude_qf_notes"
+local NOTES_FILE = ".claude-qf-notes.lua"
 
 local function mark_key()
-  return Automated_marks.claude_notes_step.key
+  return Automated_marks.claude_qf_notes_step.key
 end
 
 local function find_list_nr()

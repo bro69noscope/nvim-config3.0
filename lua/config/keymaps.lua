@@ -418,17 +418,17 @@ end, { desc = "Add current line to quickfix" })
 
 -- go to the last visited ai notes step, regenerating the notes first if the file has changed
 map("n", "<leader>cn", function()
-  require("scripts.ui.claude-notes.navigate").open()
+  require("scripts.ui.claude-qf-notes.navigate").open()
 end, { desc = "Open ai notes with qflist at last step", icon = "" })
 
 -- show the ai note on the cursor line as real text in a float
 map("n", "<leader>cs", function()
-  require("scripts.ui.claude-notes.expand-note").peek()
+  require("scripts.ui.claude-qf-notes.expand-note").peek()
 end, { desc = "Peek ai note as real text" })
 
 -- clear the ai notes virtual text
 map("n", "<leader>cq", function()
-  require("scripts.ui.claude-notes.navigate").clear()
+  require("scripts.ui.claude-qf-notes.navigate").clear()
 end, { desc = "Clear claude notes" })
 
 -- search visual selection in snacks pickers
