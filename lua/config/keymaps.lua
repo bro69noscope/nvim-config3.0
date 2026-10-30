@@ -1,5 +1,13 @@
 local map = require("scripts.ui.whichkey-map").map
 
+-- important remap to work with glove80 special layout
+-- treat {} like [] for mirrored bracket navigation
+map({ "n", "x", "o" }, "{", "[", { remap = true })
+map({ "n", "x", "o" }, "}", "]", { remap = true })
+-- remap () to {} for paragraph navigation
+map({ "n", "x", "o" }, "(", "{zz")
+map({ "n", "x", "o" }, ")", "}zz")
+
 -- Remove [] bloat
 vim.keymap.del("n", "]t")
 vim.keymap.del("n", "[t")
@@ -67,7 +75,7 @@ end, { desc = "Clip buffer content & quit", icon = "📋", silent = true })
 
 -- save with C-S
 map("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
--- cannot differentiate between C-S and C-s.
+-- noa save
 map(
   "n",
   "<leader><C-s>",
@@ -81,8 +89,8 @@ map("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and center" })
 map("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and center" })
 map("n", "<C-O>", "<C-O>zz", { desc = "Jump back and center" })
 map("n", "<C-I>", "<C-I>zz", { desc = "Jump forward and center" })
-map("n", "{", "{zz", { desc = "Previous paragraph and center" })
-map("n", "}", "}zz", { desc = "Next paragraph and center" })
+-- map("n", "{", "{zz", { desc = "Previous paragraph and center" })
+-- map("n", "}", "}zz", { desc = "Next paragraph and center" })
 map("n", "n", "nzz", { desc = "Next search and center" })
 map("n", "N", "Nzz", { desc = "Previous search and center" })
 map("n", "*", "*zz", { desc = "Search word under cursor and center" })
