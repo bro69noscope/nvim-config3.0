@@ -135,6 +135,8 @@ return {
         end
         word = vim.fn.escape(word, "\\/.*$^~[]")
         Snacks.picker.grep_word({
+          title = "Grep word (bounded)",
+          _root_title = "Grep word (bounded)",
           regex = false,
           search = "\\b" .. word .. "\\b",
           args = {},
@@ -302,6 +304,8 @@ return {
     { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
     { "<leader>s,", function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
     { "<leader>sw", function() Snacks.picker.grep_word({
+      title = "Grep word",
+      _root_title = "Grep word",
       regex = false,
       args = {},
       show_empty = true,

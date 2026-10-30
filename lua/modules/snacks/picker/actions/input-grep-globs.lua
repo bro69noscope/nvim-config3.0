@@ -57,6 +57,10 @@ end
 local function carry_scope(picker, config, base)
   local o = picker.opts
   config.cwd = o.cwd
+  config.show_empty = o.show_empty
+  config.regex = o.regex
+  config.args = o.args
+  config._root_title = o._root_title
   config._scope = o._scope
   config.filter = type(o.filter) == "table" and o.filter or nil
   base = base or o._base_title
@@ -108,11 +112,13 @@ M.make_action = function(dirs, title, source)
       if dirs then
         config_w_globs.dirs = dirs
       end
-      local base = title
+      local root = title or picker.opts._root_title or "Grep"
+      local base = root
       if #patterns > 0 then
-        base = (title or "Grep") .. " (" .. table.concat(patterns, ", ") .. ")"
+        base = root .. " (" .. table.concat(patterns, ", ") .. ")"
       end
       carry_scope(picker, config_w_globs, base)
+      config_w_globs._root_title = root
       config_w_globs.win = {
         input = { keys = setup_picker_keys.setup_grep_input_keys(dirs, title, resolved_source) },
       }
