@@ -10,6 +10,8 @@ M.powershell_es = {
       .. vim.fn.stdpath("data")
       .. "/mason/packages/powershell-editor-services/PowerShellEditorServices/Start-EditorServices.ps1' "
       .. "-Stdio "
+      .. "-LogLevel Warning " -- required: script errors on $null LogLevel and exits
+      .. "-HostName nvim -HostProfileId 0 -HostVersion 1.0.0 "
       .. "-SessionDetailsPath '"
       .. vim.fn.stdpath("cache")
       .. "/powershell-es/PowerShellEditorServices.json'",
