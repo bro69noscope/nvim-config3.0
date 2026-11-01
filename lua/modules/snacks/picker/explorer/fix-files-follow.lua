@@ -51,6 +51,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 -- this introduced a regression where the explorer would not follow the current file when changing
 -- cwd, so we fix this with a guard then, lol:
+-- TODO: PRIO3: check if this is the cause of lag when opening a lotta buffers at once
 
 vim.api.nvim_create_autocmd("DirChanged", {
   group = vim.api.nvim_create_augroup("snacks_explorer_cwd_refresh", { clear = true }),
