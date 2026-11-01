@@ -1,5 +1,20 @@
 local M = {}
 
+--- Push the full buffer text to powershell_es so its copy matches nvim's. Call right before
+--- formatting: after `:e` the server's copy can be stale and format edits would revert the file.
+function M.sync_buffer(bufnr)
+  for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "powershell_es" })) do
+    local ver = (vim.lsp.util.buf_versions[bufnr] or 0) + 1
+    vim.lsp.util.buf_versions[bufnr] = ver
+    c:notify("textDocument/didChange", {
+      textDocument = { uri = vim.uri_from_bufnr(bufnr), version = ver },
+      contentChanges = {
+        { text = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n") .. "\n" },
+      },
+    })
+  end
+end
+
 M.powershell_es = {
   cmd = {
     "pwsh",

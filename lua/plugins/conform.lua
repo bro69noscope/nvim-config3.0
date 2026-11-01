@@ -34,6 +34,11 @@ return {
         prepend_args = { "--parser", "css" },
       },
     },
-    format_on_save = {}, -- the key existing means it is enabled
+    format_on_save = function(bufnr)
+      if vim.bo[bufnr].filetype == "ps1" then
+        require("lang.powershell.lsp.powershell-lsp-settings").sync_buffer(bufnr)
+      end
+      return {}
+    end,
   },
 }
