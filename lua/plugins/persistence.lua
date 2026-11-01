@@ -15,8 +15,8 @@ return {
     { "<leader>ql", function() require("persistence").load({ last = true }) end,
     desc = "Restore Last Session", mode = { "n", "v" } },
 
-    { "<leader>qd", function() require("persistence").stop() end,
-    desc = "Don't Save Current Session", mode = { "n", "v" } },
+    { "<leader>qd", function() require("persistence").stop(); vim.cmd("qa") end,
+    desc = "Don't Save Current Session and Quit", mode = { "n", "v" } },
 
     { "<leader>qs", function() require("persistence").save() end,
     desc = "Save Session", mode = { "n", "v" } },
