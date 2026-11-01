@@ -43,6 +43,7 @@ function M.reveal_current()
     .system({ "git", "check-ignore", "-q", file }, { cwd = vim.fs.dirname(file) })
     :wait().code == 0
 
+  local opened = false
   if picker then
     if is_hidden then
       picker.opts.hidden = true
@@ -54,14 +55,23 @@ function M.reveal_current()
       picker:set_cwd(new_root)
     end
   elseif is_hidden or is_ignored or new_root then
+    -- The new picker is not registered/valid yet, so reveal called right after would not find it
+    -- and would open a second explorer without the flags.
+    opened = true
     Snacks.explorer.open({
       cwd = new_root,
       hidden = is_hidden or nil,
       ignored = is_ignored or nil,
+      on_show = function()
+        pcall(Snacks.explorer.reveal, { file = file })
+      end,
     })
   end
 
-  pcall(Snacks.explorer.reveal, { file = file })
+  if not opened then
+    pcall(Snacks.explorer.reveal, { file = file })
+  end
+
   vim.schedule(function()
     if vim.api.nvim_win_is_valid(win) then
       vim.schedule(function()
