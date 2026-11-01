@@ -26,7 +26,6 @@ M.set_cwd_to_project_root = function(opts)
   end
 
   vim.cmd("cd " .. vim.fn.fnameescape(root))
-  vim.notify("cwd: " .. root)
 end
 
 M.move_cwd_up_one_level = function()
