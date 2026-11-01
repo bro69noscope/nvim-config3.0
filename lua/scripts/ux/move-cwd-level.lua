@@ -1,6 +1,9 @@
 local M = {}
 
-M.set_cwd_to_project_root = function()
+---@param opts? { look_up?: boolean } look_up: when already at the git root, jump to a parent repo's root (default true)
+M.set_cwd_to_project_root = function(opts)
+  local look_up = vim.tbl_extend("force", { look_up = true }, opts or {}).look_up
+
   local cwd = vim.fn.getcwd()
   local root = vim.fs.root(0, ".git")
 
@@ -10,7 +13,7 @@ M.set_cwd_to_project_root = function()
   end
 
   -- Already at this root — look for a parent git repo instead
-  if vim.fs.normalize(root) == vim.fs.normalize(cwd) then
+  if look_up and vim.fs.normalize(root) == vim.fs.normalize(cwd) then
     local parent = vim.fs.dirname(root)
     local parent_root = vim.fs.root(parent, ".git")
 
