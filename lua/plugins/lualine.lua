@@ -42,24 +42,77 @@ return {
         return loc .. (excluded_ft[vim.bo.filetype] and "" or " ")
       end
 
+      -- width taken by everything in the statusline except the path (branch, grapple, x/y/z...).
+      -- Renders the statusline once with the path segment blanked (guard flag avoids recursion).
+      local measuring = false
+      local function other_width()
+        measuring = true
+        local ok, width = pcall(function()
+          local stl = require("lualine").statusline()
+          return vim.api.nvim_eval_statusline(stl, { maxwidth = 0 }).width
+        end)
+        measuring = false
+        return ok and width or 80
+      end
+
+      -- TODO: PRIO4: figure out smthing cleaner for this whole func & its helpers
       local function truncate_path()
+        if measuring then
+          return ""
+        end
+
         local filename = vim.fn.expand("%:t")
         local relative_path = vim.fn.expand("%:.")
         local dir = vim.fn.fnamemodify(relative_path, ":h")
         local separator = OnWindows and "\\" or "/"
-        local full_path_len = #vim.fn.expand("%:p")
 
-        if dir ~= "." and full_path_len > 100 then
-          local parts = vim.split(dir, separator, { plain = true })
-          local parents_kept = 2
-          local shorten_len = full_path_len > 140 and 3 or 5
+        if dir ~= "." then
+          -- budget = free columns after all other segments, the filename and the separator
+          local budget = vim.o.columns - other_width() - vim.fn.strdisplaywidth(filename) - 1 - 3
+          budget = math.max(budget, 8)
 
-          if #parts > parents_kept then
-            for i = 1, #parts - parents_kept do
-              parts[i] = parts[i]:sub(1, shorten_len)
+          if vim.fn.strdisplaywidth(dir) > budget then
+            -- outside cwd, paths can mix "/" and "\" (or be "~/..."), so split on both
+            local parts = vim.split(dir, "[/\\]")
+            parts = vim.tbl_filter(function(p)
+              return p ~= ""
+            end, parts)
+            if dir:match("^[/\\]") then
+              parts[1] = separator .. (parts[1] or "")
             end
+            local parents_kept = 2
+
+            -- 1) shorten leading dirs, progressively harder
+            for _, shorten_len in ipairs({ 5, 3, 2, 1 }) do
+              for i = 1, #parts - parents_kept do
+                parts[i] = parts[i]:sub(1, shorten_len)
+              end
+              if vim.fn.strdisplaywidth(table.concat(parts, separator)) <= budget then
+                break
+              end
+            end
+
+            -- 2) still too long: drop leading dirs
+            local ellipsis = false
+            while
+              #parts > 1
+              and vim.fn.strdisplaywidth(table.concat(parts, separator)) + (ellipsis and 2 or 0)
+                > budget
+            do
+              table.remove(parts, 1)
+              ellipsis = true
+            end
+
+            dir = table.concat(parts, separator)
+
+            -- 3) single remaining dir still too long: cut from the left
+            if vim.fn.strdisplaywidth(dir) + (ellipsis and 2 or 0) > budget then
+              dir = dir:sub(-math.max(1, budget - 2))
+              ellipsis = true
+            end
+
+            dir = (ellipsis and ("…" .. separator) or "") .. dir
           end
-          dir = table.concat(parts, separator)
         end
 
         return table.concat({ dir, separator, "%#LualineFilename#", filename, "%*" })
@@ -117,24 +170,25 @@ return {
             return not status_line_ovverridden()
           end,
         },
-        {
-          function()
-            local buffer_marks = vim.fn.getmarklist(vim.api.nvim_get_current_buf())
-            local buffer_letters = {}
-
-            for _, mark in ipairs(buffer_marks) do
-              local letter = mark.mark:sub(2, 2)
-              if letter:match("[a-z]") then
-                table.insert(buffer_letters, letter)
-              end
-            end
-
-            return #buffer_letters > 0 and table.concat(buffer_letters, "") or ""
-          end,
-          cond = function()
-            return not status_line_ovverridden()
-          end,
-        },
+        -- {
+        --   function()
+        --     local buffer_marks = vim.fn.getmarklist(vim.api.nvim_get_current_buf())
+        --     local buffer_letters = {}
+        --
+        --     for _, mark in ipairs(buffer_marks) do
+        --       local letter = mark.mark:sub(2, 2)
+        --       if letter:match("[a-z]") then
+        --         table.insert(buffer_letters, letter)
+        --       end
+        --     end
+        --
+        --     return #buffer_letters > 0 and table.concat(buffer_letters, "") or ""
+        --   end,
+        --   cond = function()
+        --     return not status_line_ovverridden()
+        --   end,
+        -- },
+        -- NOTE: local marks turned off for now to make room
       }
 
       table.insert(config.sections.lualine_x, 1, {
