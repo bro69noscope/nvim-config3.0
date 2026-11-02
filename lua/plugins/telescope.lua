@@ -11,11 +11,11 @@ return {
   event = "VeryLazy",
   keys = {
     {
-      "g<Space>",
+      "g/",
       function()
         require("telescope").extensions.grapple.tags()
       end,
-      desc = "Grapple tags",
+      desc = "Pick Grapple tags",
     },
   },
   config = function()

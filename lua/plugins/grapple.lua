@@ -14,7 +14,7 @@ return {
   event = { "BufReadPost", "BufNewFile" },
   cmd = "Grapple",
   keys = {
-    { "gA", "<cmd>Grapple toggle<cr>", desc = "Grapple toggle tag" },
+    { "g<Space>", "<cmd>Grapple toggle<cr>", desc = "Grapple toggle tag" },
     {
       "gG",
       function()
@@ -23,8 +23,8 @@ return {
       end,
       desc = "Grapple wipe tags and add current file",
     },
-    { "gH", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
-    { "gQ", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
+    { "gT", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
+    { "gS", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
     { "g1", "<cmd>Grapple select index=1<cr>", desc = "Grapple select 1" },
     { "g2", "<cmd>Grapple select index=2<cr>", desc = "Grapple select 2" },
     { "g3", "<cmd>Grapple select index=3<cr>", desc = "Grapple select 3" },
