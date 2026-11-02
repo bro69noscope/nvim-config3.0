@@ -403,7 +403,7 @@ map("n", "<M-BS>", function()
 end, { desc = "Move cwd down one level" })
 
 -- set cwd to project root (git root)
-map("n", "<leader>*", function()
+map("n", "<leader>`", function()
   require("scripts.ux.move-cwd-level").set_cwd_to_project_root()
 end, { desc = "Set cwd to project root" })
 
