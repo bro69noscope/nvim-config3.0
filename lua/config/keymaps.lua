@@ -250,10 +250,6 @@ end, { desc = "Yank current working directory to clipboard" })
 
 -- Various uitilities
 local various_utils = require("scripts.utils.various-utils")
-map("n", "<leader>uf", function()
-  require("scripts.ui.transform-windows").make_window_floating()
-end, { desc = "Make window floating" })
-
 map("n", "<Leader>ub", function()
   various_utils.capture_current_buffer_info()
 end, { desc = "Get current buffer info" })
