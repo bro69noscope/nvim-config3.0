@@ -1,3 +1,5 @@
+local backdrop = require("scripts.ui.create-backdrop-window")
+
 local M = {}
 M.make_window_floating = function()
   local win = vim.api.nvim_get_current_win()
@@ -11,6 +13,10 @@ M.make_window_floating = function()
     col = math.floor((vim.o.columns - width) / 2),
     row = math.floor((vim.o.lines - height) / 2) - 1,
     border = "single",
+    zindex = 50,
   })
+
+  local handle = backdrop.open({ zindex = 40 })
+  backdrop.link_to_window(win, handle)
 end
 return M
