@@ -1,10 +1,56 @@
+-- NOTE: unreviewed ai code
 local M = {}
 
-M.convert_path_separators = function()
-  -- Get content from unnamed register (last yank/delete)
-  local content = vim.fn.getreg('"')
+-- Returns the CURRENT visual selection as { lines, replace_fn }, or nil when not in visual
+-- mode (replace_fn nil if unsupported, e.g. blockwise)
+local function get_visual_selection()
+  local vmode = vim.fn.mode()
+  if not vmode:match("^[vV\22]") then
+    return nil
+  end
+  local spos, epos = vim.fn.getpos("v"), vim.fn.getpos(".")
+  -- selection may be made backwards
+  if spos[2] > epos[2] or (spos[2] == epos[2] and spos[3] > epos[3]) then
+    spos, epos = epos, spos
+  end
+  local src_buf = vim.api.nvim_get_current_buf()
+  local lines = vim.fn.getregion(spos, epos, { type = vmode })
+  if #lines == 0 then
+    return nil
+  end
+  -- leave visual mode so the float opens from normal mode
+  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
 
-  -- Check if register is empty
+  local replace_fn
+  if vmode == "V" then
+    replace_fn = function(new_lines)
+      vim.api.nvim_buf_set_lines(src_buf, spos[2] - 1, epos[2], false, new_lines)
+    end
+  elseif vmode == "v" then
+    local last = vim.api.nvim_buf_get_lines(src_buf, epos[2] - 1, epos[2], false)[1] or ""
+    local ecol = math.min(epos[3], #last)
+    -- include the full (possibly multibyte) last character
+    local end_col = ecol - 1 + #vim.fn.strcharpart(last:sub(ecol), 0, 1)
+    replace_fn = function(new_lines)
+      vim.api.nvim_buf_set_text(src_buf, spos[2] - 1, spos[3] - 1, epos[2] - 1, end_col, new_lines)
+    end
+  end
+  return { lines = lines, replace_fn = replace_fn }
+end
+
+-- In visual mode: operate on the current selection. Otherwise: the unnamed register.
+M.convert_path_separators = function()
+  local selection = get_visual_selection()
+  local content
+
+  if selection then
+    content = table.concat(selection.lines, "\n")
+  else
+    -- Get content from unnamed register (last yank/delete)
+    content = vim.fn.getreg('"')
+  end
+
+  -- Check if content is empty
   if content == "" then
     vim.notify("Empty register! Copy/cut some text first.", vim.log.levels.WARN)
     return
@@ -89,11 +135,12 @@ M.convert_path_separators = function()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     vim.fn.setreg('"', table.concat(lines, "\n"))
     vim.api.nvim_win_close(win, true)
-    vim.notify(
-      'Result copied to "" register',
-      vim.log.levels.INFO,
-      { title = "Path Separator Converter" }
-    )
+    local msg = 'Result copied to "" register'
+    if selection and selection.replace_fn then
+      selection.replace_fn(lines)
+      msg = 'Selection replaced, result also in "" register'
+    end
+    vim.notify(msg, vim.log.levels.INFO, { title = "Path Separator Converter" })
   end, opts)
 
   local function close_window()
