@@ -256,6 +256,25 @@ return {
       desc = "Git Status (+submodules)",
     },
 
+    -- log type files
+    {
+      "<leader>sl",
+      function()
+        Snacks.picker.files({
+          title = "Log files",
+          ignored = true,
+          transform = function(item)
+            local f = item.file:gsub("\\", "/"):lower()
+            f = "/" .. f
+            return f:match("%.log$") ~= nil
+              or f:find("/logs/", 1, true) ~= nil
+              or f:find("/log/", 1, true) ~= nil
+          end,
+        })
+      end,
+      desc = "Find .log files / log(s) folders",
+    },
+
     -- marks with only user marks a-z / A-Z. Exclude automated marks
     {
       "<leader>sm",
@@ -289,8 +308,6 @@ return {
     -- { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
     { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
-    { "<leader>sl", function() Snacks.picker.files({
-      title = "Log files", ft = "log", ignored = true }) end, desc = "Find .log files" },
     -- { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Buffers" },
     -- { "<leader>fg", function() Snacks.picker.git_files() end, desc = "Find Git Files" },
     -- { "<leader>fp", function() Snacks.picker.projects() end, desc = "Projects" },
