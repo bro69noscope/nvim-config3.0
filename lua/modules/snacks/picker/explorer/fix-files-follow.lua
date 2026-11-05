@@ -19,6 +19,27 @@ M.refresh_after_cwd_change = function()
   vim.defer_fn(reopen_explorer, 100)
 end
 
+local reveal_timer = assert(vim.uv.new_timer())
+local pending_file
+local last_enter = 0
+local BURST_GAP_MS = 300
+local TRAILING_MS = 150
+
+local function reveal_latest()
+  local file = pending_file
+  pending_file = nil
+  if not file then
+    return
+  end
+
+  local explorer = Snacks.picker.get({ source = "explorer" })[1]
+  if not explorer or explorer.opts.follow_file == false then
+    return
+  end
+
+  pcall(Snacks.explorer.reveal, { file = file })
+end
+
 vim.api.nvim_create_autocmd("BufEnter", {
   group = vim.api.nvim_create_augroup("snacks_explorer_follow_file_fix", { clear = true }),
   callback = function(args)
@@ -40,7 +61,17 @@ vim.api.nvim_create_autocmd("BufEnter", {
       return
     end
 
-    pcall(Snacks.explorer.reveal, { file = bufname })
+    local now = vim.uv.now()
+    local is_burst = now - last_enter < BURST_GAP_MS
+    last_enter = now
+
+    pending_file = bufname
+    reveal_timer:stop()
+    if is_burst then
+      reveal_timer:start(TRAILING_MS, 0, vim.schedule_wrap(reveal_latest))
+    else
+      vim.schedule(reveal_latest)
+    end
 
     if vim.g.snacks_explorer_needs_cwd_refresh then
       vim.g.snacks_explorer_needs_cwd_refresh = false
@@ -51,8 +82,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 -- this introduced a regression where the explorer would not follow the current file when changing
 -- cwd, so we fix this with a guard then, lol:
--- TODO: PRIO3: check if this is the cause of lag when opening a lotta buffers at once
-
 vim.api.nvim_create_autocmd("DirChanged", {
   group = vim.api.nvim_create_augroup("snacks_explorer_cwd_refresh", { clear = true }),
   callback = function()
