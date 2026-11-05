@@ -132,7 +132,7 @@ local function spawn_wezterm(cwd)
     return
   end
 
-  vim.notify("Spawning WezTerm with bin: " .. bin, vim.log.levels.DEBUG)
+  -- vim.notify("Spawning WezTerm with bin: " .. bin, vim.log.levels.DEBUG)
 
   local err = {}
   local sock = main_socket(bin)
