@@ -7,8 +7,7 @@ Logger.init()
 Logger.set_level("DEBUG")
 RepeatablePairs.setup()
 
-require("config.reserved") -- important to check out if unfamiliar with the config
-require("config.global-keymaps")
+require("config.global-settings")
 require("config.os-config")
 require("config.options")
 require("config.lazy")
