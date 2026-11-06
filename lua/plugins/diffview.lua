@@ -10,178 +10,22 @@ return {
   },
   cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory", "DiffviewLog" },
   config = function()
-    -- For reference, default highlight group values
-    -- DiffviewFilePanelInsertions = {
-    --   default = true,
-    --   link = "diffAdded",
-    -- }
-    --
-    -- diffAdded = {
-    --   bg = "#273849",
-    --   fg = "#B8DB87",
-    -- }
-    -- DiffviewFilePanelDeletions = {
-    --   default = true,
-    --   link = "diffRemoved",
-    -- }
-    --
-    -- diffRemoved = {
-    --   bg = "#3A273A",
-    --   fg = "#E26A75",
-    -- }
-    -- DiffviewStatusModified = {
-    --   default = true,
-    --   link = "diffChanged",
-    -- }
-    --
-    -- DiffviewStatusCopied = {
-    --   default = true,
-    --   link = "diffChanged",
-    -- }
-    --
-    -- DiffviewStatusRenamed = {
-    --   default = true,
-    --   link = "diffChanged",
-    -- }
-    --
-    -- diffChanged = {
-    --   bg = "#252A3F",
-    --   fg = "#7CA1F2",
-    -- }
-
-    vim.api.nvim_set_hl(0, "DiffviewFilePanelInsertions", { fg = "#B8DB87", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusAdded", { fg = "#B8DB87", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusUntracked", { fg = "#B8DB87", bg = "NONE" })
-
-    vim.api.nvim_set_hl(0, "DiffviewFilePanelDeletions", { fg = "#E26A75", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusBroken", { fg = "#E26A75", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusDeleted", { fg = "#E26A75", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusUnknown", { fg = "#E26A75", bg = "NONE" })
-
-    vim.api.nvim_set_hl(0, "DiffviewStatusModified", { fg = "#7CA1F2", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusCopied", { fg = "#7CA1F2", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusRenamed", { fg = "#7CA1F2", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusUnmerged", { fg = "#7CA1F2", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "DiffviewStatusTypeChange", { fg = "#7CA1F2", bg = "NONE" })
-
-    vim.api.nvim_set_hl(0, "DiffviewFilePanelTitle", { link = "@markup.heading.1.markdown" })
-    vim.api.nvim_set_hl(0, "DiffviewFilePanelCounter", { link = "@markup.heading.1.markdown" })
-    vim.api.nvim_set_hl(0, "DiffviewFilePanelSelected", { link = "@variable.parameter" })
+    require("modules.diffview.highlights").setup()
+    require("modules.diffview.autocmds").setup()
 
     local actions = require("diffview.actions")
-    local default_wrap_state = vim.o.wrap
-    local diff_sanitize = require("scripts.ui.diff-sanitize")
+    local hooks = require("modules.diffview.hooks")
     local jump_sections = require("modules.diffview.jump-sections")
-
-    -- Close all diffview panels, then open the file at the cursor position we were at
-    local function close_and_jump()
-      local path, cursor
-
-      -- focus the diff window showing a real file (not a diffview:// buffer)
-      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-        if vim.wo[win].diff then
-          local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
-          if name ~= "" and not name:match("^diffview://") then
-            vim.api.nvim_set_current_win(win)
-            path = name
-            cursor = vim.api.nvim_win_get_cursor(win)
-            break
-          end
-        end
-      end
-
-      actions.close()
-
-      if path and path ~= "" then
-        vim.schedule(function()
-          if vim.fn.filereadable(path) == 1 then
-            if vim.fs.normalize(vim.api.nvim_buf_get_name(0)) ~= vim.fs.normalize(path) then
-              vim.cmd("edit " .. vim.fn.fnameescape(path))
-            end
-            if cursor then
-              pcall(vim.api.nvim_win_set_cursor, 0, cursor)
-              vim.cmd("normal! zz")
-            end
-          end
-        end)
-      end
-    end
-
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "DiffviewClose",
-      callback = function()
-        vim.o.wrap = default_wrap_state
-      end,
-    })
-
-    -- fix powershell_es lsp attaching to diffview buffers (again lol)
-    vim.api.nvim_create_autocmd("LspAttach", {
-      callback = function(args)
-        local bufnr = args.buf
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        local name = vim.api.nvim_buf_get_name(bufnr)
-
-        if client and client.name == "powershell_es" and name:match("^diffview://") then
-          vim.schedule(function()
-            vim.lsp.buf_detach_client(bufnr, client.id)
-          end)
-        end
-      end,
-    })
+    local change_nav = require("modules.diffview.change-nav")
+    local close_and_jump = require("modules.diffview.close-and-jump").close_and_jump
 
     require("diffview").setup({
       wrap_entries = false, -- Fork opt only
       hooks = {
-        --- @ diagnostic disable-next-line: unused-local
-        view_opened = function(view)
-          default_wrap_state = vim.o.wrap
-          diff_sanitize.disable_diff_features()
-
-          -- Name tabpage with diffview info
-          vim.schedule(function()
-            local tabpage = vim.api.nvim_get_current_tabpage()
-            vim.api.nvim_create_autocmd("User", {
-              pattern = "DiffviewDiffBufWinEnter",
-              callback = function()
-                if vim.api.nvim_get_current_tabpage() == tabpage then
-                  local filename = vim.fn.expand("%:t")
-                  if filename ~= "" and filename ~= "null" then
-                    vim.t.custom_tabname = "diffview: " .. filename
-                  end
-                end
-              end,
-            })
-          end)
-        end,
-
-        view_closed = function()
-          diff_sanitize.re_enable_diff_features()
-        end,
-
-        --- @ diagnostic disable-next-line: unused-local
-        diff_buf_read = function(bufnr)
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            vim.wo[win].winbar = ""
-            vim.wo[win].culopt = "number"
-            vim.wo[win].wrap = false
-          end
-        end,
-
-        --- @ diagnostic disable-next-line: unused-local
-        diff_buf_win_enter = function(bufnr, winid, ctx)
-          if ctx.layout_name:match("^diff2") then
-            if ctx.symbol == "a" then
-              vim.opt_local.winhl = table.concat({
-                "DiffAdd:DiffviewDiffAddAsDelete",
-                "DiffDelete:DiffviewDiffDelete",
-              }, ",")
-            elseif ctx.symbol == "b" then
-              vim.opt_local.winhl = table.concat({
-                "DiffDelete:DiffviewDiffDelete",
-              }, ",")
-            end
-          end
-        end,
+        view_opened = hooks.view_opened,
+        view_closed = hooks.view_closed,
+        diff_buf_read = hooks.diff_buf_read,
+        diff_buf_win_enter = hooks.diff_buf_win_enter,
       },
       enhanced_diff_hl = true,
       view = {
@@ -203,42 +47,11 @@ return {
             jump_sections.jump_to_next_section,
             { desc = "Jump between changes/staged sections" },
           },
-          {
-            "n",
-            NextDiffChangeBind,
-            function()
-              local cur_pos = vim.api.nvim_win_get_cursor(0)
-              vim.cmd("normal! ]c")
-              vim.cmd("normal! zz")
-              local new_pos = vim.api.nvim_win_get_cursor(0)
-              if cur_pos[1] == new_pos[1] and cur_pos[2] == new_pos[2] then
-                local last_change_pos = vim.api.nvim_win_get_cursor(0)
-                vim.cmd("normal! G")
-                local eof_pos = vim.api.nvim_win_get_cursor(0)
-                if last_change_pos[1] == eof_pos[1] and last_change_pos[2] == eof_pos[2] then
-                  actions.select_next_entry()
-                end
-              end
-            end,
-            { desc = "Next change or file" },
-          },
+          { "n", NextDiffChangeBind, change_nav.next_change, { desc = "Next change or file" } },
           {
             "n",
             PreviousDiffChangeBind,
-            function()
-              local cur_pos = vim.api.nvim_win_get_cursor(0)
-              vim.cmd("normal! [c")
-              vim.cmd("normal! zz")
-              local new_pos = vim.api.nvim_win_get_cursor(0)
-              if cur_pos[1] == new_pos[1] and cur_pos[2] == new_pos[2] then
-                local first_change_pos = vim.api.nvim_win_get_cursor(0)
-                vim.cmd("normal! gg")
-                local bof_pos = vim.api.nvim_win_get_cursor(0)
-                if first_change_pos[1] == bof_pos[1] and first_change_pos[2] == bof_pos[2] then
-                  actions.select_prev_entry()
-                end
-              end
-            end,
+            change_nav.prev_change,
             { desc = "Previous change or file" },
           },
         },
