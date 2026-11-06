@@ -10,6 +10,7 @@ M.input_grep_globs = require("modules.snacks.picker.actions.input-grep-globs")
 M.toggle_and_search = require("modules.snacks.picker.actions.toggle-grep-and-search")
 M.toggle_smartcase = require("modules.snacks.picker.actions.toggle-smartcase").toggle_case
 M.append_to_qflist = require("modules.snacks.picker.actions.append-to-qflist").qflist_append
+M.grapple_replace = require("modules.snacks.picker.actions.grapple-tag").grapple_replace
 M.persist_flags = require("modules.snacks.picker.persist-flags")
 M.grep_actions = require("modules.snacks.picker.actions.grep-actions")
 M.git_status_all = require("modules.snacks.picker.sources.git-status-all")
@@ -122,6 +123,9 @@ return {
     qflist_append = function(picker)
       M.append_to_qflist(picker)
     end,
+    grapple_replace = function(picker)
+      M.grapple_replace(picker)
+    end,
     flash = M.setup_flash,
     custom_toggle_hidden = function(picker)
       if not picker or not picker.opts then
@@ -157,6 +161,7 @@ return {
         ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_replace", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
         ["<F4>"] = { "scope_to_git", mode = { "n", "i" } },
@@ -170,6 +175,8 @@ return {
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["O"] = { { "pick_win", "jump" } },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_replace", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
         [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
