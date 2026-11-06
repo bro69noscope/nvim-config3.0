@@ -73,6 +73,40 @@ return {
     local diff_sanitize = require("scripts.ui.diff-sanitize")
     local jump_sections = require("modules.diffview.jump-sections")
 
+    -- Close all diffview panels, then open the file at the cursor position we were at
+    local function close_and_jump()
+      local path, cursor
+
+      -- focus the diff window showing a real file (not a diffview:// buffer)
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if vim.wo[win].diff then
+          local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
+          if name ~= "" and not name:match("^diffview://") then
+            vim.api.nvim_set_current_win(win)
+            path = name
+            cursor = vim.api.nvim_win_get_cursor(win)
+            break
+          end
+        end
+      end
+
+      actions.close()
+
+      if path and path ~= "" then
+        vim.schedule(function()
+          if vim.fn.filereadable(path) == 1 then
+            if vim.fs.normalize(vim.api.nvim_buf_get_name(0)) ~= vim.fs.normalize(path) then
+              vim.cmd("edit " .. vim.fn.fnameescape(path))
+            end
+            if cursor then
+              pcall(vim.api.nvim_win_set_cursor, 0, cursor)
+              vim.cmd("normal! zz")
+            end
+          end
+        end)
+      end
+    end
+
     vim.api.nvim_create_autocmd("User", {
       pattern = "DiffviewClose",
       callback = function()
@@ -161,6 +195,7 @@ return {
       keymaps = {
         view = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
+          { "n", "Q", close_and_jump, { desc = "Close diffview and jump to cursor pos" } },
           { "n", "-", actions.toggle_stage_entry, { desc = "Toggle stage file" } },
           {
             "n",
@@ -209,6 +244,7 @@ return {
         },
         file_panel = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
+          { "n", "Q", close_and_jump, { desc = "Close diffview and jump to cursor pos" } },
           { "n", "s", false, { desc = "diffview_ignore" } }, -- lets us use flash in diffview
           { "n", "-", actions.toggle_stage_entry, { desc = "Toggle stage file" } },
           { "n", "l", actions.focus_entry, { desc = "Open and focus file" } },
@@ -221,6 +257,7 @@ return {
         },
         file_history_panel = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
+          { "n", "Q", close_and_jump, { desc = "Close diffview and jump to cursor pos" } },
           { "n", "l", actions.focus_entry, { desc = "Open and focus file" } },
         },
       },

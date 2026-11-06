@@ -274,7 +274,10 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- close diff tabs with q or Q (special handlings)
 vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
   callback = function(args)
-    if vim.wo.diff then
+    -- diffview has its own q/Q keymaps
+    local lib = package.loaded["diffview.lib"]
+    local in_diffview = lib and lib.get_current_view() ~= nil
+    if vim.wo.diff and not in_diffview then
       local function close_diff_tab()
         pcall(vim.keymap.del, "n", "q", { buffer = args.buf })
         pcall(vim.keymap.del, "n", "Q", { buffer = args.buf })
