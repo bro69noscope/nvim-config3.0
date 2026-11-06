@@ -13,7 +13,7 @@ M.ahk2 = {
   },
   init_options = {
     locale = "en-us",
-    InterpreterPath = "C:/Users/ville/scoop/shims/autohotkey.exe",
+    InterpreterPath = "C:/Program Files/AutoHotkey/v2/AutoHotkey64.exe",
     FormatOptions = {
       -- preserve_newlines = true,
       wrap_line_length = 88,
