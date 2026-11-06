@@ -1,8 +1,7 @@
 local M = {}
 
--- Replace all tags in a grapple scope (nil = current scope) with the picker's
--- selected files (fallback: current item).
-M.grapple_replace = function(picker, scope)
+---@param switch? boolean also make `scope` the active scope afterwards
+M.grapple_replace = function(picker, scope, switch)
   local sel = picker:selected({ fallback = true })
   local paths = {}
 
@@ -23,10 +22,19 @@ M.grapple_replace = function(picker, scope)
     return
   end
 
+  if scope and not grapple.app().scope_manager:exists(scope) then
+    vim.notify(("Grapple: unknown scope '%s'"):format(scope), vim.log.levels.WARN)
+    return
+  end
+
   picker:close()
   grapple.reset({ scope = scope })
   for _, path in ipairs(paths) do
     grapple.tag({ path = path, scope = scope })
+  end
+
+  if switch and scope then
+    grapple.use_scope(scope, { notify = false })
   end
 
   vim.notify(("Grapple: tagged %d file(s)"):format(#paths))

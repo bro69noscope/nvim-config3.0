@@ -2,15 +2,32 @@ vim.api.nvim_set_hl(0, "GrappleActive", { fg = "#ff6186", bold = true })
 return {
   "cbochs/grapple.nvim",
   enabled = true,
-  opts = {
-    scope = "git", -- also try out "git_branch"
-    statusline = {
-      active = "%%#GrappleActive#[%s]%%#StatusLine#",
-      inactive = "%s",
-      icon = "󰛢",
-      include_icon = true,
-    },
-  },
+  opts = function()
+    return {
+      scope = GrappleDefaultScope,
+      scopes = {
+        {
+          name = GrappleDiffReviewScope,
+          desc = "Diff review tags (per git root)",
+          cache = { event = { "BufEnter", "FocusGained" }, debounce = 1000 },
+          resolver = function()
+            local git = vim.fs.find(".git", { upward = true, stop = vim.uv.os_homedir() })[1]
+            if not git then
+              return
+            end
+            local root = vim.fn.fnamemodify(git, ":h")
+            return root .. "#" .. GrappleDiffReviewScope, root
+          end,
+        },
+      },
+      statusline = {
+        active = "%%#GrappleActive#[%s]%%#StatusLine#",
+        inactive = "%s",
+        icon = "󰛢",
+        include_icon = true,
+      },
+    }
+  end,
   event = { "BufReadPost", "BufNewFile" },
   cmd = "Grapple",
   keys = {
@@ -23,8 +40,22 @@ return {
       end,
       desc = "Grapple wipe tags and add current file",
     },
-    { "gT", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags" },
-    { "gS", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple toggle scopes" },
+    {
+      "g_",
+      function()
+        require("grapple").use_scope(GrappleDiffReviewScope)
+      end,
+      desc = "Grapple use diff_review scope",
+    },
+    {
+      "g=",
+      function()
+        require("grapple").use_scope(GrappleDefaultScope)
+      end,
+      desc = "Grapple use default scope",
+    },
+    { "gL", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple list tags" },
+    { "gS", "<cmd>Grapple toggle_scopes<cr>", desc = "Grapple scopes" },
     { "g1", "<cmd>Grapple select index=1<cr>", desc = "Grapple select 1" },
     { "g2", "<cmd>Grapple select index=2<cr>", desc = "Grapple select 2" },
     { "g3", "<cmd>Grapple select index=3<cr>", desc = "Grapple select 3" },
@@ -35,7 +66,6 @@ return {
     { "g8", "<cmd>Grapple select index=8<cr>", desc = "Grapple select 8" },
     { "g9", "<cmd>Grapple select index=9<cr>", desc = "Grapple select 9" },
     { "g0", "<cmd>Grapple select index=10<cr>", desc = "Grapple select 10" },
-    -- idk about those, might use the key for smth else
     { "<Right>", "<cmd>Grapple cycle forward<cr>", desc = "Grapple cycle forward" },
     { "<Left>", "<cmd>Grapple cycle backward<cr>", desc = "Grapple cycle backward" },
   },
