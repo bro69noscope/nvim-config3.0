@@ -127,7 +127,7 @@ return {
       M.grapple_replace(picker, GrappleDefaultScope, true)
     end,
     grapple_diff_review = function(picker)
-      M.grapple_replace(picker, GrappleDiffReviewScope, true)
+      M.grapple_replace(picker, GrappleDiffReviewScope, true, true)
     end,
     flash = M.setup_flash,
     custom_toggle_hidden = function(picker)
