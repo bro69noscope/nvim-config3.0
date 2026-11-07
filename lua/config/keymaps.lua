@@ -330,6 +330,11 @@ map("n", "<leader>gol", function()
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "log" })
 end, { desc = "Open Lazygit logs in floating term" })
 
+-- Git pull current branch
+local gitpull = require("scripts.ux.gitpull")
+gitpull.setup({})
+map("n", "<leader>gu", gitpull.pull, { desc = "Git pull current branch" })
+
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
 map("n", "<leader>xo", function()
   require("scripts.ux.diagnose-multiple-buffers").open_buffers()
