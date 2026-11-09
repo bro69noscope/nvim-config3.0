@@ -175,6 +175,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
 })
 
 -- Quit certain buffer types with 'q', though not while in nvim visual multi
+-- TODO: add git blame form gitsigns to this
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown", "qf", "oil", "checkhealth", "help", "log", "grug-far" },
   callback = function()
