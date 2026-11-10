@@ -35,9 +35,13 @@ local function must(args, cwd, what, cb)
   end)
 end
 
+-- git add -A hashes every untracked, non-ignored file, so a big untracked directory (build output,
+-- a dependency folder nobody gitignored) makes a snapshot slow. Past this many, snapshot refuses.
+local UNTRACKED_LIMIT = 2000
+
 ---@param cwd string
 ---@param cb fun(sha: string?, err: string?) sha nil + err nil = nothing to snapshot
-local function snapshot(cwd, cb)
+local function take_snapshot(cwd, cb)
   local idx = vim.fn.tempname()
   local env = { GIT_INDEX_FILE = idx }
   local function done(sha, err)
@@ -81,6 +85,41 @@ local function snapshot(cwd, cb)
       end, env)
     end, env)
   end, env)
+end
+
+---@param cwd string
+---@param cb fun(sha: string?, err: string?) sha nil + err nil = nothing to snapshot
+local function snapshot(cwd, cb)
+  git({ "ls-files", "--others", "--exclude-standard", "-z" }, cwd, function(u)
+    local paths = u.code == 0 and vim.split(u.stdout, "\0", { plain = true, trimempty = true })
+      or {}
+    if #paths <= UNTRACKED_LIMIT then
+      return take_snapshot(cwd, cb)
+    end
+
+    local per_dir = {}
+    for _, p in ipairs(paths) do
+      local top = p:match("^([^/]+)/") or "(top level)"
+      per_dir[top] = (per_dir[top] or 0) + 1
+    end
+
+    local dirs = vim.tbl_keys(per_dir)
+    table.sort(dirs, function(a, b)
+      return per_dir[a] > per_dir[b]
+    end)
+
+    local top3 = vim.tbl_map(function(d)
+      return ("%s (%d)"):format(d, per_dir[d])
+    end, vim.list_slice(dirs, 1, 3))
+
+    cb(
+      nil,
+      (
+        "%d untracked files in %s (limit %d). Gitignore them, e.g. in .git/info/exclude, "
+        .. "then retry. Biggest: %s"
+      ):format(#paths, cwd, UNTRACKED_LIMIT, table.concat(top3, ", "))
+    )
+  end)
 end
 
 --- Tree of what is staged in cwd right now, so a later reset can put the staging back.
