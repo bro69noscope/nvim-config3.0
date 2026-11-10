@@ -46,7 +46,7 @@ return {
     -- scroll = { enabled = true },
     toggle = { enabled = true }, -- Setup is made in init, necessary? maybe idk why.
     statuscolumn = { enabled = true },
-    words = { enabled = true },
+    words = { enabled = true, jumplist = false },
     picker = require("modules.snacks.picker.picker-config"),
   },
   config = function(_, opts)
