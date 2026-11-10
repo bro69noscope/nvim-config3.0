@@ -69,6 +69,25 @@ local function snapshot(cwd, cb)
   end, env)
 end
 
+--- Tree of what is staged in cwd right now, so a later reset can put the staging back.
+--- Gives nil when nothing is staged or the index cannot be written (unmerged entries).
+---@param cwd string
+---@param cb fun(tree: string?)
+local function index_tree(cwd, cb)
+  git({ "write-tree" }, cwd, function(a)
+    if a.code ~= 0 then
+      return cb(nil)
+    end
+    local tree = vim.trim(a.stdout)
+    git({ "rev-parse", "HEAD^{tree}" }, cwd, function(b)
+      if b.code ~= 0 or vim.trim(b.stdout) == tree then
+        return cb(nil)
+      end
+      cb(tree)
+    end)
+  end)
+end
+
 --- Parse `git worktree list --porcelain`; the first entry is always the main checkout.
 ---@param out string
 ---@return Worktree[]
@@ -242,48 +261,76 @@ function M.pull_from_llm_worktree()
     end
 
     local function run(wt)
-      snapshot(wt.path, function(sha, err)
-        if err then
-          notify("Snapshot failed, merging committed work only:\n" .. err, vim.log.levels.WARN)
+      index_tree(main.path, function(staged)
+        local hint = ""
+        if staged then
+          hint = "\nYour staging from before the pull: git read-tree " .. staged
+          Logger.info("main's staged state saved as tree " .. staged, CTX)
         end
-        local ref = sha or wt.branch
-        Logger.info(
-          ("Squash-merging %s%s into main..."):format(wt.branch, sha and " + uncommitted" or ""),
-          CTX
-        )
-        git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
-          local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
-          if r.code == 0 then
-            git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
-              local unmerged = vim.trim(u.stdout or "")
-              if unmerged ~= "" then
-                notify(
-                  "Merged, but conflicts remain (resolve with git tooling, then `git reset`):\n"
-                    .. unmerged,
-                  vim.log.levels.WARN
-                )
-                return vim.cmd("checktime")
-              end
-              git({ "reset", "-q" }, main.path, function()
-                Logger.info("git merge output:\n" .. out, CTX)
-                notify(("Merged %s into main as unstaged changes"):format(wt.branch))
+
+        snapshot(wt.path, function(sha, err)
+          if err then
+            notify("Snapshot failed, merging committed work only:\n" .. err, vim.log.levels.WARN)
+          end
+          local ref = sha or wt.branch
+          Logger.info(
+            ("Squash-merging %s%s into main..."):format(wt.branch, sha and " + uncommitted" or ""),
+            CTX
+          )
+
+          git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
+            local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
+            if r.code == 0 then
+              git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                local unmerged = vim.trim(u.stdout or "")
+                if unmerged ~= "" then
+                  notify(
+                    "Merged, but conflicts remain (resolve with git tooling, then `git reset`):\n"
+                      .. unmerged
+                      .. hint,
+                    vim.log.levels.WARN
+                  )
+                  return vim.cmd("checktime")
+                end
+
+                -- index back to what was staged before (HEAD when nothing was); files stay as
+                -- merged
+                local reset = staged and { "read-tree", staged } or { "reset", "-q" }
+                git(reset, main.path, function(z)
+                  Logger.info("git merge output:\n" .. out, CTX)
+                  if z.code ~= 0 then
+                    notify(
+                      "Merged, but restoring your staging failed:\n"
+                        .. vim.trim(z.stderr or "")
+                        .. hint,
+                      vim.log.levels.WARN
+                    )
+                  else
+                    notify(
+                      ("Merged %s into main as unstaged changes%s"):format(
+                        wt.branch,
+                        staged and ", your staged changes kept" or ""
+                      )
+                    )
+                  end
+                  vim.cmd("checktime")
+                end)
+              end)
+            else
+              git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                local unmerged = vim.trim(u.stdout or "")
+                if unmerged ~= "" then
+                  notify(
+                    "Conflicts (resolve with git tooling, then `git reset`):\n" .. unmerged .. hint,
+                    vim.log.levels.WARN
+                  )
+                else
+                  notify("Merge not applied:\n" .. out, vim.log.levels.ERROR)
+                end
                 vim.cmd("checktime")
               end)
-            end)
-          else
-            git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
-              local unmerged = vim.trim(u.stdout or "")
-              if unmerged ~= "" then
-                notify(
-                  "Conflicts (resolve with git tooling, then `git reset`):\n" .. unmerged,
-                  vim.log.levels.WARN
-                )
-              else
-                notify("Merge not applied:\n" .. out, vim.log.levels.ERROR)
-              end
-              vim.cmd("checktime")
-            end)
-          end
+            end
+          end)
         end)
       end)
     end
