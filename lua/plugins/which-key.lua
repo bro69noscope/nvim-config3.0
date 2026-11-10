@@ -93,6 +93,11 @@ return {
         icon = { icon = "󰒒", color = "blue" },
       },
 
+      -- AI
+      { "<leader>a", group = "[A]I", icon = { icon = "󰚩", color = "blue" } },
+
+      { "<leader>i", group = "A[I] custom", icon = { icon = "󰚩", color = "red" } },
+
       -- single actions
       {
         PickProjectBind,

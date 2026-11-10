@@ -335,6 +335,30 @@ local gitpull = require("scripts.ux.gitpull")
 gitpull.setup({})
 map("n", "<leader>gu", gitpull.pull, { desc = "Git pull current branch" })
 
+-- Jump to / live-diff the same file in another worktree (same line, picker if several)
+map("n", "<leader>gj", function()
+  require("scripts.ux.worktree-jump").jump()
+end, { desc = "Jump to same file in another worktree" })
+
+map("n", "<leader>gJ", function()
+  require("scripts.ux.worktree-jump").jump({ diff = true })
+end, { desc = "Diff same file against another worktree" })
+
+-- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
+map("n", "<leader>ip", function()
+  require("scripts.ux.worktreemerge").pull_from_llm_worktree()
+end, { desc = "Pull LLM worktree's work into main" })
+
+-- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
+map("n", "<leader>is", function()
+  require("scripts.ux.worktreemerge").overwrite_llm_worktree()
+end, { desc = "Overwrite LLM worktree with main" })
+
+-- Stage the hunks of my unstaged changes that the LLM worktree doesn't have
+map("n", "<leader>ih", function()
+  require("scripts.ux.worktreemerge").stage_unshared_hunks()
+end, { desc = "Stage my hunks missing from LLM worktree" })
+
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
 map("n", "<leader>xo", function()
   require("scripts.ux.diagnose-multiple-buffers").open_buffers()
@@ -560,3 +584,5 @@ end, { desc = "Show current cwd" })
 map({ "n", "t", "i" }, "<m-m>", function()
   require("scripts.ux.maximize-to-float").toggle_max_float()
 end, { desc = "Toggle maximized terminal", icon = "" })
+
+-- CLAUDE BOTTOM COMMENT: added at end of file in worktree, uncommitted, pull in with <leader>gw

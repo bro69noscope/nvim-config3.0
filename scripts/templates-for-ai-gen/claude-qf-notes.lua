@@ -2,17 +2,17 @@ local notes = {
   {
     file = "path/to/file.ext",
     line = 10,
-    text = "[1] START: what this code does and why it matters",
+    text = "[1] START(a3): what this code does and why it matters",
   },
   {
     file = "path/to/file.ext",
     line = 20,
-    text = "[1] END: what it hands off to",
+    text = "[1] END(a3): what it hands off to",
   },
   {
     file = "path/to/other_file.ext",
     line = 5,
-    text = "[2] START: single-line location, no end note",
+    text = "[2] START(a3): single-line location, no end note",
   },
 }
 
@@ -60,7 +60,7 @@ for _, n in ipairs(notes) do
 
   local line = vim.api.nvim_buf_get_lines(buf, n.line - 1, n.line, false)[1] or ""
   local indent = line:match("^%s*")
-  local is_end = n.text:find("^%[%d+%] END:") ~= nil
+  local is_end = n.text:find("^%[%d+%] END%(%x%x%):") ~= nil
   local width = math.max(MAX_WIDTH - vim.fn.strdisplaywidth(indent), 20)
   local virt_lines = {}
 
