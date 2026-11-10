@@ -14,5 +14,9 @@ return {
   config = function(_, opts)
     require("match-up").setup(opts)
     vim.keymap.del("i", "<C-G>%") -- invasive keymap for imode c-g binds
+    for _, mode in ipairs({ "n", "x", "o" }) do
+      pcall(vim.keymap.del, mode, "g%")
+      vim.keymap.set(mode, "<C-%>", "<plug>(matchup-g%)", { desc = "matchup: reverse %" })
+    end
   end,
 }
