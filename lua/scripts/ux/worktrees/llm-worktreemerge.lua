@@ -21,6 +21,20 @@ local function git(args, cwd, cb, env)
   )
 end
 
+--- git that ends the whole chain with an error popup when it fails; cb gets the trimmed stdout.
+---@param args string[]
+---@param cwd string
+---@param what string what the call was for, used in the error message
+---@param cb fun(out: string)
+local function must(args, cwd, what, cb)
+  git(args, cwd, function(r)
+    if r.code ~= 0 then
+      return notify(("%s failed:\n%s"):format(what, vim.trim(r.stderr or "")), vim.log.levels.ERROR)
+    end
+    cb(vim.trim(r.stdout or ""))
+  end)
+end
+
 ---@param cwd string
 ---@param cb fun(sha: string?, err: string?) sha nil + err nil = nothing to snapshot
 local function snapshot(cwd, cb)
@@ -373,80 +387,62 @@ function M.overwrite_llm_worktree()
     end
 
     local function run(wt)
-      local function backup_and_reset(cb)
-        snapshot(wt.path, function(sha, err)
-          if err then
+      local function do_merge()
+        Logger.info(("Mirroring %s onto %s..."):format(main.branch, wt.branch), CTX)
+        snapshot(wt.path, function(wsha, werr)
+          if werr then
             return notify(
-              "Could not snapshot the LLM's edits in the worktree, nothing changed:\n" .. err,
+              "Could not snapshot the worktree, nothing changed:\n" .. werr,
               vim.log.levels.ERROR
             )
           end
-          local function reset()
-            git({ "reset", "--hard" }, wt.path, function(r)
-              if r.code ~= 0 then
-                return notify(
-                  "reset --hard failed:\n" .. vim.trim(r.stderr or ""),
-                  vim.log.levels.ERROR
+          must({ "rev-parse", "HEAD" }, wt.path, "rev-parse HEAD in the worktree", function(wtip)
+            must({ "rev-parse", "HEAD" }, main.path, "rev-parse HEAD in main", function(mhead)
+              snapshot(main.path, function(msha, merr)
+                if merr then
+                  return notify(
+                    "Could not snapshot main, nothing changed:\n" .. merr,
+                    vim.log.levels.ERROR
+                  )
+                end
+                -- the snapshot has the branch tip as its parent, so the committed work stays
+                -- reachable
+                local ref = "refs/wt-backup/"
+                  .. os.date("%Y%m%d-%H%M%S")
+                  .. ("-%03d"):format(math.floor(vim.uv.hrtime() / 1e6) % 1000)
+                must(
+                  { "update-ref", ref, wsha or wtip },
+                  wt.path,
+                  "backing up the worktree",
+                  function()
+                    Logger.info("worktree backed up as " .. ref, CTX)
+                    local steps = { { "reset", "--hard", msha or mhead }, { "clean", "-fd" } }
+                    if msha then
+                      table.insert(steps, { "reset", "-q", mhead })
+                    end
+                    local function step(i)
+                      local s = steps[i]
+                      if not s then
+                        return notify(
+                          (
+                            "%s now mirrors %s.\n"
+                            .. "What it had is saved as %s (restore files: git checkout %s -- .)"
+                          ):format(wt.branch, main.branch, ref, ref)
+                        )
+                      end
+                      must(
+                        s,
+                        wt.path,
+                        "git " .. table.concat(s, " ") .. " (worktree saved as " .. ref .. ")",
+                        function()
+                          step(i + 1)
+                        end
+                      )
+                    end
+                    step(1)
+                  end
                 )
-              end
-              cb()
-            end)
-          end
-          if not sha then
-            return reset()
-          end
-          local ref = "refs/wt-backup/" .. os.date("%Y%m%d-%H%M%S")
-          git({ "update-ref", ref, sha }, wt.path, function(u)
-            if u.code ~= 0 then
-              return notify(
-                "Could not back up the LLM's uncommitted edits in the worktree, nothing changed:\n"
-                  .. vim.trim(u.stderr or ""),
-                vim.log.levels.ERROR
-              )
-            end
-            notify(
-              "The LLM's uncommitted edits in the worktree saved as "
-                .. ref
-                .. " (restore: git checkout "
-                .. ref
-                .. " -- .)"
-            )
-            reset()
-          end)
-        end)
-      end
-
-      local function merge_ref(ref, label, cb)
-        git({ "merge", "--no-edit", "-X", "theirs", ref }, wt.path, function(r)
-          local out = vim.trim(r.stdout .. "\n" .. r.stderr)
-          if r.code ~= 0 then
-            return git({ "merge", "--abort" }, wt.path, function()
-              notify(label .. " failed, merge aborted:\n" .. out, vim.log.levels.ERROR)
-            end)
-          end
-          Logger.info(label .. ": " .. out, CTX)
-          if cb then
-            cb()
-          end
-        end)
-      end
-
-      local function do_merge()
-        Logger.info(("Overwriting %s with %s (main wins)..."):format(wt.branch, main.branch), CTX)
-        local function done()
-          notify(("%s now matches %s (main wins)"):format(wt.branch, main.branch))
-        end
-        backup_and_reset(function()
-          merge_ref(main.branch, "committed", function()
-            snapshot(main.path, function(sha, err)
-              if err then
-                return notify("Could not snapshot main's edits:\n" .. err, vim.log.levels.ERROR)
-              end
-              if not sha then
-                Logger.info("No uncommitted edits in main", CTX)
-                return done()
-              end
-              merge_ref(sha, "uncommitted snapshot", done)
+              end)
             end)
           end)
         end)
