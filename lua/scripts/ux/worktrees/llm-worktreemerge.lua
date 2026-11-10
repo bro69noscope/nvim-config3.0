@@ -8,17 +8,48 @@ local notify = require("config.notifylog").bind({ title = TITLE, ctx = CTX })
 ---@field path string
 ---@field branch string? nil when the worktree has a detached HEAD
 
+local in_flight = 0
+
 --- Run git async; cb runs on the main loop once git exits.
 ---@param args string[]
 ---@param cwd string
 ---@param cb fun(r: vim.SystemCompleted)
 ---@param env? table<string, string> extra environment variables for this git call
 local function git(args, cwd, cb, env)
-  vim.system(
+  in_flight = in_flight + 1
+
+  ---@param r vim.SystemCompleted
+  local function on_exit(r)
+    local cb_ok, cb_err = pcall(cb, r)
+    in_flight = in_flight - 1
+    if not cb_ok then
+      error(cb_err, 0)
+    end
+  end
+
+  local ok, err = pcall(
+    vim.system,
     vim.list_extend({ "git" }, args),
     { cwd = cwd, text = true, env = env },
-    vim.schedule_wrap(cb)
+    vim.schedule_wrap(on_exit)
   )
+
+  if not ok then
+    in_flight = in_flight - 1
+    error(err, 0)
+  end
+end
+
+---@return boolean
+local function busy()
+  if in_flight == 0 then
+    return false
+  end
+  notify(
+    "Another LLM worktree command is still running, try again in a moment",
+    vim.log.levels.WARN
+  )
+  return true
 end
 
 --- git that ends the whole chain with an error popup when it fails; cb gets the trimmed stdout.
@@ -297,6 +328,9 @@ local function renumber(head, delta)
 end
 
 function M.pull_from_llm_worktree()
+  if busy() then
+    return
+  end
   local dir = vim.uv.cwd()
   if not dir then
     return notify("No working directory", vim.log.levels.ERROR)
@@ -406,6 +440,9 @@ function M.pull_from_llm_worktree()
 end
 
 function M.overwrite_llm_worktree()
+  if busy() then
+    return
+  end
   local dir = vim.uv.cwd()
   if not dir then
     return notify("No working directory", vim.log.levels.ERROR)
@@ -522,6 +559,9 @@ end
 -- A hunk counts as "in the worktree" when its reverse applies cleanly there (the worktree's
 -- files already contain the added lines and lack the removed ones). Shared hunks stay unstaged.
 function M.stage_unshared_hunks()
+  if busy() then
+    return
+  end
   pick_llm_worktree("Stage hunks missing from", function(main, wt)
     if not vim.uv.fs_stat(wt.path .. "/.git") then
       return notify("Worktree dir missing: " .. wt.path, vim.log.levels.ERROR)
