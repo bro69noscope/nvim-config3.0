@@ -525,7 +525,18 @@ function M.stage_unshared_hunks()
           write_file(p, t.file.header .. t.hunk.head .. table.concat(t.hunk.body))
           git({ "apply", "--reverse", "--check", "--ignore-whitespace", p }, wt.path, function(r)
             os.remove(p)
-            t.hunk.stage = r.code ~= 0
+            -- 0 = the reverse applies (worktree has it), 1 = it does not (worktree lacks it).
+            -- Anything else (128: corrupt patch, git failure) says nothing about the worktree.
+            if r.code ~= 0 and r.code ~= 1 then
+              return notify(
+                ("git apply --check failed (exit %d), nothing staged:\n%s"):format(
+                  r.code,
+                  vim.trim(r.stderr or "")
+                ),
+                vim.log.levels.ERROR
+              )
+            end
+            t.hunk.stage = r.code == 1
             Logger.debug(
               ("hunk %d/%d %s %s: %s"):format(
                 i,
