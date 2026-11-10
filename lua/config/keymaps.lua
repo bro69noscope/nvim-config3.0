@@ -584,5 +584,3 @@ end, { desc = "Show current cwd" })
 map({ "n", "t", "i" }, "<m-m>", function()
   require("scripts.ux.maximize-to-float").toggle_max_float()
 end, { desc = "Toggle maximized terminal", icon = "" })
-
--- CLAUDE BOTTOM COMMENT: added at end of file in worktree, uncommitted, pull in with <leader>gw
