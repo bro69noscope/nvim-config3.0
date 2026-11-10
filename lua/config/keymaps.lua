@@ -347,17 +347,17 @@ end, { desc = "Diff same file against another worktree" })
 -- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
 map("n", "<leader>ip", function()
   require("scripts.ux.worktreemerge").pull_from_llm_worktree()
-end, { desc = "Pull LLM worktree's work into main" })
+end, { desc = "Pull from LLM worktree" })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktreemerge").overwrite_llm_worktree()
-end, { desc = "Overwrite LLM worktree with main" })
+end, { desc = "Send to LLM worktree" })
 
 -- Stage the hunks of my unstaged changes that the LLM worktree doesn't have
 map("n", "<leader>ih", function()
   require("scripts.ux.worktreemerge").stage_unshared_hunks()
-end, { desc = "Stage my hunks missing from LLM worktree" })
+end, { desc = "Stage hunks not in LLM worktree" })
 
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
 map("n", "<leader>xo", function()
