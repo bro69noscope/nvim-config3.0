@@ -1,6 +1,8 @@
 local M = {}
 
-local TITLE = "WorktreeMerge"
+local TITLE = "LlmWorktreeMerge"
+local CTX = "llm-worktreemerge"
+local notify = require("config.notifylog").bind({ title = TITLE, ctx = CTX })
 
 ---@class Worktree
 ---@field path string
@@ -65,12 +67,6 @@ local function snapshot(cwd, cb)
       end, env)
     end, env)
   end, env)
-end
-
----@param msg string
----@param level? integer vim.log.levels.*, defaults to INFO
-local function notify(msg, level)
-  vim.notify(msg, level or vim.log.levels.INFO, { title = TITLE })
 end
 
 --- Parse `git worktree list --porcelain`; the first entry is always the main checkout.
@@ -251,8 +247,9 @@ function M.pull_from_llm_worktree()
           notify("Snapshot failed, merging committed work only:\n" .. err, vim.log.levels.WARN)
         end
         local ref = sha or wt.branch
-        notify(
-          ("Squash-merging %s%s into main..."):format(wt.branch, sha and " + uncommitted" or "")
+        Logger.info(
+          ("Squash-merging %s%s into main..."):format(wt.branch, sha and " + uncommitted" or ""),
+          CTX
         )
         git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
           local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
@@ -268,7 +265,8 @@ function M.pull_from_llm_worktree()
                 return vim.cmd("checktime")
               end
               git({ "reset", "-q" }, main.path, function()
-                notify("Merged as unstaged changes.\n" .. out)
+                Logger.info("git merge output:\n" .. out, CTX)
+                notify(("Merged %s into main as unstaged changes"):format(wt.branch))
                 vim.cmd("checktime")
               end)
             end)
@@ -379,7 +377,7 @@ function M.overwrite_llm_worktree()
               notify(label .. " failed, merge aborted:\n" .. out, vim.log.levels.ERROR)
             end)
           end
-          notify(label .. ": " .. out)
+          Logger.info(label .. ": " .. out, CTX)
           if cb then
             cb()
           end
@@ -387,7 +385,10 @@ function M.overwrite_llm_worktree()
       end
 
       local function do_merge()
-        notify(("Overwriting %s with %s (main wins)..."):format(wt.branch, main.branch))
+        Logger.info(("Overwriting %s with %s (main wins)..."):format(wt.branch, main.branch), CTX)
+        local function done()
+          notify(("%s now matches %s (main wins)"):format(wt.branch, main.branch))
+        end
         backup_and_reset(function()
           merge_ref(main.branch, "committed", function()
             snapshot(main.path, function(sha, err)
@@ -395,9 +396,10 @@ function M.overwrite_llm_worktree()
                 return notify("Could not snapshot main's edits:\n" .. err, vim.log.levels.ERROR)
               end
               if not sha then
-                return notify("No uncommitted edits in main")
+                Logger.info("No uncommitted edits in main", CTX)
+                return done()
               end
-              merge_ref(sha, "uncommitted snapshot")
+              merge_ref(sha, "uncommitted snapshot", done)
             end)
           end)
         end)
@@ -407,7 +409,7 @@ function M.overwrite_llm_worktree()
         return do_merge()
       end
 
-      notify("Worktree dir missing, recreating " .. wt.path, vim.log.levels.WARN)
+      Logger.warn("Worktree dir missing, recreating " .. wt.path, CTX)
       git({ "worktree", "prune" }, main.path, function()
         git({ "worktree", "add", wt.path, wt.branch }, main.path, function(a)
           if a.code ~= 0 then
@@ -524,6 +526,17 @@ function M.stage_unshared_hunks()
           git({ "apply", "--reverse", "--check", "--ignore-whitespace", p }, wt.path, function(r)
             os.remove(p)
             t.hunk.stage = r.code ~= 0
+            Logger.debug(
+              ("hunk %d/%d %s %s: %s"):format(
+                i,
+                #tasks,
+                vim.trim(t.file.header:match("^[^\n]*")),
+                vim.trim(t.hunk.head),
+                t.hunk.stage and "missing from worktree, will stage"
+                  or "already in worktree, stays unstaged"
+              ),
+              CTX
+            )
             check(i + 1)
           end)
         end

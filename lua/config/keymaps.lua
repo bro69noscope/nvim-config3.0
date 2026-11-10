@@ -337,26 +337,26 @@ map("n", "<leader>gu", gitpull.pull, { desc = "Git pull current branch" })
 
 -- Jump to / live-diff the same file in another worktree (same line, picker if several)
 map("n", "<leader>gj", function()
-  require("scripts.ux.worktree-jump").jump()
-end, { desc = "Jump to same file in another worktree" })
+  require("scripts.ux.worktrees.worktree-jump").jump()
+end, { desc = "Jump to file in other worktree" })
 
 map("n", "<leader>gJ", function()
-  require("scripts.ux.worktree-jump").jump({ diff = true })
-end, { desc = "Diff same file against another worktree" })
+  require("scripts.ux.worktrees.worktree-jump").jump({ diff = true })
+end, { desc = "Diff file against other worktree" })
 
 -- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
 map("n", "<leader>ip", function()
-  require("scripts.ux.worktreemerge").pull_from_llm_worktree()
+  require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree()
 end, { desc = "Pull from LLM worktree" })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
-  require("scripts.ux.worktreemerge").overwrite_llm_worktree()
+  require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()
 end, { desc = "Send to LLM worktree" })
 
 -- Stage the hunks of my unstaged changes that the LLM worktree doesn't have
 map("n", "<leader>ih", function()
-  require("scripts.ux.worktreemerge").stage_unshared_hunks()
+  require("scripts.ux.worktrees.llm-worktreemerge").stage_unshared_hunks()
 end, { desc = "Stage hunks not in LLM worktree" })
 
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
