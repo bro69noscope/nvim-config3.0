@@ -84,3 +84,6 @@ ui
 ai
 Buf
 templater
+touchups
+worktree
+llm
