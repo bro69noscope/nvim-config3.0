@@ -57,30 +57,46 @@ return {
   keys = {
     -- buffers scoped to cwd, without gitignored files
     {
-      "<leader>;",
+      "<leader>,",
       function()
         local cwd = vim.fn.getcwd()
-        local ignored_cache = {}
-        Snacks.picker.buffers({
-          title = "Buffers (cwd)",
-          cwd = cwd,
-          filter = { cwd = true },
-          transform = function(item)
-            local file = item.file
-            if not file then
-              return
+        local files = {}
+        for _, b in ipairs(vim.api.nvim_list_bufs()) do
+          local name = vim.api.nvim_buf_get_name(b)
+          if vim.bo[b].buflisted and name ~= "" then
+            files[#files + 1] = vim.fs.normalize(name)
+          end
+        end
+
+        local function open(ignored)
+          Snacks.picker.buffers({
+            title = "Buffers (cwd)",
+            cwd = cwd,
+            filter = { cwd = true },
+            transform = function(item)
+              local file = item.file
+              if not file then
+                return
+              end
+              if ignored[vim.fs.normalize(file)] or not vim.uv.fs_stat(file) then
+                return false
+              end
+            end,
+          })
+        end
+
+        -- single async git call; picker opens in callback
+        vim.system(
+          { "git", "-C", cwd, "check-ignore", "-z", "--stdin" },
+          { stdin = table.concat(files, "\0") },
+          vim.schedule_wrap(function(res)
+            local ignored = {}
+            for p in (res.stdout or ""):gmatch("([^%z]+)") do
+              ignored[vim.fs.normalize(p)] = true
             end
-            local cached = ignored_cache[file]
-            if cached == nil then
-              local res = vim.system({ "git", "-C", cwd, "check-ignore", "-q", "--", file }):wait()
-              cached = res.code == 0
-              ignored_cache[file] = cached
-            end
-            if cached then
-              return false
-            end
-          end,
-        })
+            open(ignored)
+          end)
+        )
       end,
       desc = "Buffers (clean)",
     },
@@ -270,7 +286,7 @@ return {
 
    -- Top Pickers & Explorer
     { "<leader><space>", function() Snacks.picker.smart() end, desc = "Smart Find Files" },
-    { "<leader>,", function() Snacks.picker.buffers() end, desc = "Buffers" },
+    { "<leader>;", function() Snacks.picker.buffers() end, desc = "All Buffers" },
     { "<leader>/", function() Snacks.picker.grep() end, desc = "Grep" },
     -- { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
     { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
