@@ -260,12 +260,15 @@ local function pick_llm_worktree(prompt, cb)
   if not dir then
     return notify("No working directory", vim.log.levels.ERROR)
   end
+
   git({ "worktree", "list", "--porcelain" }, dir, function(w)
     if w.code ~= 0 then
       return notify("Not a git repo", vim.log.levels.ERROR)
     end
+
     local list = parse(w.stdout)
     local main = list[1]
+
     warn_detached(list, main)
     local llm_wts = llm_worktrees(list, main)
     if #llm_wts == 0 then
@@ -274,7 +277,7 @@ local function pick_llm_worktree(prompt, cb)
     if #llm_wts == 1 then
       return cb(main, llm_wts[1])
     end
-    vim.ui.select(llm_wts, {
+
       prompt = prompt,
       format_item = function(wt)
         return wt.branch .. "  (" .. wt.path .. ")"
@@ -362,12 +365,14 @@ function M.pull_from_llm_worktree()
   if not dir then
     return notify("No working directory", vim.log.levels.ERROR)
   end
+
   git({ "worktree", "list", "--porcelain" }, dir, function(w)
     if w.code ~= 0 then
       return notify("Not a git repo:" .. dir, vim.log.levels.ERROR)
     end
     local list = parse(w.stdout)
     local main = list[1]
+
     warn_detached(list, main)
     local llm_wts = llm_worktrees(list, main)
     if #llm_wts == 0 then
@@ -394,6 +399,7 @@ function M.pull_from_llm_worktree()
 
           git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
             local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
+
             if r.code == 0 then
               git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
                 local unmerged = vim.trim(u.stdout or "")
@@ -474,6 +480,7 @@ function M.overwrite_llm_worktree()
   if not dir then
     return notify("No working directory", vim.log.levels.ERROR)
   end
+
   git({ "worktree", "list", "--porcelain" }, dir, function(w)
     if w.code ~= 0 then
       return notify("Not a git repo", vim.log.levels.ERROR)
@@ -483,6 +490,7 @@ function M.overwrite_llm_worktree()
     if not main.branch then
       return notify("Main has detached HEAD", vim.log.levels.ERROR)
     end
+
     warn_detached(list, main)
     local llm_wts = llm_worktrees(list, main)
     if #llm_wts == 0 then
