@@ -65,6 +65,35 @@ local function must(args, cwd, what, cb)
 end
 
 local UNTRACKED_LIMIT = 2000
+local BACKUP_KEEP = 20
+
+---@param cwd string
+local function prune_backups(cwd)
+  -- Names are timestamps, so sorting by name descending is newest first.
+  local list = { "for-each-ref", "--sort=-refname", "--format=%(refname)", "refs/wt-backup/" }
+  git(list, cwd, function(r)
+    if r.code ~= 0 then
+      return Logger.warn("could not list old backups: " .. vim.trim(r.stderr or ""), CTX)
+    end
+
+    local refs = vim.split(r.stdout or "", "\n", { plain = true, trimempty = true })
+
+    if #refs > BACKUP_KEEP then
+      local n = #refs - BACKUP_KEEP
+      Logger.debug(("pruning %d old backups (keeping %d)"):format(n, BACKUP_KEEP), CTX)
+    end
+
+    for i = BACKUP_KEEP + 1, #refs do
+      local old = vim.trim(refs[i])
+      git({ "update-ref", "-d", old }, cwd, function(d)
+        if d.code ~= 0 then
+          local why = vim.trim(d.stderr or "")
+          Logger.warn(("could not delete old backup %s: %s"):format(old, why), CTX)
+        end
+      end)
+    end
+  end)
+end
 
 ---@param cwd string
 ---@param cb fun(tree: string?, err: string?)
@@ -510,12 +539,13 @@ function M.overwrite_llm_worktree()
           local function step(i)
             local s = steps[i]
             if not s then
-              return notify(
+              notify(
                 (
                   "%s now mirrors %s.\n"
                   .. "What it had is saved as %s (restore files: git checkout %s -- .)"
                 ):format(wt.branch, main.branch, ref, ref)
               )
+              return prune_backups(wt.path)
             end
 
             git(s, wt.path, function(r)
