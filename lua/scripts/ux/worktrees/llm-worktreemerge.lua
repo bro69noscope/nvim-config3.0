@@ -10,7 +10,6 @@ local notify = require("config.notifylog").bind({ title = TITLE, ctx = CTX })
 
 local in_flight = 0
 
---- Run git async; cb runs on the main loop once git exits.
 ---@param args string[]
 ---@param cwd string
 ---@param cb fun(r: vim.SystemCompleted)
@@ -52,7 +51,6 @@ local function busy()
   return true
 end
 
---- git that ends the whole chain with an error popup when it fails; cb gets the trimmed stdout.
 ---@param args string[]
 ---@param cwd string
 ---@param what string what the call was for, used in the error message
@@ -66,8 +64,6 @@ local function must(args, cwd, what, cb)
   end)
 end
 
--- git add -A hashes every untracked, non-ignored file, so a big untracked directory (build output,
--- a dependency folder nobody gitignored) makes a snapshot slow. Past this many, snapshot refuses.
 local UNTRACKED_LIMIT = 2000
 
 ---@param cwd string
@@ -198,7 +194,6 @@ local function is_llm_path(wt, main)
   return wt ~= main and wt.path:find("/.claude/worktrees/", 1, true) ~= nil
 end
 
--- worktrees owned by the LLM: linked (not main), on a branch, under .claude/worktrees/
 ---@param list Worktree[]
 ---@param main Worktree
 ---@return Worktree[]
@@ -223,7 +218,6 @@ local function warn_detached(list, main)
   end
 end
 
---- List worktrees, pick the LLM one (asks when there are several) and hand main and it to cb.
 ---@param prompt string
 ---@param cb fun(main: Worktree, wt: Worktree)
 local function pick_llm_worktree(prompt, cb)
@@ -287,8 +281,6 @@ end
 ---@field header string "diff --git" line up to the first hunk
 ---@field hunks DiffHunk[]
 
---- Split raw `git diff` output into files and hunks. Lines keep their line endings so a patch
---- rebuilt from them is byte-identical.
 ---@param text string
 ---@return DiffFile[]
 local function parse_diff(text)
