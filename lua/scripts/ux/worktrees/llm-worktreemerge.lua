@@ -714,9 +714,25 @@ function M.stage_unshared_hunks()
           end)
         end
 
+        local progress_id
+        ---@param done integer hunks checked so far
+        ---@param status "running"|"success"|"failed"
+        local function progress(done, status)
+          local msg = ("checked %d/%d hunks"):format(done, #tasks)
+          progress_id = vim.api.nvim_echo({ { msg } }, false, {
+            id = progress_id,
+            kind = "progress",
+            source = CTX,
+            title = TITLE,
+            status = status,
+            percent = math.floor(done / #tasks * 100),
+          })
+        end
+
         -- one hunk at a time: does its reverse apply to the worktree's files?
         local function check(i)
           local t = tasks[i]
+          progress(i - 1, t and "running" or "success")
           if not t then
             return stage()
           end
@@ -727,6 +743,7 @@ function M.stage_unshared_hunks()
             -- 0 = the reverse applies (worktree has it), 1 = it does not (worktree lacks it).
             -- Anything else (128: corrupt patch, git failure) says nothing about the worktree.
             if r.code ~= 0 and r.code ~= 1 then
+              progress(i - 1, "failed")
               return notify(
                 ("git apply --check failed (exit %d), nothing staged:\n%s"):format(
                   r.code,
