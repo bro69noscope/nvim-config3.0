@@ -379,6 +379,72 @@ local function renumber(head, delta)
   return ("@@ -%d,%d +%d,%d @@%s"):format(a, b, new_start, d, rest), delta + d - b
 end
 
+--- The path of a "diff --git a/<p> b/<p>" header. nil for quoted paths and renames.
+---@param header string
+---@return string?
+local function diff_path(header)
+  local a, b = header:match("^diff %-%-git a/([^\n]+) b/([^\n]+)\n")
+  if a and a == b then
+    return a
+  end
+end
+
+--- Where a hunk's changed lines sit in the new (main) file, in half-line coordinates: line n
+--- spans n-0.5 to n+0.5, and a removal is a point at the gap, n-0.5. Context lines are not part
+--- of the span, only the +/- lines are.
+---@param hunk DiffHunk
+---@return number lo
+---@return number hi
+local function changed_span(hunk)
+  local c, d = hunk.head:match("^@@ %-%d+,?%d* %+(%d+),?(%d*) @@")
+  local n = tonumber(c)
+  if d == "0" then
+    n = n + 1 -- pure deletion: git gives the line before the gap, we want the line after
+  end
+  local lo, hi = math.huge, -math.huge
+  for _, line in ipairs(hunk.body) do
+    local kind = line:sub(1, 1)
+    if kind == " " then
+      n = n + 1
+    elseif kind == "+" then
+      lo, hi = math.min(lo, n - 0.5), math.max(hi, n + 0.5)
+      n = n + 1
+    elseif kind == "-" then
+      lo, hi = math.min(lo, n - 0.5), math.max(hi, n - 0.5)
+    end
+  end
+  return lo, hi
+end
+
+--- The regions where two versions of a file differ, from `git diff --unified=0 old new`, in the
+--- old file's coordinates (same half-line scheme as changed_span).
+---@param text string
+---@return number[][] regions each { lo, hi }
+local function diff_regions(text)
+  local regions = {}
+  for a_str, b_str in text:gmatch("\n@@ %-(%d+),?(%d*) ") do
+    local a = tonumber(a_str)
+    local b = b_str == "" and 1 or tonumber(b_str)
+    if b > 0 then
+      table.insert(regions, { a - 0.5, a + b - 0.5 })
+    else
+      -- b == 0: lines were inserted after old line a
+      table.insert(regions, { a + 0.5, a + 0.5 })
+    end
+  end
+  return regions
+end
+
+--- Do two spans share ground? Touching at an end is not sharing, a point counts only when it is
+--- strictly inside the other span or equals the other point.
+---@return boolean
+local function overlaps(lo1, hi1, lo2, hi2)
+  if lo1 == hi1 and lo2 == hi2 then
+    return lo1 == lo2
+  end
+  return lo1 < hi2 and lo2 < hi1
+end
+
 function M.pull_from_llm_worktree()
   if busy() then
     return
@@ -662,9 +728,7 @@ function M.overwrite_llm_worktree()
   end)
 end
 
--- Stage, in main, every hunk of your unstaged changes that the LLM worktree does not have.
--- A hunk counts as "in the worktree" when its reverse applies cleanly there (the worktree's
--- files already contain the added lines and lack the removed ones). Shared hunks stay unstaged.
+-- Stage every unstaged changes in main that the LLM worktree does not have.
 function M.stage_unshared_hunks()
   if busy() then
     return
@@ -697,6 +761,15 @@ function M.stage_unshared_hunks()
           return notify("No unstaged hunks in main")
         end
 
+        -- files that cannot be compared (renamed, quoted path); their hunks stay unstaged
+        local skipped = {}
+        local function skipped_note()
+          if #skipped == 0 then
+            return ""
+          end
+          return "\nNot compared, left unstaged: " .. table.concat(skipped, ", ")
+        end
+
         local function stage()
           local parts, staged, nfiles = {}, 0, 0
           for _, f in ipairs(files) do
@@ -716,9 +789,10 @@ function M.stage_unshared_hunks()
           end
           if staged == 0 then
             return notify(
-              ("Nothing to stage: all %d unstaged hunk(s) are already in %s"):format(
+              ("Nothing to stage: all %d unstaged hunk(s) are already in %s%s"):format(
                 #tasks,
-                wt.branch
+                wt.branch,
+                skipped_note()
               )
             )
           end
@@ -733,71 +807,124 @@ function M.stage_unshared_hunks()
               )
             end
             notify(
-              ("Staged %d of %d hunk(s) in %d file(s); %d already in %s stay unstaged"):format(
+              ("Staged %d of %d hunk(s) in %d file(s); %d already in %s stay unstaged%s"):format(
                 staged,
                 #tasks,
                 nfiles,
                 #tasks - staged,
-                wt.branch
+                wt.branch,
+                skipped_note()
               )
             )
           end)
         end
 
         local progress_id
-        ---@param done integer hunks checked so far
+        ---@param done integer files checked so far
         ---@param status "running"|"success"|"failed"
         local function progress(done, status)
-          local msg = ("checked %d/%d hunks"):format(done, #tasks)
+          local msg = ("checked %d/%d files"):format(done, #files)
           progress_id = vim.api.nvim_echo({ { msg } }, false, {
             id = progress_id,
             kind = "progress",
             source = CTX,
             title = TITLE,
             status = status,
-            percent = math.floor(done / #tasks * 100),
+            percent = math.floor(done / #files * 100),
           })
         end
 
-        -- one hunk at a time: does its reverse apply to the worktree's files?
-        local function check(i)
-          local t = tasks[i]
-          progress(i - 1, t and "running" or "success")
-          if not t then
+        -- one file at a time: which of its hunks does the worktree's copy already have?
+        local function check_file(i)
+          local f = files[i]
+          progress(i - 1, f and "running" or "success")
+          if not f then
             return stage()
           end
-          local p = vim.fn.tempname()
-          write_file(p, t.file.header .. t.hunk.head .. table.concat(t.hunk.body))
-          git({ "apply", "--reverse", "--check", "--ignore-whitespace", p }, wt.path, function(r)
-            os.remove(p)
-            -- 0 = the reverse applies (worktree has it), 1 = it does not (worktree lacks it).
-            -- Anything else (128: corrupt patch, git failure) says nothing about the worktree.
-            if r.code ~= 0 and r.code ~= 1 then
-              progress(i - 1, "failed")
-              return notify(
-                ("git apply --check failed (exit %d), nothing staged:\n%s"):format(
-                  r.code,
-                  vim.trim(r.stderr or "")
+
+          local path = diff_path(f.header)
+          if not path then
+            table.insert(skipped, vim.trim(f.header:match("^[^\n]*")))
+            return check_file(i + 1)
+          end
+
+          ---@param is_shared fun(h: DiffHunk): boolean
+          local function finish(is_shared)
+            for _, h in ipairs(f.hunks) do
+              h.stage = not is_shared(h)
+              Logger.debug(
+                ("%s %s: %s"):format(
+                  path,
+                  vim.trim(h.head),
+                  h.stage and "missing from worktree, will stage"
+                    or "already in worktree, stays unstaged"
                 ),
-                vim.log.levels.ERROR
+                CTX
               )
             end
-            t.hunk.stage = r.code == 1
-            Logger.debug(
-              ("hunk %d/%d %s %s: %s"):format(
-                i,
-                #tasks,
-                vim.trim(t.file.header:match("^[^\n]*")),
-                vim.trim(t.hunk.head),
-                t.hunk.stage and "missing from worktree, will stage"
-                  or "already in worktree, stays unstaged"
-              ),
-              CTX
-            )
-            check(i + 1)
-          end)
+            check_file(i + 1)
+          end
+
+          local main_file, wt_file = main.path .. "/" .. path, wt.path .. "/" .. path
+          local mtext, wtext = read_file(main_file), read_file(wt_file)
+          if f.header:find("\ndeleted file mode", 1, true) then
+            -- main deleted the file: shared only if the worktree has it gone too
+            return finish(function()
+              return wtext == nil
+            end)
+          elseif mtext == nil then
+            table.insert(skipped, path)
+            return check_file(i + 1)
+          elseif wtext == nil then
+            return finish(function()
+              return false
+            end)
+          elseif mtext == wtext then
+            return finish(function()
+              return true
+            end)
+          end
+
+          git(
+            {
+              "diff",
+              "--no-index",
+              "--no-color",
+              "--no-ext-diff",
+              "--no-textconv",
+              "--unified=0",
+              "--ignore-space-at-eol",
+              "--",
+              main_file,
+              wt_file,
+            },
+            main.path,
+            function(r)
+              -- 0 = same, 1 = they differ; anything else says nothing about the worktree
+              if r.code ~= 0 and r.code ~= 1 then
+                progress(i - 1, "failed")
+                return notify(
+                  ("git diff --no-index failed (exit %d), nothing staged:\n%s"):format(
+                    r.code,
+                    vim.trim(r.stderr or "")
+                  ),
+                  vim.log.levels.ERROR
+                )
+              end
+              local regions = diff_regions(r.stdout or "")
+              finish(function(h)
+                local lo, hi = changed_span(h)
+                for _, g in ipairs(regions) do
+                  if overlaps(lo, hi, g[1], g[2]) then
+                    return false
+                  end
+                end
+                return true
+              end)
+            end
+          )
         end
-        check(1)
+        check_file(1)
       end
     )
   end)
