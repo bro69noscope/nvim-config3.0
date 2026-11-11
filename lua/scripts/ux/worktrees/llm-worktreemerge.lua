@@ -465,12 +465,48 @@ function M.overwrite_llm_worktree()
         local ref = "refs/wt-backup/"
           .. os.date("%Y%m%d-%H%M%S")
           .. ("-%03d"):format(math.floor(vim.uv.hrtime() / 1e6) % 1000)
+
         must({ "update-ref", ref, wsha or wtip }, wt.path, "backing up the worktree", function()
           Logger.info("worktree backed up as " .. ref, CTX)
           local steps = { { "reset", "--hard", msha or mhead }, { "clean", "-fd" } }
           if msha then
             table.insert(steps, { "reset", "-q", mhead })
           end
+
+          local undo = { { "reset", "--hard", ref } }
+          if wsha then
+            table.insert(undo, { "reset", "-q", wtip })
+          end
+
+          local function rollback(why)
+            local function undo_step(i)
+              local u = undo[i]
+              if not u then
+                return notify(
+                  why .. "\nThe worktree was restored from " .. ref .. ".",
+                  vim.log.levels.ERROR
+                )
+              end
+
+              git(u, wt.path, function(r)
+                if r.code ~= 0 then
+                  local msg = "%s\nRestoring failed too (git %s):\n%s\nRestore by hand: %s"
+                  return notify(
+                    msg:format(
+                      why,
+                      table.concat(u, " "),
+                      vim.trim(r.stderr or ""),
+                      "git reset --hard " .. ref
+                    ),
+                    vim.log.levels.ERROR
+                  )
+                end
+                undo_step(i + 1)
+              end)
+            end
+            undo_step(1)
+          end
+
           local function step(i)
             local s = steps[i]
             if not s then
@@ -481,14 +517,15 @@ function M.overwrite_llm_worktree()
                 ):format(wt.branch, main.branch, ref, ref)
               )
             end
-            must(
-              s,
-              wt.path,
-              "git " .. table.concat(s, " ") .. " (worktree saved as " .. ref .. ")",
-              function()
-                step(i + 1)
+
+            git(s, wt.path, function(r)
+              if r.code ~= 0 then
+                return rollback(
+                  ("git %s failed:\n%s"):format(table.concat(s, " "), vim.trim(r.stderr or ""))
+                )
               end
-            )
+              step(i + 1)
+            end)
           end
           step(1)
         end)
