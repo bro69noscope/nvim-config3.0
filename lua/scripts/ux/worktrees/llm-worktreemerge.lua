@@ -51,6 +51,27 @@ local function busy()
   return true
 end
 
+--- vim.ui.select that keeps busy() true while the picker is open
+---@generic T
+---@param items T[]
+---@param opts table
+---@param cb fun(choice: T?)
+local function select(items, opts, cb)
+  in_flight = in_flight + 1
+  local ok, err = pcall(vim.ui.select, items, opts, function(choice)
+    -- cb starts its own git calls first, so the counter stays above 0 across the hand-over
+    local cb_ok, cb_err = pcall(cb, choice)
+    in_flight = in_flight - 1
+    if not cb_ok then
+      error(cb_err, 0)
+    end
+  end)
+  if not ok then
+    in_flight = in_flight - 1
+    error(err, 0)
+  end
+end
+
 ---@param args string[]
 ---@param cwd string
 ---@param what string what the call was for, used in the error message
@@ -278,6 +299,7 @@ local function pick_llm_worktree(prompt, cb)
       return cb(main, llm_wts[1])
     end
 
+    select(llm_wts, {
       prompt = prompt,
       format_item = function(wt)
         return wt.branch .. "  (" .. wt.path .. ")"
@@ -459,7 +481,7 @@ function M.pull_from_llm_worktree()
       return run(llm_wts[1])
     end
 
-    vim.ui.select(llm_wts, {
+    select(llm_wts, {
       prompt = "Merge worktree into main (unstaged)",
       format_item = function(wt)
         return wt.branch .. "  (" .. wt.path .. ")"
@@ -627,7 +649,7 @@ function M.overwrite_llm_worktree()
     if #llm_wts == 1 then
       return run(llm_wts[1])
     end
-    vim.ui.select(llm_wts, {
+    select(llm_wts, {
       prompt = "Sync " .. main.branch .. " into",
       format_item = function(wt)
         return wt.branch .. "  (" .. wt.path .. ")"
