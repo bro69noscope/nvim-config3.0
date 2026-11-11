@@ -67,13 +67,13 @@ end
 local UNTRACKED_LIMIT = 2000
 
 ---@param cwd string
----@param cb fun(sha: string?, err: string?) sha nil + err nil = nothing to snapshot
-local function take_snapshot(cwd, cb)
+---@param cb fun(tree: string?, err: string?)
+local function working_tree(cwd, cb)
   local idx = vim.fn.tempname()
   local env = { GIT_INDEX_FILE = idx }
-  local function done(sha, err)
+  local function done(tree, err)
     os.remove(idx)
-    cb(sha, err)
+    cb(tree, err)
   end
   local function fail(r)
     done(nil, vim.trim(r.stderr or ""))
@@ -90,32 +90,38 @@ local function take_snapshot(cwd, cb)
         if c.code ~= 0 then
           return fail(c)
         end
-        local tree = vim.trim(c.stdout)
-        git({ "rev-parse", "HEAD^{tree}" }, cwd, function(d)
-          if d.code ~= 0 then
-            return fail(d)
-          end
-          if vim.trim(d.stdout) == tree then
-            return done()
-          end
-          git(
-            { "commit-tree", tree, "-p", "HEAD", "-m", "worktreemerge snapshot" },
-            cwd,
-            function(e)
-              if e.code ~= 0 then
-                return fail(e)
-              end
-              done(vim.trim(e.stdout))
-            end
-          )
-        end)
+        done(vim.trim(c.stdout))
       end, env)
     end, env)
   end, env)
 end
 
 ---@param cwd string
----@param cb fun(sha: string?, err: string?) sha nil + err nil = nothing to snapshot
+---@param cb fun(sha: string?, err: string?, tree: string?) sha nil + err nil = nothing to snapshot
+local function take_snapshot(cwd, cb)
+  working_tree(cwd, function(tree, err)
+    if err then
+      return cb(nil, err)
+    end
+    git({ "rev-parse", "HEAD^{tree}" }, cwd, function(d)
+      if d.code ~= 0 then
+        return cb(nil, vim.trim(d.stderr or ""))
+      end
+      if vim.trim(d.stdout) == tree then
+        return cb(nil, nil, tree)
+      end
+      git({ "commit-tree", tree, "-p", "HEAD", "-m", "worktreemerge snapshot" }, cwd, function(e)
+        if e.code ~= 0 then
+          return cb(nil, vim.trim(e.stderr or ""))
+        end
+        cb(vim.trim(e.stdout), nil, tree)
+      end)
+    end)
+  end)
+end
+
+---@param cwd string
+---@param cb fun(sha: string?, err: string?, tree: string?) sha nil + err nil = nothing to snapshot
 local function snapshot(cwd, cb)
   git({ "ls-files", "--others", "--exclude-standard", "-z" }, cwd, function(u)
     local paths = u.code == 0 and vim.split(u.stdout, "\0", { plain = true, trimempty = true })
@@ -455,9 +461,42 @@ function M.overwrite_llm_worktree()
     end
 
     local function run(wt)
+      local function mirror(wsha, wtip, msha, mhead)
+        local ref = "refs/wt-backup/"
+          .. os.date("%Y%m%d-%H%M%S")
+          .. ("-%03d"):format(math.floor(vim.uv.hrtime() / 1e6) % 1000)
+        must({ "update-ref", ref, wsha or wtip }, wt.path, "backing up the worktree", function()
+          Logger.info("worktree backed up as " .. ref, CTX)
+          local steps = { { "reset", "--hard", msha or mhead }, { "clean", "-fd" } }
+          if msha then
+            table.insert(steps, { "reset", "-q", mhead })
+          end
+          local function step(i)
+            local s = steps[i]
+            if not s then
+              return notify(
+                (
+                  "%s now mirrors %s.\n"
+                  .. "What it had is saved as %s (restore files: git checkout %s -- .)"
+                ):format(wt.branch, main.branch, ref, ref)
+              )
+            end
+            must(
+              s,
+              wt.path,
+              "git " .. table.concat(s, " ") .. " (worktree saved as " .. ref .. ")",
+              function()
+                step(i + 1)
+              end
+            )
+          end
+          step(1)
+        end)
+      end
+
       local function do_merge()
         Logger.info(("Mirroring %s onto %s..."):format(main.branch, wt.branch), CTX)
-        snapshot(wt.path, function(wsha, werr)
+        snapshot(wt.path, function(wsha, werr, wtree)
           if werr then
             return notify(
               "Could not snapshot the worktree, nothing changed:\n" .. werr,
@@ -473,43 +512,22 @@ function M.overwrite_llm_worktree()
                     vim.log.levels.ERROR
                   )
                 end
-                -- the snapshot has the branch tip as its parent, so the committed work stays
-                -- reachable
-                local ref = "refs/wt-backup/"
-                  .. os.date("%Y%m%d-%H%M%S")
-                  .. ("-%03d"):format(math.floor(vim.uv.hrtime() / 1e6) % 1000)
-                must(
-                  { "update-ref", ref, wsha or wtip },
-                  wt.path,
-                  "backing up the worktree",
-                  function()
-                    Logger.info("worktree backed up as " .. ref, CTX)
-                    local steps = { { "reset", "--hard", msha or mhead }, { "clean", "-fd" } }
-                    if msha then
-                      table.insert(steps, { "reset", "-q", mhead })
-                    end
-                    local function step(i)
-                      local s = steps[i]
-                      if not s then
-                        return notify(
-                          (
-                            "%s now mirrors %s.\n"
-                            .. "What it had is saved as %s (restore files: git checkout %s -- .)"
-                          ):format(wt.branch, main.branch, ref, ref)
-                        )
-                      end
-                      must(
-                        s,
-                        wt.path,
-                        "git " .. table.concat(s, " ") .. " (worktree saved as " .. ref .. ")",
-                        function()
-                          step(i + 1)
-                        end
-                      )
-                    end
-                    step(1)
+                working_tree(wt.path, function(wtree2, err2)
+                  if err2 then
+                    return notify(
+                      "Could not re-check the worktree, nothing changed:\n" .. err2,
+                      vim.log.levels.ERROR
+                    )
                   end
-                )
+                  if wtree2 ~= wtree then
+                    return notify(
+                      "The worktree changed while preparing, nothing was changed."
+                        .. " Try to run again.",
+                      vim.log.levels.WARN
+                    )
+                  end
+                  mirror(wsha, wtip, msha, mhead)
+                end)
               end)
             end)
           end)
@@ -670,5 +688,4 @@ function M.stage_unshared_hunks()
     )
   end)
 end
-
 return M
