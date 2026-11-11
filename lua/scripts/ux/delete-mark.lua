@@ -91,7 +91,7 @@ M.delete_mark = function()
 
   local opts = { buffer = buf, nowait = true, silent = true }
   vim.keymap.set({ "i", "n" }, "<CR>", confirm, opts)
-  vim.keymap.set({ "i", "n" }, "<Esc>", cancel, opts)
+  vim.keymap.set({ "n" }, "<Esc>", cancel, opts)
   vim.keymap.set({ "i", "n" }, "<C-c>", cancel, opts)
 
   -- cancel if focus leaves the float
