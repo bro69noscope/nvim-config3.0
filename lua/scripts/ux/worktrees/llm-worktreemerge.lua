@@ -573,6 +573,7 @@ function M.overwrite_llm_worktree()
     if w.code ~= 0 then
       return notify("Not a git repo", vim.log.levels.ERROR)
     end
+
     local list = parse(w.stdout)
     local main = list[1]
     if not main.branch then
@@ -764,6 +765,7 @@ function M.stage_unshared_hunks()
             table.insert(tasks, { file = f, hunk = h })
           end
         end
+
         if #tasks == 0 then
           return notify("No unstaged hunks in main")
         end
@@ -779,6 +781,7 @@ function M.stage_unshared_hunks()
 
         local function stage()
           local parts, staged, nfiles = {}, 0, 0
+
           for _, f in ipairs(files) do
             local delta, kept = 0, {}
             for _, h in ipairs(f.hunks) do
@@ -789,11 +792,13 @@ function M.stage_unshared_hunks()
                 staged = staged + 1
               end
             end
+
             if #kept > 0 then
               nfiles = nfiles + 1
               table.insert(parts, f.header .. table.concat(kept))
             end
           end
+
           if staged == 0 then
             return notify(
               ("Nothing to stage: all %d unstaged hunk(s) are already in %s%s"):format(
@@ -803,6 +808,7 @@ function M.stage_unshared_hunks()
               )
             )
           end
+
           local patch = vim.fn.tempname()
           write_file(patch, table.concat(parts))
           git({ "apply", "--cached", "--unidiff-zero", patch }, main.path, function(r)
@@ -813,6 +819,7 @@ function M.stage_unshared_hunks()
                 vim.log.levels.ERROR
               )
             end
+
             notify(
               ("Staged %d of %d hunk(s) in %d file(s); %d already in %s stay unstaged%s"):format(
                 staged,
