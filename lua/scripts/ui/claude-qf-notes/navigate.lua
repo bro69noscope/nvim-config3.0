@@ -47,8 +47,12 @@ local function jump_to_marked_step()
   mark_here()
 end
 
-local function show_list()
-  vim.cmd("copen | wincmd p | normal! zz")
+local function show_list(open_qf)
+  if open_qf then
+    vim.cmd("copen | wincmd p | normal! zz")
+  else
+    vim.cmd("normal! zz")
+  end
 end
 
 local seen = { nr = nil, tick = nil, idx = nil }
@@ -133,11 +137,13 @@ end
 ---Go to the last visited step of the claude notes. Regenerates the notes from the script when it
 ---was written since the last run, or when the list or the virtual lines are gone, and otherwise
 ---just makes the existing list current again (e.g. after a detour into other lists).
-function M.open()
+---@param opts? { copen?: boolean } copen defaults to true; false skips opening the quickfix window
+function M.open(opts)
+  local open_qf = not (opts and opts.copen == false)
   local nr = find_list_nr()
   if (not nr or not notes_drawn() or notes_file_changed()) and run_notes_script() then
     jump_to_marked_step()
-    show_list()
+    show_list(open_qf)
     return
   end
   if not nr then
@@ -145,7 +151,7 @@ function M.open()
   end
   vim.cmd("silent " .. nr .. "chistory")
   jump_to_marked_step()
-  show_list()
+  show_list(open_qf)
 end
 
 function M.clear()

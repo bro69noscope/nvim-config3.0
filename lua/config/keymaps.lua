@@ -456,8 +456,12 @@ end, { desc = "Add current line to quickfix" })
 
 -- go to the last visited ai notes step, regenerating the notes first if the file has changed
 map("n", "<leader>cn", function()
+  require("scripts.ui.claude-qf-notes.navigate").open({ copen = false })
+end, { desc = "Open ai notes (no qf win)", icon = "" })
+
+map("n", "<leader>cN", function()
   require("scripts.ui.claude-qf-notes.navigate").open()
-end, { desc = "Open ai notes with qflist at last step", icon = "" })
+end, { desc = "Open ai notes with qflist", icon = "" })
 
 -- show the ai note on the cursor line as real text in a float
 map("n", "<leader>cs", function()
