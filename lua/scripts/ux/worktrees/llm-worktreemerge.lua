@@ -772,15 +772,29 @@ function M.stage_unshared_hunks()
 
         -- files that cannot be compared (renamed, quoted path); their hunks stay unstaged
         local skipped = {}
-        local function skipped_note()
+        local function warn_skipped()
           if #skipped == 0 then
-            return ""
+            return
           end
-          return "\nNot compared, left unstaged: " .. table.concat(skipped, ", ")
+
+          local msg = "%d file(s) NOT compared (renamed, special path or unreadable),"
+            .. " hunks left unstaged:\n  %s"
+          notify(msg:format(#skipped, table.concat(skipped, "\n  ")), vim.log.levels.WARN)
         end
 
         local function stage()
-          local parts, staged, nfiles = {}, 0, 0
+          warn_skipped()
+          local parts, staged, nfiles, shared, uncompared = {}, 0, 0, 0, 0
+          for _, f in ipairs(files) do
+            for _, h in ipairs(f.hunks) do
+              if h.stage == false then
+                shared = shared + 1
+              elseif h.stage == nil then
+                uncompared = uncompared + 1
+              end
+            end
+          end
+          local uncompared_note = uncompared > 0 and (", %d not compared"):format(uncompared) or ""
 
           for _, f in ipairs(files) do
             local delta, kept = 0, {}
@@ -801,10 +815,11 @@ function M.stage_unshared_hunks()
 
           if staged == 0 then
             return notify(
-              ("Nothing to stage: all %d unstaged hunk(s) are already in %s%s"):format(
+              ("Nothing to stage: %d of %d unstaged hunk(s) are already in %s%s"):format(
+                shared,
                 #tasks,
                 wt.branch,
-                skipped_note()
+                uncompared_note
               )
             )
           end
@@ -825,9 +840,9 @@ function M.stage_unshared_hunks()
                 staged,
                 #tasks,
                 nfiles,
-                #tasks - staged,
+                shared,
                 wt.branch,
-                skipped_note()
+                uncompared_note
               )
             )
           end)
