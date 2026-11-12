@@ -740,7 +740,14 @@ function M.stage_unshared_hunks()
     local diff_file = vim.fn.tempname()
     -- --output keeps git from going through the text-mode pipe, which would eat any \r
     git(
-      { "diff", "--no-color", "--no-ext-diff", "--no-textconv", "--output=" .. diff_file },
+      {
+        "diff",
+        "--no-color",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--unified=0",
+        "--output=" .. diff_file,
+      },
       main.path,
       function(d)
         local text = read_file(diff_file) or ""
@@ -798,7 +805,7 @@ function M.stage_unshared_hunks()
           end
           local patch = vim.fn.tempname()
           write_file(patch, table.concat(parts))
-          git({ "apply", "--cached", patch }, main.path, function(r)
+          git({ "apply", "--cached", "--unidiff-zero", patch }, main.path, function(r)
             os.remove(patch)
             if r.code ~= 0 then
               return notify(
