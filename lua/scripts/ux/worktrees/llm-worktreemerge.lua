@@ -209,7 +209,7 @@ end
 --- Gives nil when nothing is staged or the index cannot be written (unmerged entries).
 ---@param cwd string
 ---@param cb fun(tree: string?)
-local function index_tree(cwd, cb)
+local function staged_tree(cwd, cb)
   git({ "write-tree" }, cwd, function(a)
     if a.code ~= 0 then
       return cb(nil)
@@ -468,7 +468,7 @@ function M.pull_from_llm_worktree()
     end
 
     local function run(wt)
-      index_tree(main.path, function(staged)
+      staged_tree(main.path, function(staged)
         local hint = ""
         if staged then
           hint = "\nYour staging from before the pull: git read-tree " .. staged
@@ -729,6 +729,17 @@ function M.overwrite_llm_worktree()
   end)
 end
 
+---@param cwd string
+---@return string? tree
+---@return string? err
+local function index_tree(cwd)
+  local r = vim.system({ "git", "write-tree" }, { cwd = cwd, text = true }):wait()
+  if r.code ~= 0 then
+    return nil, vim.trim(r.stderr or "")
+  end
+  return vim.trim(r.stdout or "")
+end
+
 -- Stage every unstaged changes in main that the LLM worktree does not have.
 function M.stage_unshared_hunks()
   if busy() then
@@ -737,6 +748,10 @@ function M.stage_unshared_hunks()
   pick_llm_worktree("Stage hunks missing from", function(main, wt)
     if not vim.uv.fs_stat(wt.path .. "/.git") then
       return notify("Worktree dir missing: " .. wt.path, vim.log.levels.ERROR)
+    end
+    local index_before, index_err = index_tree(main.path)
+    if not index_before then
+      return notify("git write-tree failed:\n" .. (index_err or ""), vim.log.levels.ERROR)
     end
     local diff_file = vim.fn.tempname()
     -- --output keeps git from going through the text-mode pipe, which would eat any \r
@@ -821,6 +836,13 @@ function M.stage_unshared_hunks()
                 wt.branch,
                 uncompared_note
               )
+            )
+          end
+
+          if index_tree(main.path) ~= index_before then
+            return notify(
+              "The index changed while checking hunks, nothing staged. Run it again.",
+              vim.log.levels.WARN
             )
           end
 
