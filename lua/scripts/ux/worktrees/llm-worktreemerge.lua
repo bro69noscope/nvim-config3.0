@@ -87,7 +87,6 @@ end
 
 local UNTRACKED_LIMIT = 2000
 local BACKUP_KEEP = 20
--- refs/wt-pulled/<branch> = the worktree state last merged into main (or mirrored from it)
 local PULLED = "refs/wt-pulled/"
 
 ---@param cwd string
@@ -214,8 +213,6 @@ local function snapshot(cwd, cb)
   end)
 end
 
---- Tree of what is staged in cwd right now, so a later reset can put the staging back.
---- Gives nil when nothing is staged or the index cannot be written (unmerged entries).
 ---@param cwd string
 ---@param cb fun(tree: string?)
 local function staged_tree(cwd, cb)
@@ -388,7 +385,6 @@ local function renumber(head, delta)
   return ("@@ -%d,%d +%d,%d @@%s"):format(a, b, new_start, d, rest), delta + d - b
 end
 
---- The path of a "diff --git a/<p> b/<p>" header. nil for quoted paths and renames.
 ---@param header string
 ---@return string?
 local function diff_path(header)
@@ -398,9 +394,6 @@ local function diff_path(header)
   end
 end
 
---- Where a hunk's changed lines sit in the new (main) file, in half-line coordinates: line n
---- spans n-0.5 to n+0.5, and a removal is a point at the gap, n-0.5. Context lines are not part
---- of the span, only the +/- lines are.
 ---@param hunk DiffHunk
 ---@return number lo
 ---@return number hi
@@ -425,8 +418,6 @@ local function changed_span(hunk)
   return lo, hi
 end
 
---- The regions where two versions of a file differ, from `git diff --unified=0 old new`, in the
---- old file's coordinates (same half-line scheme as changed_span).
 ---@param text string
 ---@return number[][] regions each { lo, hi }
 local function diff_regions(text)
@@ -444,8 +435,6 @@ local function diff_regions(text)
   return regions
 end
 
---- Do two spans share ground? Touching at an end is not sharing, a point counts only when it is
---- strictly inside the other span or equals the other point.
 ---@return boolean
 local function overlaps(lo1, hi1, lo2, hi2)
   if lo1 == hi1 and lo2 == hi2 then
@@ -454,7 +443,6 @@ local function overlaps(lo1, hi1, lo2, hi2)
   return lo1 < hi2 and lo2 < hi1
 end
 
---- Put main's index back to what was staged before a pull (HEAD when nothing was); files stay.
 ---@param main Worktree
 ---@param staged string? tree from staged_tree
 ---@param cb fun(r: vim.SystemCompleted)
@@ -463,11 +451,9 @@ local function restore_staging(main, staged, cb)
   git(reset, main.path, cb)
 end
 
---- Remember the worktree state that was just merged into main. The next pull merges from it, so
---- main's copy of that earlier pull is not taken for main's own edits.
 ---@param main Worktree
 ---@param wt Worktree
----@param sha string? snapshot commit that was merged; nil = the worktree's HEAD
+---@param sha string? worktree snapshot this pull brought into main. nil = its HEAD
 local function record_pulled(main, wt, sha)
   local function save(commit)
     git({ "update-ref", PULLED .. wt.branch, commit }, main.path, function(r)
@@ -512,7 +498,7 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
         sha or wt.branch,
       }
       git(args, main.path, function(m)
-        if m.code > 1 then
+        if m.code > 1 then -- 1 means conflicts
           return notify(
             "git merge-tree failed, nothing changed:\n" .. vim.trim(m.stderr or ""),
             vim.log.levels.ERROR
@@ -529,10 +515,11 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           table.insert(conflicts, vim.trim(lines[i]))
         end
 
-        -- index = main as it is now, then move its files to the merge result; the last step
-        -- refuses when a file changed since the snapshot
         local steps = {
           { "read-tree", "--reset", mtree },
+          -- --reset blanks the size/mtime of changed entries (a bare read-tree blanks every entry,
+          -- so the refresh would rehash every file); step 3 compares those to the files to rule out
+          -- unsaved edits, so without fresh values it refuses ("not uptodate")
           { "update-index", "-q", "--refresh" },
           { "read-tree", "-m", "-u", mtree, result },
         }
@@ -637,17 +624,14 @@ function M.pull_from_llm_worktree()
             end
 
             -- first pull of this worktree: nothing recorded, let git find the common base
-            Logger.info(
-              ("Squash-merging %s%s into main..."):format(wt.branch, sha and " + uncommitted" or ""),
-              CTX
-            )
+            local extra = sha and " + uncommitted" or ""
+            Logger.info(("Squash-merging %s%s into main..."):format(wt.branch, extra), CTX)
 
             git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
               local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
 
               if r.code == 0 then
-                -- the merge was clean, but --autostash reapplying your uncommitted edits can still
-                -- conflict: markers "Updated upstream" / "Stashed changes", stash kept in the list
+                -- clean merge, but the autostash reapply can conflict
                 git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
                   local unmerged = vim.trim(u.stdout or "")
                   if unmerged ~= "" then
@@ -661,8 +645,6 @@ function M.pull_from_llm_worktree()
                     return vim.cmd("checktime")
                   end
 
-                  -- index back to what was staged before (HEAD when nothing was); files stay as
-                  -- merged
                   restore_staging(main, staged, function(z)
                     Logger.info("git merge output:\n" .. out, CTX)
                     record_pulled(main, wt, sha)
@@ -685,8 +667,7 @@ function M.pull_from_llm_worktree()
                   end)
                 end)
               else
-                -- the merge failed: unmerged files mean it conflicted itself (markers HEAD /
-                -- <branch>), none mean it never ran (bad ref, index lock, local changes in the way)
+                -- merge failed: unmerged files = conflict, none = never ran
                 git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
                   local unmerged = vim.trim(u.stdout or "")
                   if unmerged ~= "" then
@@ -807,7 +788,6 @@ function M.overwrite_llm_worktree()
                 ):format(wt.branch, main.branch, ref, ref)
               )
               prune_backups(wt.path)
-              -- both sides are the same now, so the next pull starts from here
               return git({ "update-ref", PULLED .. wt.branch, msha or mhead }, wt.path, function(u)
                 if u.code ~= 0 then
                   Logger.warn("could not record the mirrored state: " .. vim.trim(u.stderr), CTX)
@@ -908,8 +888,6 @@ function M.stage_unshared_hunks()
     if not vim.uv.fs_stat(wt.path .. "/.git") then
       return notify("Worktree dir missing: " .. wt.path, vim.log.levels.ERROR)
     end
-    -- the patch has no context lines, so it only fits the index it was diffed against: read the
-    -- index alongside the diff and compare again right before applying
     local index_before, index_read
     staged_tree(main.path, function(tree)
       index_before, index_read = tree, true
@@ -946,7 +924,6 @@ function M.stage_unshared_hunks()
           return notify("No unstaged hunks in main")
         end
 
-        -- files that cannot be compared (renamed, quoted path); their hunks stay unstaged
         local skipped = {}
         local function warn_skipped()
           if #skipped == 0 then
@@ -1000,7 +977,6 @@ function M.stage_unshared_hunks()
             )
           end
 
-          -- that read is long done, unless every file was identical and no other git call ran
           if not vim.wait(2000, function()
             return index_read
           end, 10) then
@@ -1055,7 +1031,6 @@ function M.stage_unshared_hunks()
           })
         end
 
-        -- one file at a time: which of its hunks does the worktree's copy already have?
         local function check_file(i)
           local f = files[i]
           progress(i - 1, f and "running" or "success")
@@ -1089,7 +1064,6 @@ function M.stage_unshared_hunks()
           local main_file, wt_file = main.path .. "/" .. path, wt.path .. "/" .. path
           local mtext, wtext = read_file(main_file), read_file(wt_file)
           if f.header:find("\ndeleted file mode", 1, true) then
-            -- main deleted the file: shared only if the worktree has it gone too
             return finish(function()
               return wtext == nil
             end)
