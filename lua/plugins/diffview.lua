@@ -54,6 +54,10 @@ return {
             change_nav.prev_change,
             { desc = "Previous change or file" },
           },
+          { "n", "]x", false, { desc = "diffview_ignore" } },
+          { "n", "[x", false, { desc = "diffview_ignore" } },
+          { "n", "]`", actions.next_conflict, { desc = "Next conflict" } },
+          { "n", "[`", actions.prev_conflict, { desc = "Previous conflict" } },
         },
         file_panel = {
           { "n", "q", actions.close, { desc = "Close diffview" } },
