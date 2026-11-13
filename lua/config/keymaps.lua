@@ -349,6 +349,11 @@ map("n", "<leader>ip", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree()
 end, { desc = "Pull from LLM worktree" })
 
+-- Pull again ignoring the last pull, so changes main undid since come back
+map("n", "<leader>iP", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ again = true })
+end, { desc = "Re-pull everything from LLM worktree" })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()

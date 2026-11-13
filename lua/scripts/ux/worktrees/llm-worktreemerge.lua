@@ -518,6 +518,14 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           table.insert(conflicts, vim.trim(lines[i]))
         end
 
+        -- the worktree brought nothing main lacks, e.g. main undid the last pull: a merge keeps
+        -- that undo, only a re-pull applies those changes again
+        if result == mtree then
+          notify(("Nothing new from %s since the last pull, main unchanged"):format(wt.branch))
+          record_pulled(main, wt, sha)
+          return prune_backups(main.path)
+        end
+
         local steps = {
           { "read-tree", "--reset", mtree },
           -- --reset blanks the size/mtime of changed entries (a bare read-tree blanks every entry,
@@ -531,8 +539,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           if not s then
             return restore_staging(main, staged, function(z)
               if z.code ~= 0 then
+                local err = vim.trim(z.stderr or "")
                 notify(
-                  "Merged, but restoring your staging failed:\n" .. vim.trim(z.stderr or "") .. hint,
+                  "Merged, but restoring your staging failed:\n" .. err .. hint,
                   vim.log.levels.WARN
                 )
               elseif #conflicts > 0 then
@@ -585,7 +594,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
   end)
 end
 
-function M.pull_from_llm_worktree()
+---@param opts? { again?: boolean } again: ignore the last pull and merge from the common commit
+function M.pull_from_llm_worktree(opts)
+  local again = opts and opts.again
   if busy() then
     return
   end
@@ -615,6 +626,7 @@ function M.pull_from_llm_worktree()
             vim.log.levels.ERROR
           )
         end
+
         local hint = ""
         if staged then
           hint = "\nYour staging from before the pull: git read-tree " .. staged
@@ -626,6 +638,19 @@ function M.pull_from_llm_worktree()
             notify("Snapshot failed, merging committed work only:\n" .. err, vim.log.levels.WARN)
           end
           local ref = sha or wt.branch
+
+          if again then
+            return git({ "merge-base", "HEAD", ref }, main.path, function(c)
+              if c.code ~= 0 then
+                local why = c.code == 1 and "no common commit" or vim.trim(c.stderr or "")
+                return notify(
+                  ("Could not find where %s started, nothing changed:\n%s"):format(wt.branch, why),
+                  vim.log.levels.ERROR
+                )
+              end
+              pull_from_base(main, wt, vim.trim(c.stdout), sha, staged, hint)
+            end)
+          end
 
           git({ "rev-parse", "--verify", "-q", PULLED .. wt.branch }, main.path, function(b)
             if b.code == 0 then
