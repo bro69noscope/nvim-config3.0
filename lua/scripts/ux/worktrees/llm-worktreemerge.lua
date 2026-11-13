@@ -14,7 +14,8 @@ local in_flight = 0
 ---@param cwd string
 ---@param cb fun(r: vim.SystemCompleted)
 ---@param env? table<string, string> extra environment variables for this git call
-local function git(args, cwd, cb, env)
+---@param stdin? string written to git's standard input
+local function git(args, cwd, cb, env, stdin)
   in_flight = in_flight + 1
 
   ---@param r vim.SystemCompleted
@@ -29,7 +30,7 @@ local function git(args, cwd, cb, env)
   local ok, err = pcall(
     vim.system,
     vim.list_extend({ "git" }, args),
-    { cwd = cwd, text = true, env = env },
+    { cwd = cwd, text = true, env = env, stdin = stdin },
     vim.schedule_wrap(on_exit)
   )
 
@@ -495,7 +496,7 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
       local args = {
         "merge-tree",
         "--write-tree",
-        "--name-only",
+        "-z",
         "--merge-base=" .. base,
         msha or "HEAD",
         sha or wt.branch,
@@ -508,14 +509,35 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           )
         end
 
-        -- first line is the merged tree, then the conflicted paths up to a blank line
-        local lines = vim.split(m.stdout or "", "\n", { plain = true })
-        local result, conflicts = vim.trim(lines[1]), {}
-        for i = 2, #lines do
-          if vim.trim(lines[i]) == "" then
+        -- NUL-separated: the merged tree, then one "<mode> <oid> <stage>\t<path>" entry per side
+        -- of each conflicted file, up to an empty field (git's messages follow)
+        local fields = vim.split(m.stdout or "", "\0", { plain = true })
+        local result, stages, conflicts, seen = vim.trim(fields[1]), {}, {}, {}
+        for i = 2, #fields do
+          if fields[i] == "" then
             break
           end
-          table.insert(conflicts, vim.trim(lines[i]))
+          table.insert(stages, fields[i])
+          local path = fields[i]:match("\t(.*)$")
+          if path and not seen[path] then
+            seen[path] = true
+            table.insert(conflicts, path)
+          end
+        end
+
+        --- Make git recognize the conflicts, so they can be resolved with git tooling. Without
+        --- this, the files only hold the markers as text and git sees a normal edit (" M").
+        ---@param cb fun(r: vim.SystemCompleted)
+        local function mark_conflicts(cb)
+          local info = {}
+          for _, path in ipairs(conflicts) do
+            -- mode 0 drops the path's normal entry
+            table.insert(info, "0 " .. ("0"):rep(#result) .. "\t" .. path .. "\0")
+          end
+          for _, entry in ipairs(stages) do
+            table.insert(info, entry .. "\0")
+          end
+          git({ "update-index", "-z", "--index-info" }, main.path, cb, nil, table.concat(info))
         end
 
         -- the worktree brought nothing main lacks, e.g. main undid the last pull: a merge keeps
@@ -538,30 +560,52 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           local s = steps[i]
           if not s then
             return restore_staging(main, staged, function(z)
+              local function done()
+                record_pulled(main, wt, sha)
+                prune_backups(main.path)
+                vim.cmd("checktime")
+              end
+
               if z.code ~= 0 then
                 local err = vim.trim(z.stderr or "")
                 notify(
                   "Merged, but restoring your staging failed:\n" .. err .. hint,
                   vim.log.levels.WARN
                 )
-              elseif #conflicts > 0 then
-                notify(
-                  "Merged with conflicts, the files hold the markers:\n"
-                    .. table.concat(conflicts, "\n")
-                    .. hint,
-                  vim.log.levels.WARN
-                )
-              else
+                return done()
+              end
+              if #conflicts == 0 then
                 notify(
                   ("Merged %s into main as unstaged changes%s"):format(
                     wt.branch,
                     staged and ", your staged changes kept" or ""
                   )
                 )
+                return done()
               end
-              record_pulled(main, wt, sha)
-              prune_backups(main.path)
-              vim.cmd("checktime")
+
+              mark_conflicts(function(c)
+                local list = table.concat(conflicts, "\n")
+                if c.code ~= 0 then
+                  notify(
+                    "Merged with conflicts, the files hold the markers but git does not list them"
+                      .. " as conflicts:\n"
+                      .. list
+                      .. "\n"
+                      .. vim.trim(c.stderr or "")
+                      .. hint,
+                    vim.log.levels.WARN
+                  )
+                else
+                  notify(
+                    "Merged with conflicts (resolve with git tooling, then `git reset`):\n"
+                      .. list
+                      .. hint,
+                    vim.log.levels.WARN
+                  )
+                end
+                done()
+              end)
             end)
           end
 
