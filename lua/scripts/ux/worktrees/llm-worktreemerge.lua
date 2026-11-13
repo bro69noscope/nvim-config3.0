@@ -214,15 +214,18 @@ local function snapshot(cwd, cb)
 end
 
 ---@param cwd string
----@param cb fun(tree: string?)
+---@param cb fun(tree: string?, err: string?) tree nil + err nil = nothing staged
 local function staged_tree(cwd, cb)
   git({ "write-tree" }, cwd, function(a)
     if a.code ~= 0 then
-      return cb(nil)
+      return cb(nil, vim.trim(a.stderr or ""))
     end
     local tree = vim.trim(a.stdout)
     git({ "rev-parse", "HEAD^{tree}" }, cwd, function(b)
-      if b.code ~= 0 or vim.trim(b.stdout) == tree then
+      if b.code ~= 0 then
+        return cb(nil, vim.trim(b.stderr or ""))
+      end
+      if vim.trim(b.stdout) == tree then
         return cb(nil)
       end
       cb(tree)
@@ -605,7 +608,13 @@ function M.pull_from_llm_worktree()
     end
 
     local function run(wt)
-      staged_tree(main.path, function(staged)
+      staged_tree(main.path, function(staged, serr)
+        if serr then
+          return notify(
+            "Could not read main's staging, nothing changed:\n" .. serr,
+            vim.log.levels.ERROR
+          )
+        end
         local hint = ""
         if staged then
           hint = "\nYour staging from before the pull: git read-tree " .. staged
@@ -888,9 +897,9 @@ function M.stage_unshared_hunks()
     if not vim.uv.fs_stat(wt.path .. "/.git") then
       return notify("Worktree dir missing: " .. wt.path, vim.log.levels.ERROR)
     end
-    local index_before, index_read
-    staged_tree(main.path, function(tree)
-      index_before, index_read = tree, true
+    local index_before, index_err, index_read
+    staged_tree(main.path, function(tree, err)
+      index_before, index_err, index_read = tree, err, true
     end)
     local diff_file = vim.fn.tempname()
     -- --output keeps git from going through the text-mode pipe, which would eat any \r
@@ -980,10 +989,27 @@ function M.stage_unshared_hunks()
           if not vim.wait(2000, function()
             return index_read
           end, 10) then
-            return notify("Could not read the index, nothing staged.", vim.log.levels.ERROR)
+            return notify(
+              "Could not read the index (timed out), nothing staged.",
+              vim.log.levels.ERROR
+            )
           end
 
-          staged_tree(main.path, function(index_now)
+          if index_err then
+            return notify(
+              "Could not read the index, nothing staged:\n" .. index_err,
+              vim.log.levels.ERROR
+            )
+          end
+
+          staged_tree(main.path, function(index_now, now_err)
+            if now_err then
+              return notify(
+                "Could not read the index, nothing staged:\n" .. now_err,
+                vim.log.levels.ERROR
+              )
+            end
+
             if index_now ~= index_before then
               return notify(
                 "The index changed while checking hunks, nothing staged. Run it again.",
