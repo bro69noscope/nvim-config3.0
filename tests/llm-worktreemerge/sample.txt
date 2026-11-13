@@ -1,0 +1,173 @@
+# sample file for trying llm-worktreemerge setups (pull, overwrite, stage hunks)
+# sections are near-identical on purpose: git can match a hunk to the wrong copy
+
+[section 1]
+name = item_1
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 2]
+name = item_2
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 3]
+name = item_3
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 4]
+name = item_4
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 5]
+name = item_5
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 6]
+name = item_6
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 7]
+name = item_7
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 8]
+name = item_8
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 9]
+name = item_9
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 10]
+name = item_10
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 11]
+name = item_11
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 12]
+name = item_12
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 13]
+name = item_13
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 14]
+name = item_14
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 15]
+name = item_15
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+[section 16]
+name = item_16
+enabled = true
+retries = 3
+timeout = 1000
+tags = { "alpha", "beta" }
+end
+
+# identical run
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+same line
+
+# alternating run
+ping
+pong
+ping
+pong
+ping
+pong
+ping
+pong
+ping
+pong
+ping
+pong
+
+# blank-separated duplicates
+enabled = true
+
+enabled = true
+
+enabled = true
+
+enabled = true
+
+enabled = true
+
+enabled = true
+
+# eof
