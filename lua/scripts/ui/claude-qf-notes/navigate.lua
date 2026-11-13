@@ -4,7 +4,8 @@ local M = {}
 -- scripts/templates-for-ai-gen/claude-qf-notes.lua
 M.NAMESPACE = vim.api.nvim_create_namespace("claude_qf_notes")
 local QFLIST_TITLE = "claude_qf_notes"
-local NOTES_FILE = ".claude-qf-notes.lua"
+M.NOTES_FILE = ".claude-qf-notes.lua"
+local NOTES_FILE = M.NOTES_FILE
 
 local function mark_key()
   return Automated_marks.claude_qf_notes_step.key
@@ -117,10 +118,13 @@ local function run_notes_script()
   return true
 end
 
+-- clear() keeps the marks without their virtual lines, so only marks with virt_lines count
 local function notes_drawn()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if #vim.api.nvim_buf_get_extmarks(b, M.NAMESPACE, 0, -1, { limit = 1 }) > 0 then
-      return true
+    for _, m in ipairs(vim.api.nvim_buf_get_extmarks(b, M.NAMESPACE, 0, -1, { details = true })) do
+      if m[4].virt_lines then
+        return true
+      end
     end
   end
   return false
@@ -154,9 +158,13 @@ function M.open(opts)
   show_list(open_qf)
 end
 
+---Hide the virtual lines but keep the marks (same id and position), so nvim keeps tracking line
+---additions/deletions and sync-lines.lua can still write them back on save.
 function M.clear()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    vim.api.nvim_buf_clear_namespace(b, M.NAMESPACE, 0, -1)
+    for _, m in ipairs(vim.api.nvim_buf_get_extmarks(b, M.NAMESPACE, 0, -1, {})) do
+      vim.api.nvim_buf_set_extmark(b, M.NAMESPACE, m[2], m[3], { id = m[1] })
+    end
   end
   vim.cmd("cclose")
 end

@@ -53,7 +53,7 @@ end
 local failed = 0
 local items = {}
 
-for _, n in ipairs(notes) do
+for i, n in ipairs(notes) do
   local path = vim.fn.fnamemodify(n.file, ":p")
   local buf = vim.fn.bufadd(path)
   vim.fn.bufload(buf)
@@ -69,6 +69,7 @@ for _, n in ipairs(notes) do
   end
 
   local ok = pcall(vim.api.nvim_buf_set_extmark, buf, NAMESPACE, n.line - 1, 0, {
+    id = i,
     virt_lines = virt_lines,
     virt_lines_above = not is_end,
   })

@@ -38,6 +38,7 @@ require("scripts.ux.better-tabclose")
 require("scripts.ux.find-next-brackets")
 require("scripts.ux.change-file-extension").setup()
 require("scripts.ui.claude-qf-notes.navigate").setup()
+require("scripts.ui.claude-qf-notes.sync-lines").setup()
 
 -- misc
 require("modules.snacks.picker.explorer.toggle-without-focus")

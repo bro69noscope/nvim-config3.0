@@ -71,7 +71,10 @@ function M.peek()
       end
       table.insert(parts, vim.trim(text))
     end
-    table.insert(lines, table.concat(parts, " "))
+    -- hidden notes (see navigate.clear) keep their mark but have no virt_lines
+    if #parts > 0 then
+      table.insert(lines, table.concat(parts, " "))
+    end
   end
   if #lines == 0 then
     return vim.notify("no claude note on this line", vim.log.levels.INFO)
