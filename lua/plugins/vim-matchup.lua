@@ -14,9 +14,17 @@ return {
   config = function(_, opts)
     require("match-up").setup(opts)
     vim.keymap.del("i", "<C-G>%") -- invasive keymap for imode c-g binds
-    for _, mode in ipairs({ "n", "x", "o" }) do
-      pcall(vim.keymap.del, mode, "g%")
-      vim.keymap.set(mode, "<C-%>", "<plug>(matchup-g%)", { desc = "matchup: reverse %" })
+
+    local function plug(name)
+      return function()
+        local count = vim.v.count > 0 and vim.v.count or ""
+        vim.cmd.normal(vim.keycode(count .. "<plug>(matchup-" .. name .. ")"))
+      end
     end
+
+    local next_match, _ = RepeatablePairs.track_pair(plug("%"), plug("g%"))
+    local prev_match, _ = RepeatablePairs.track_pair(plug("g%"), plug("%"))
+    vim.keymap.set("n", "%", next_match, { desc = "matchup: % (repeatable)" })
+    vim.keymap.set("n", "g%", prev_match, { desc = "matchup: g% (repeatable)" })
   end,
 }
