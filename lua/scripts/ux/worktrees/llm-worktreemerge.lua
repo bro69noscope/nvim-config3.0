@@ -89,17 +89,21 @@ end
 local UNTRACKED_LIMIT = 2000
 local BACKUP_KEEP = 20
 local PULLED = "refs/wt-pulled/"
+local UNDO = "refs/wt-undo/pull"
+local BACKUP_PREFIX = "refs/wt-backup/"
+local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%d%d%d%-%d%d%d$"
 
 ---@param cwd string
 local function prune_backups(cwd)
-  -- Names are timestamps, so sorting by name descending is newest first.
-  local list = { "for-each-ref", "--sort=-refname", "--format=%(refname)", "refs/wt-backup/" }
+  local list = { "for-each-ref", "--sort=-refname", "--format=%(refname)", BACKUP_PREFIX }
   git(list, cwd, function(r)
     if r.code ~= 0 then
       return Logger.warn("could not list old backups: " .. vim.trim(r.stderr or ""), CTX)
     end
 
-    local refs = vim.split(r.stdout or "", "\n", { plain = true, trimempty = true })
+    local refs = vim.tbl_filter(function(ref)
+      return ref:match(BACKUP_NAME) ~= nil
+    end, vim.split(r.stdout or "", "\n", { plain = true, trimempty = true }))
 
     if #refs > BACKUP_KEEP then
       local n = #refs - BACKUP_KEEP
@@ -120,9 +124,8 @@ end
 
 ---@return string
 local function backup_ref()
-  return "refs/wt-backup/"
-    .. os.date("%Y%m%d-%H%M%S")
-    .. ("-%03d"):format(math.floor(vim.uv.hrtime() / 1e6) % 1000)
+  local sec, usec = vim.uv.gettimeofday()
+  return BACKUP_PREFIX .. os.date("%Y%m%d-%H%M%S", sec) .. ("-%03d"):format(math.floor(usec / 1000))
 end
 
 ---@param cwd string
