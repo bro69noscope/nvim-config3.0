@@ -359,6 +359,11 @@ map("n", "<leader>iu", function()
   require("scripts.ux.worktrees.llm-worktreemerge").undo_pull()
 end, { desc = "Undo last pull from LLM worktree" })
 
+-- After resolving a pull's conflicts, put those files' staging back to before the pull
+map("n", "<leader>ir", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").restore_resolved_staging()
+end, { desc = "Restore staging after resolving LLM pull" })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()

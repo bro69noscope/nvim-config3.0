@@ -90,6 +90,7 @@ local UNTRACKED_LIMIT = 2000
 local BACKUP_KEEP = 20
 local PULLED = "refs/wt-pulled/"
 local UNDO = "refs/wt-undo/pull"
+local CONFLICTS = "refs/wt-undo/conflicts"
 local BACKUP_PREFIX = "refs/wt-backup/"
 local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%d%d%d%-%d%d%d$"
 
@@ -476,7 +477,9 @@ local function save_undo(main, wt, tree, staged, cb)
       vim.list_extend(args, { "-m", msg })
       must(args, main.path, what, function(point)
         must({ "update-ref", UNDO, point }, main.path, what, function()
-          cb()
+          must({ "update-ref", "-d", CONFLICTS }, main.path, what, function()
+            cb()
+          end)
         end)
       end)
     end
@@ -577,6 +580,20 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           git({ "update-index", "-z", "--index-info" }, main.path, cb, nil, table.concat(info))
         end
 
+        local function record_conflicts()
+          local list = table.concat(conflicts, "\0")
+          git({ "hash-object", "-w", "--stdin" }, main.path, function(h)
+            if h.code ~= 0 then
+              return Logger.warn("could not save the conflict list: " .. vim.trim(h.stderr), CTX)
+            end
+            git({ "update-ref", CONFLICTS, vim.trim(h.stdout) }, main.path, function(u)
+              if u.code ~= 0 then
+                Logger.warn("could not save the conflict list: " .. vim.trim(u.stderr), CTX)
+              end
+            end)
+          end, nil, list)
+        end
+
         -- the worktree brought nothing main lacks, e.g. main undid the last pull: a merge keeps
         -- that undo, only a re-pull applies those changes again
         if result == mtree then
@@ -634,10 +651,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
                     vim.log.levels.WARN
                   )
                 else
+                  record_conflicts()
                   notify(
-                    "Merged with conflicts (resolve with git tooling, then `git reset`):\n"
-                      .. list
-                      .. hint,
+                    "Merged with conflicts (resolvable with git tooling)\n" .. list .. hint,
                     vim.log.levels.WARN
                   )
                 end
@@ -906,6 +922,7 @@ function M.undo_pull()
             pulled == "none" and { "update-ref", "-d", PULLED .. branch }
               or { "update-ref", PULLED .. branch, pulled },
             { "update-ref", "-d", UNDO },
+            { "update-ref", "-d", CONFLICTS },
           }
 
           local function step(i)
@@ -940,6 +957,62 @@ function M.undo_pull()
           must({ "update-ref", backup, msha }, main.path, what, function()
             step(1)
           end)
+        end)
+      end)
+    end)
+  end)
+end
+
+--- Put the index entry of each conflicted file back to what it was before the pull (unstaged if it
+--- was not staged).
+function M.restore_resolved_staging()
+  if busy() then
+    return
+  end
+
+  local dir = vim.uv.cwd()
+  if not dir then
+    return notify("No working directory", vim.log.levels.ERROR)
+  end
+
+  git({ "worktree", "list", "--porcelain" }, dir, function(w)
+    if w.code ~= 0 then
+      return notify("Not a git repo: " .. dir, vim.log.levels.ERROR)
+    end
+    local main = parse(w.stdout)[1]
+
+    git({ "cat-file", "blob", CONFLICTS }, main.path, function(c)
+      if c.code ~= 0 then
+        return notify("No conflicted pull to restore the staging of", vim.log.levels.WARN)
+      end
+      local paths = vim.split(c.stdout, "\0", { plain = true, trimempty = true })
+
+      git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+        local unmerged = vim.trim(u.stdout or "")
+        if unmerged ~= "" then
+          return notify("Resolve these first:\n" .. unmerged, vim.log.levels.WARN)
+        end
+
+        -- parent 2 = the staging before the pull, none = nothing was staged (parent 1 = HEAD)
+        git({ "rev-parse", "--verify", "-q", UNDO .. "^2" }, main.path, function(p)
+          local source = p.code == 0 and vim.trim(p.stdout) or UNDO .. "^1"
+          local restore = {
+            "--literal-pathspecs",
+            "restore",
+            "--source=" .. source,
+            "--staged",
+            "--pathspec-from-file=-",
+            "--pathspec-file-nul",
+          }
+          git(restore, main.path, function(r)
+            if r.code ~= 0 then
+              return notify(
+                "Could not restore the staging:\n" .. vim.trim(r.stderr or ""),
+                vim.log.levels.ERROR
+              )
+            end
+            notify("Staging from before the pull restored for:\n" .. table.concat(paths, "\n"))
+          end, nil, c.stdout)
         end)
       end)
     end)
