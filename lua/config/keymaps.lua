@@ -354,6 +354,11 @@ map("n", "<leader>iP", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ again = true })
 end, { desc = "Re-pull everything from LLM worktree" })
 
+-- Put main back to right before the last pull (files, staging, pulled mark)
+map("n", "<leader>iu", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").undo_pull()
+end, { desc = "Undo last pull from LLM worktree" })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()

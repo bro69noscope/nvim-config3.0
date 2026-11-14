@@ -272,8 +272,7 @@ local function llm_worktrees(list, main)
   end, list)
 end
 
--- LLM worktrees with a detached HEAD (checkout <sha>, mid-rebase, bisect...) have no
--- branch, so llm_worktrees skips them; say so instead of failing silently
+-- LLM worktrees with a detached HEAD (checkout <sha>, mid-rebase, bisect...) have no branch
 ---@param list Worktree[]
 ---@param main Worktree
 local function warn_detached(list, main)
@@ -460,6 +459,41 @@ end
 
 ---@param main Worktree
 ---@param wt Worktree
+---@param tree string main's files on disk, from working_tree
+---@param staged string? main's staging, from staged_tree
+---@param cb fun()
+local function save_undo(main, wt, tree, staged, cb)
+  local what = "Saving the undo point (nothing changed)"
+  git({ "rev-parse", "--verify", "-q", PULLED .. wt.branch }, main.path, function(p)
+    -- what undo_pull resets the pulled mark to, "none" = first pull
+    local msg = ("worktreemerge undo point\n\nbranch %s\npulled %s"):format(
+      wt.branch,
+      p.code == 0 and vim.trim(p.stdout) or "none"
+    )
+    -- parents: HEAD, then the staging if any (a parent must be a commit, so it gets wrapped)
+    local function save(parents)
+      local args = vim.list_extend({ "commit-tree", tree, "-p", "HEAD" }, parents)
+      vim.list_extend(args, { "-m", msg })
+      must(args, main.path, what, function(point)
+        must({ "update-ref", UNDO, point }, main.path, what, function()
+          cb()
+        end)
+      end)
+    end
+
+    if not staged then
+      return save({})
+    end
+
+    local wrap = { "commit-tree", staged, "-p", "HEAD", "-m", "worktreemerge staging" }
+    must(wrap, main.path, what, function(s)
+      save({ "-p", s })
+    end)
+  end)
+end
+
+---@param main Worktree
+---@param wt Worktree
 ---@param sha string? worktree snapshot this pull brought into main. nil = its HEAD
 local function record_pulled(main, wt, sha)
   local function save(commit)
@@ -626,7 +660,10 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
             step(i + 1)
           end)
         end
-        step(1)
+
+        save_undo(main, wt, mtree, staged, function()
+          step(1)
+        end)
       end)
     end
 
@@ -708,63 +745,75 @@ function M.pull_from_llm_worktree(opts)
             local extra = sha and " + uncommitted" or ""
             Logger.info(("Squash-merging %s%s into main..."):format(wt.branch, extra), CTX)
 
-            git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
-              local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
-
-              if r.code == 0 then
-                -- clean merge, but the autostash reapply can conflict
-                git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
-                  local unmerged = vim.trim(u.stdout or "")
-                  if unmerged ~= "" then
-                    record_pulled(main, wt, sha)
-                    notify(
-                      "Merged, but conflicts remain (resolve with git tooling, then `git reset`):\n"
-                        .. unmerged
-                        .. hint,
-                      vim.log.levels.WARN
-                    )
-                    return vim.cmd("checktime")
-                  end
-
-                  restore_staging(main, staged, function(z)
-                    Logger.info("git merge output:\n" .. out, CTX)
-                    record_pulled(main, wt, sha)
-                    if z.code ~= 0 then
-                      notify(
-                        "Merged, but restoring your staging failed:\n"
-                          .. vim.trim(z.stderr or "")
-                          .. hint,
-                        vim.log.levels.WARN
-                      )
-                    else
-                      notify(
-                        ("Merged %s into main as unstaged changes%s"):format(
-                          wt.branch,
-                          staged and ", your staged changes kept" or ""
-                        )
-                      )
-                    end
-                    vim.cmd("checktime")
-                  end)
-                end)
-              else
-                -- merge failed: unmerged files = conflict, none = never ran
-                git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
-                  local unmerged = vim.trim(u.stdout or "")
-                  if unmerged ~= "" then
-                    record_pulled(main, wt, sha)
-                    notify(
-                      "Conflicts (resolve with git tooling, then `git reset`):\n"
-                        .. unmerged
-                        .. hint,
-                      vim.log.levels.WARN
-                    )
-                  else
-                    notify("Merge not applied:\n" .. out, vim.log.levels.ERROR)
-                  end
-                  vim.cmd("checktime")
-                end)
+            working_tree(main.path, function(mtree, merr)
+              if merr then
+                return notify(
+                  "Could not snapshot main, nothing changed:\n" .. merr,
+                  vim.log.levels.ERROR
+                )
               end
+
+              save_undo(main, wt, mtree, staged, function()
+                git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
+                  local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
+
+                  if r.code == 0 then
+                    -- clean merge, but the autostash reapply can conflict
+                    git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                      local unmerged = vim.trim(u.stdout or "")
+                      if unmerged ~= "" then
+                        record_pulled(main, wt, sha)
+                        notify(
+                          "Merged, but conflicts remain (resolve with git tooling, then"
+                            .. " `git reset`):\n"
+                            .. unmerged
+                            .. hint,
+                          vim.log.levels.WARN
+                        )
+                        return vim.cmd("checktime")
+                      end
+
+                      restore_staging(main, staged, function(z)
+                        Logger.info("git merge output:\n" .. out, CTX)
+                        record_pulled(main, wt, sha)
+                        if z.code ~= 0 then
+                          notify(
+                            "Merged, but restoring your staging failed:\n"
+                              .. vim.trim(z.stderr or "")
+                              .. hint,
+                            vim.log.levels.WARN
+                          )
+                        else
+                          notify(
+                            ("Merged %s into main as unstaged changes%s"):format(
+                              wt.branch,
+                              staged and ", your staged changes kept" or ""
+                            )
+                          )
+                        end
+                        vim.cmd("checktime")
+                      end)
+                    end)
+                  else
+                    -- merge failed: unmerged files = conflict, none = never ran
+                    git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                      local unmerged = vim.trim(u.stdout or "")
+                      if unmerged ~= "" then
+                        record_pulled(main, wt, sha)
+                        notify(
+                          "Conflicts (resolve with git tooling, then `git reset`):\n"
+                            .. unmerged
+                            .. hint,
+                          vim.log.levels.WARN
+                        )
+                      else
+                        notify("Merge not applied:\n" .. out, vim.log.levels.ERROR)
+                      end
+                      vim.cmd("checktime")
+                    end)
+                  end
+                end)
+              end)
             end)
           end)
         end)
@@ -784,6 +833,115 @@ function M.pull_from_llm_worktree(opts)
       if choice then
         run(choice)
       end
+    end)
+  end)
+end
+
+--- Put main back to right before the last pull: files on disk (untracked ones too), staging, and
+--- the worktree's pulled mark, so the next pull offers those changes again.
+function M.undo_pull()
+  if busy() then
+    return
+  end
+  local dir = vim.uv.cwd()
+  if not dir then
+    return notify("No working directory", vim.log.levels.ERROR)
+  end
+
+  git({ "worktree", "list", "--porcelain" }, dir, function(w)
+    if w.code ~= 0 then
+      return notify("Not a git repo: " .. dir, vim.log.levels.ERROR)
+    end
+    local main = parse(w.stdout)[1]
+
+    local fmt = "--format=%(parent)%0a%(contents)"
+    git({ "for-each-ref", fmt, UNDO }, main.path, function(l)
+      if l.code ~= 0 then
+        local err = vim.trim(l.stderr or "")
+        return notify("Could not read " .. UNDO .. ": " .. err, vim.log.levels.ERROR)
+      end
+      if l.stdout == "" then
+        return notify("No pull to undo", vim.log.levels.WARN)
+      end
+
+      local parents = vim.split(l.stdout:match("^[^\n]*"), " ", { plain = true, trimempty = true })
+      local branch, pulled = l.stdout:match("\nbranch (%S+)\npulled (%S+)")
+
+      if not branch then
+        local subject = l.stdout:match("\n([^\n]*)") or ""
+        return notify(
+          ("%s does not point to an undo point (commit message: %q)"):format(UNDO, subject),
+          vim.log.levels.ERROR
+        )
+      end
+
+      must({ "rev-parse", "HEAD" }, main.path, "rev-parse HEAD in main", function(head)
+        if head ~= parents[1] then
+          local msg = "HEAD moved since the pull, not undoing. Files before it:"
+            .. " git checkout %s -- ."
+          return notify(msg:format(UNDO), vim.log.levels.WARN)
+        end
+
+        local ask = "Undo the pull of %s? Edits made in main since are discarded (backed up first)"
+        if vim.fn.confirm(ask:format(branch), "&Yes\n&No", 2) ~= 1 then
+          return
+        end
+
+        snapshot(main.path, function(msha, merr)
+          if merr then
+            return notify(
+              "Could not back up main, nothing changed:\n" .. merr,
+              vim.log.levels.ERROR
+            )
+          end
+          local backup = msha and backup_ref()
+          local saved = backup and ("\nWhat main had since the pull is saved as " .. backup) or ""
+
+          local steps = {
+            -- the index takes the files on disk, so the next step also removes the ones the pull
+            -- added (it only removes files the index has); this also clears conflict stages
+            { "add", "-A" },
+            { "read-tree", "-u", "--reset", UNDO },
+            parents[2] and { "read-tree", parents[2] } or { "reset", "-q" },
+            pulled == "none" and { "update-ref", "-d", PULLED .. branch }
+              or { "update-ref", PULLED .. branch, pulled },
+            { "update-ref", "-d", UNDO },
+          }
+
+          local function step(i)
+            local s = steps[i]
+            if not s then
+              notify(("Main is back to right before the pull of %s%s"):format(branch, saved))
+              prune_backups(main.path)
+              return vim.cmd("checktime")
+            end
+
+            git(s, main.path, function(r)
+              if r.code ~= 0 then
+                notify(
+                  ("Undo stopped at git %s:\n%s%s"):format(
+                    table.concat(s, " "),
+                    vim.trim(r.stderr or ""),
+                    saved
+                  ),
+                  vim.log.levels.ERROR
+                )
+                return vim.cmd("checktime")
+              end
+              step(i + 1)
+            end)
+          end
+
+          if not backup then
+            return step(1)
+          end
+
+          local what = "Backing up main (nothing changed)"
+          must({ "update-ref", backup, msha }, main.path, what, function()
+            step(1)
+          end)
+        end)
+      end)
     end)
   end)
 end
