@@ -58,7 +58,7 @@ return {
           vim.cmd("normal! zz")
         end, { desc = "Next change in diff" })
 
-        map("n", PreviousDiffChangeBind, function()
+        map("n", PrevDiffChangeBind, function()
           vim.cmd.normal({ "[c", bang = true })
           vim.cmd("normal! zz")
         end, { desc = "Previous change in diff" })
@@ -96,7 +96,7 @@ return {
         next_hunk({ wrap = false })
       end, { desc = "Next Hunk" })
 
-      map("n", PreviousDiffChangeBind, function()
+      map("n", PrevDiffChangeBind, function()
         local repeat_reverse = require("modules.gitsigns.repeat-reverse")
         local _, prev_hunk = repeat_reverse.setup_gitsigns()
         prev_hunk({ wrap = false })

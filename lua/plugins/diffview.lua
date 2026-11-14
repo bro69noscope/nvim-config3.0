@@ -50,14 +50,24 @@ return {
           { "n", NextDiffChangeBind, change_nav.next_change, { desc = "Next change or file" } },
           {
             "n",
-            PreviousDiffChangeBind,
+            PrevDiffChangeBind,
             change_nav.prev_change,
             { desc = "Previous change or file" },
           },
           { "n", "]x", false, { desc = "diffview_ignore" } },
           { "n", "[x", false, { desc = "diffview_ignore" } },
-          { "n", "]`", actions.next_conflict, { desc = "Next conflict" } },
-          { "n", "[`", actions.prev_conflict, { desc = "Previous conflict" } },
+          {
+            "n",
+            NextDiffConflictBind,
+            change_nav.next_conflict,
+            { desc = "Next conflict or file" },
+          },
+          {
+            "n",
+            PrevDiffConflictBind,
+            change_nav.prev_conflict,
+            { desc = "Previous conflict or file" },
+          },
         },
         file_panel = {
           { "n", "q", actions.close, { desc = "Close diffview" } },

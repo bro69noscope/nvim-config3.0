@@ -85,7 +85,7 @@ return {
           end
         end, { buffer = 0 })
 
-        vim.keymap.set("n", PreviousDiffChangeBind, function()
+        vim.keymap.set("n", PrevDiffChangeBind, function()
           if vim.wo.diff then
             vim.cmd.normal({ "[c", bang = true })
           end

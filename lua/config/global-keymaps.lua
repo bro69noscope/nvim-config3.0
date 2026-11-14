@@ -1,5 +1,8 @@
 _G.NextDiffChangeBind = "<m-j>"
-_G.PreviousDiffChangeBind = "<m-k>"
+_G.PrevDiffChangeBind = "<m-k>"
+_G.NextDiffConflictBind = "<m-c-j>"
+_G.PrevDiffConflictBind = "<m-c-k>"
+
 _G.HideTerminalBind = "<c-o>"
 
 _G.UpWindowBind = "<c-k>"
