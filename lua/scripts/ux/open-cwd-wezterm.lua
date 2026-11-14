@@ -12,7 +12,7 @@ local function find_up(rel)
   end
 end
 
-local paths_file = find_up("shared/wezterm-paths.txt") -- located in dotfiles/ parent repo
+local paths_file = find_up("windows/shared/wezterm-paths.txt") -- located in dotfiles/ parent repo
 local sock_dir = vim.fn.expand("~/.local/share/wezterm")
 local excluded_titles = { "[[NVIM-SCRATCH]]", "WezTerm - secondary" }
 
