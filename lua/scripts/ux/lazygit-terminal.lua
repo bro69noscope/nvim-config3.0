@@ -8,7 +8,6 @@ local function notify_error(msg)
   vim.notify(msg, vim.log.levels.ERROR)
 end
 
--- Function to create a floating terminal
 local function lg_float_term(opts)
   opts = vim.tbl_deep_extend("force", {
     size = { width = 0.96, height = 1.0 },
@@ -21,10 +20,8 @@ local function lg_float_term(opts)
     -- Handle arguments for Windows
     if opts.cmd_args then
       if type(opts.cmd_args) == "string" then
-        -- Add the single string as one more argument
         table.insert(cmd, opts.cmd_args)
       elseif type(opts.cmd_args) == "table" then
-        -- Add each argument from the table
         for _, arg in ipairs(opts.cmd_args) do
           table.insert(cmd, arg)
         end
@@ -58,7 +55,6 @@ local function lg_float_term(opts)
     border = "rounded",
   })
 
-  -- Store in our global reference
   lazygit_term.buf = buf
   lazygit_term.win = float
   local backdrop = require("scripts.ui.create-backdrop-window")
@@ -69,28 +65,43 @@ local function lg_float_term(opts)
   vim.api.nvim_buf_set_keymap(buf, "t", "]", "]", { noremap = true, nowait = true })
   vim.api.nvim_buf_set_keymap(buf, "t", "[", "[", { noremap = true, nowait = true })
 
-  -- Create terminal
+  local newdir_file = vim.fn.tempname()
+
   vim.fn.jobstart(cmd, {
     cwd = vim.fn.getcwd(),
+    env = { LAZYGIT_NEW_DIR_FILE = newdir_file },
     term = true,
     on_exit = function()
       vim.schedule(function()
-        -- Check if the window still exists
+        local ok, out = pcall(vim.fn.readfile, newdir_file)
+        os.remove(newdir_file)
+        local newdir = ok and out[1] or ""
+
+        local function key(p)
+          p = vim.fs.normalize(p)
+          return OnWindows and p:lower() or p
+        end
+
+        if newdir ~= "" and key(newdir) ~= key(vim.fn.getcwd()) then
+          vim.cmd.cd(vim.fn.fnameescape(newdir))
+          vim.notify("cwd -> " .. vim.fn.getcwd(), vim.log.levels.INFO, { title = "Lazygit" })
+        end
+
         if vim.api.nvim_win_is_valid(lazygit_term.win) then
           vim.api.nvim_win_close(lazygit_term.win, true)
         end
-        -- Force delete the buffer
+
         if vim.api.nvim_buf_is_valid(lazygit_term.buf) then
           vim.api.nvim_buf_delete(lazygit_term.buf, { force = true })
         end
-        -- Refresh file and directory views
+
         vim.cmd("checktime")
         if package.loaded["neo-tree"] then
           pcall(function()
             require("neo-tree.sources.manager").refresh()
           end)
         end
-        -- Clear our references
+
         lazygit_term.buf = nil
         lazygit_term.win = nil
       end)
@@ -101,7 +112,6 @@ local function lg_float_term(opts)
   return { buf = buf, win = float }
 end
 
--- Function to check clipboard with retries
 local function get_relative_file_path(retries, delay)
   local relative_filepath
   for _ = 1, retries do
@@ -114,7 +124,6 @@ local function get_relative_file_path(retries, delay)
   return nil
 end
 
--- Function to handle editing from Lazygit
 function M.lazygit_edit(original_buffer)
   local current_bufnr = vim.fn.bufnr("%")
   local channel_id = vim.fn.getbufvar(current_bufnr, "terminal_job_id")
@@ -139,7 +148,6 @@ function M.lazygit_edit(original_buffer)
   vim.cmd("e " .. relative_filepath)
 end
 
--- Function to start Lazygit in a floating terminal
 function M.start_lazygit(opts)
   local current_buffer = vim.api.nvim_get_current_buf()
   local float_term = lg_float_term(opts)
@@ -155,7 +163,6 @@ function M.start_lazygit(opts)
     )
   end
 
-  -- Keybind to edit the file in the current nvim instance
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
@@ -167,7 +174,6 @@ function M.start_lazygit(opts)
     { noremap = true, silent = true }
   )
 
-  -- Keybind to write a commit using Tinygit
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
@@ -176,7 +182,6 @@ function M.start_lazygit(opts)
     { noremap = true, silent = true }
   )
 
-  -- Keybind to amend last commit using Tinygit
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
@@ -190,7 +195,6 @@ end
 
 function M.run_tinygit_command(command)
   vim.cmd("Tinygit " .. command)
-  -- Set up a timer to check when Tinygit is done
   local check_timer = vim.loop.new_timer()
   if not check_timer then
     notify_error("Failed to create a timer for checking Tinygit completion.")
@@ -200,7 +204,6 @@ function M.run_tinygit_command(command)
     80,
     80,
     vim.schedule_wrap(function()
-      -- Check if any of the gitcommit windows are still valid
       local gitcommit_windows_exist = false
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         local buf = vim.api.nvim_win_get_buf(win)
@@ -210,7 +213,6 @@ function M.run_tinygit_command(command)
         end
       end
       if not gitcommit_windows_exist then
-        -- Return focus to the terminal window if it's still valid
         if vim.api.nvim_win_is_valid(lazygit_term.win) then
           vim.api.nvim_set_current_win(lazygit_term.win)
           vim.cmd("startinsert")
