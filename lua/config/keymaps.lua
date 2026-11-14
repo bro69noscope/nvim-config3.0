@@ -234,19 +234,19 @@ map("n", "<leader>yf", function()
   local file_name = vim.fn.expand("%:t:r")
   vim.fn.setreg("+", file_name)
   vim.notify("File name copied to clipboard: " .. file_name, vim.log.levels.INFO)
-end, { desc = "Yank current file name to clipboard" })
+end, { desc = "Yank current fname to clipboard" })
 
 map("n", "<leader>yF", function()
   local file_name = vim.fn.expand("%:t")
   vim.fn.setreg("+", file_name)
   vim.notify("File path copied to clipboard: " .. file_name, vim.log.levels.INFO)
-end, { desc = "Yank current file name (with ext.) to clipboard" })
+end, { desc = "Yank current fname + ext. to clipboard" })
 
 map("n", "<leader>y.", function()
   local cwd = vim.fn.getcwd()
   vim.fn.setreg("+", cwd)
   vim.notify("CWD copied to clipboard: " .. cwd, vim.log.levels.INFO)
-end, { desc = "Yank current working directory to clipboard" })
+end, { desc = "Yank cwd to clipboard", icon = "📂" })
 
 -- Various uitilities
 local various_utils = require("scripts.utils.various-utils")
