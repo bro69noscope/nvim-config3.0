@@ -15,6 +15,11 @@ if vim.g.neovide == true then
   vim.g.neovide_scale_factor = zoomed_scale
   vim.keymap.set("n", "<F11>", ":let g:neovide_fullscreen = !g:neovide_fullscreen<CR>", {})
   vim.keymap.set({ "n", "i", "v", "c", "t" }, "<C-S-v>", paste, { silent = true, desc = "Paste" })
+
+  -- unbind weird inexplicable bugged keybinds
+  vim.keymap.set("n", "<C-S-j>", "<Nop>")
+  vim.keymap.set("n", "<C-S-k>", "<Nop>") -- this one doesn't bug, just for consistency
+
   vim.keymap.set(
     "n",
     "<C-=>",
