@@ -1,3 +1,4 @@
+test
 local map = require("scripts.ui.whichkey-map").map
 
 -- important remap to work with glove80 special layout
