@@ -1,7 +1,13 @@
 local M = {}
 
+local close_active
+
 local function show_float(text)
-  local max_width = math.floor(vim.o.columns * 0.6)
+  if close_active then
+    close_active()
+  end
+
+  local max_width = math.floor(vim.o.columns * 0.7)
   local width = math.min(#text + 2, max_width)
   local height = math.max(1, math.ceil(#text / width))
 
@@ -9,9 +15,9 @@ local function show_float(text)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { text })
 
   local win = vim.api.nvim_open_win(buf, false, {
-    relative = "cursor",
-    row = 1,
-    col = 0,
+    relative = "editor",
+    row = math.floor((vim.o.lines - height) / 2) - 1,
+    col = math.floor((vim.o.columns - width) / 2) - 1,
     width = width,
     height = height,
     style = "minimal",
@@ -20,13 +26,29 @@ local function show_float(text)
 
   vim.wo[win].wrap = true
 
-  vim.api.nvim_create_autocmd({ "CursorMoved", "BufLeave", "InsertEnter" }, {
+  local backdrop = require("scripts.ui.create-backdrop-window")
+  local backdrop_handle = backdrop.open({ blend = 60 })
+
+  local saved_guicursor = vim.o.guicursor
+  vim.api.nvim_set_hl(0, "HiddenCursor", { blend = 100, nocombine = true })
+  vim.o.guicursor = "a:HiddenCursor"
+
+  local autocmd_id
+  local function close()
+    close_active = nil
+    pcall(vim.api.nvim_del_autocmd, autocmd_id)
+    vim.o.guicursor = saved_guicursor
+    backdrop.close(backdrop_handle)
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
+
+  close_active = close
+
+  autocmd_id = vim.api.nvim_create_autocmd({ "CursorMoved", "BufLeave", "InsertEnter" }, {
     once = true,
-    callback = function()
-      if vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
-      end
-    end,
+    callback = close,
   })
 end
 
