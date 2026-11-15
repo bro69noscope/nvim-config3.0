@@ -4,9 +4,16 @@ local TITLE = "LlmWorktreeMerge"
 local CTX = "llm-worktreemerge"
 local notify = require("config.notifylog").bind({ title = TITLE, ctx = CTX })
 
+local UNTRACKED_LIMIT = 2000
+local BACKUP_KEEP = 20
+local PULLED = "refs/wt-pulled/"
+local BACKUP_PREFIX = "refs/wt-backup/"
+local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%d%d%d%-%d%d%d$"
+
 ---@class Worktree
 ---@field path string
 ---@field branch string? nil when the worktree has a detached HEAD
+---@field is_main boolean? true for the main checkout (first in `git worktree list`)
 
 local in_flight = 0
 
@@ -86,13 +93,25 @@ local function must(args, cwd, what, cb)
   end)
 end
 
-local UNTRACKED_LIMIT = 2000
-local BACKUP_KEEP = 20
-local PULLED = "refs/wt-pulled/"
-local UNDO = "refs/wt-undo/pull"
-local CONFLICTS = "refs/wt-undo/conflicts"
-local BACKUP_PREFIX = "refs/wt-backup/"
-local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%d%d%d%-%d%d%d$"
+-- Refs are shared by all worktrees, so the ones about a pull name the worktree pulled into
+-- (target). Main keeps the plain names, which predate pulling into other worktrees.
+
+--- What the last pull of llm into target brought in, the base of the next pull
+---@param target Worktree
+---@param llm Worktree
+---@return string
+local function pulled_ref(target, llm)
+  return PULLED .. llm.branch .. (target.is_main and "" or "@" .. target.branch)
+end
+
+--- The undo point of target's last pull ("pull"), or the blob listing the files that pull left
+--- conflicted, NUL-separated ("conflicts"). One slot per target.
+---@param target Worktree
+---@param name "pull"|"conflicts"
+---@return string
+local function undo_ref(target, name)
+  return "refs/wt-undo/" .. (target.is_main and "" or "@" .. target.branch .. "/") .. name
+end
 
 ---@param cwd string
 local function prune_backups(cwd)
@@ -255,7 +274,68 @@ local function parse(out)
       end
     end
   end
+  if list[1] then
+    list[1].is_main = true
+  end
   return list
+end
+
+---@param p string
+---@return string
+local function norm_path(p)
+  p = vim.fs.normalize(p)
+  return vim.fn.has("win32") == 1 and p:lower() or p
+end
+
+--- The worktree the cwd is in: the longest matching path, since LLM worktrees sit inside main
+---@param list Worktree[]
+---@param dir string
+---@return Worktree?
+local function worktree_at(list, dir)
+  local d, found = norm_path(dir), nil
+  for _, wt in ipairs(list) do
+    local p = norm_path(wt.path)
+    if (d == p or vim.startswith(d, p .. "/")) and (not found or #wt.path > #found.path) then
+      found = wt
+    end
+  end
+  return found
+end
+
+--- Run cb with the worktree list and the worktree the cwd is in, the one pulled into
+---@param cb fun(list: Worktree[], target: Worktree)
+local function with_target(cb)
+  local dir = vim.uv.cwd()
+  if not dir then
+    return notify("No working directory", vim.log.levels.ERROR)
+  end
+
+  git({ "worktree", "list", "--porcelain" }, dir, function(w)
+    if w.code ~= 0 then
+      return notify("Not a git repo: " .. dir, vim.log.levels.ERROR)
+    end
+
+    local list = parse(w.stdout)
+    local target = worktree_at(list, dir)
+    if not target then
+      return notify("The cwd is in no worktree of this repo: " .. dir, vim.log.levels.ERROR)
+    end
+
+    if not target.is_main and not target.branch then
+      return notify(
+        target.path .. " has a detached HEAD, check out a branch first",
+        vim.log.levels.ERROR
+      )
+    end
+
+    cb(list, target)
+  end)
+end
+
+---@param target Worktree
+---@return string
+local function label(target)
+  return target.is_main and "main" or target.branch
 end
 
 ---@param wt Worktree
@@ -287,39 +367,31 @@ local function warn_detached(list, main)
   end
 end
 
----@param prompt string
----@param cb fun(main: Worktree, wt: Worktree)
+---@param prompt string picker prompt, %s = the target's label
+---@param cb fun(target: Worktree, llm: Worktree)
 local function pick_llm_worktree(prompt, cb)
-  local dir = vim.uv.cwd()
-  if not dir then
-    return notify("No working directory", vim.log.levels.ERROR)
-  end
-
-  git({ "worktree", "list", "--porcelain" }, dir, function(w)
-    if w.code ~= 0 then
-      return notify("Not a git repo", vim.log.levels.ERROR)
-    end
-
-    local list = parse(w.stdout)
+  with_target(function(list, target)
     local main = list[1]
-
     warn_detached(list, main)
-    local llm_wts = llm_worktrees(list, main)
+    -- a target that is itself an LLM worktree can't pair with itself
+    local llm_wts = vim.tbl_filter(function(llm)
+      return llm ~= target
+    end, llm_worktrees(list, main))
     if #llm_wts == 0 then
-      return notify("No LLM worktrees", vim.log.levels.WARN)
+      return notify("No other LLM worktrees", vim.log.levels.WARN)
     end
     if #llm_wts == 1 then
-      return cb(main, llm_wts[1])
+      return cb(target, llm_wts[1])
     end
 
     select(llm_wts, {
-      prompt = prompt,
-      format_item = function(wt)
-        return wt.branch .. "  (" .. wt.path .. ")"
+      prompt = prompt:format(label(target)),
+      format_item = function(llm)
+        return llm.branch .. "  (" .. llm.path .. ")"
       end,
     }, function(choice)
       if choice then
-        cb(main, choice)
+        cb(target, choice)
       end
     end)
   end)
@@ -453,31 +525,31 @@ end
 ---@param main Worktree
 ---@param staged string? tree from staged_tree
 ---@param cb fun(r: vim.SystemCompleted)
-local function restore_staging(main, staged, cb)
+local function restore_staging(target, staged, cb)
   local reset = staged and { "read-tree", staged } or { "reset", "-q" }
-  git(reset, main.path, cb)
+  git(reset, target.path, cb)
 end
 
----@param main Worktree
----@param wt Worktree
----@param tree string main's files on disk, from working_tree
----@param staged string? main's staging, from staged_tree
+---@param target Worktree
+---@param llm Worktree
+---@param tree string target's files on disk, from working_tree
+---@param staged string? target's staging, from staged_tree
 ---@param cb fun()
-local function save_undo(main, wt, tree, staged, cb)
-  local what = "Saving the undo point (nothing changed)"
-  git({ "rev-parse", "--verify", "-q", PULLED .. wt.branch }, main.path, function(p)
+local function save_undo(target, llm, tree, staged, cb)
+  local what = "Saving the undo point (nothing changed yet)"
+  git({ "rev-parse", "--verify", "-q", pulled_ref(target, llm) }, target.path, function(p)
     -- what undo_pull resets the pulled mark to, "none" = first pull
     local msg = ("worktreemerge undo point\n\nbranch %s\npulled %s"):format(
-      wt.branch,
+      llm.branch,
       p.code == 0 and vim.trim(p.stdout) or "none"
     )
     -- parents: HEAD, then the staging if any (a parent must be a commit, so it gets wrapped)
     local function save(parents)
       local args = vim.list_extend({ "commit-tree", tree, "-p", "HEAD" }, parents)
       vim.list_extend(args, { "-m", msg })
-      must(args, main.path, what, function(point)
-        must({ "update-ref", UNDO, point }, main.path, what, function()
-          must({ "update-ref", "-d", CONFLICTS }, main.path, what, function()
+      must(args, target.path, what, function(point)
+        must({ "update-ref", undo_ref(target, "pull"), point }, target.path, what, function()
+          must({ "update-ref", "-d", undo_ref(target, "conflicts") }, target.path, what, function()
             cb()
           end)
         end)
@@ -489,18 +561,18 @@ local function save_undo(main, wt, tree, staged, cb)
     end
 
     local wrap = { "commit-tree", staged, "-p", "HEAD", "-m", "worktreemerge staging" }
-    must(wrap, main.path, what, function(s)
+    must(wrap, target.path, what, function(s)
       save({ "-p", s })
     end)
   end)
 end
 
----@param main Worktree
----@param wt Worktree
----@param sha string? worktree snapshot this pull brought into main. nil = its HEAD
-local function record_pulled(main, wt, sha)
+---@param target Worktree
+---@param llm Worktree
+---@param sha string? worktree snapshot this pull brought into target. nil = its HEAD
+local function record_pulled(target, llm, sha)
   local function save(commit)
-    git({ "update-ref", PULLED .. wt.branch, commit }, main.path, function(r)
+    git({ "update-ref", pulled_ref(target, llm), commit }, target.path, function(r)
       if r.code ~= 0 then
         Logger.warn("could not record the pulled state: " .. vim.trim(r.stderr or ""), CTX)
       end
@@ -510,7 +582,8 @@ local function record_pulled(main, wt, sha)
   if sha then
     return save(sha)
   end
-  git({ "rev-parse", wt.branch }, main.path, function(r)
+
+  git({ "rev-parse", llm.branch }, target.path, function(r)
     if r.code ~= 0 then
       return Logger.warn("could not record the pulled state: " .. vim.trim(r.stderr or ""), CTX)
     end
@@ -518,18 +591,21 @@ local function record_pulled(main, wt, sha)
   end)
 end
 
---- Merge the worktree into main starting from the previous pull: only what changed in the worktree
---- since then comes in, and everything else in main (its own edits) stays.
----@param main Worktree
----@param wt Worktree
+--- Merge the worktree into target (the cwd's worktree) starting from the previous pull: only what
+--- changed in the worktree since then comes in, and target's own edits stay.
+---@param target Worktree
+---@param llm Worktree
 ---@param base string commit of the previous pull
 ---@param sha string? snapshot commit of the worktree now; nil = its HEAD
----@param staged string? main's staged state, put back afterwards
+---@param staged string? target's staged state, put back afterwards
 ---@param hint string
-local function pull_from_base(main, wt, base, sha, staged, hint)
-  snapshot(main.path, function(msha, merr, mtree)
+local function pull_from_base(target, llm, base, sha, staged, hint)
+  snapshot(target.path, function(msha, merr, mtree)
     if merr then
-      return notify("Could not snapshot main, nothing changed:\n" .. merr, vim.log.levels.ERROR)
+      return notify(
+        ("Could not snapshot %s, nothing changed:\n"):format(label(target)) .. merr,
+        vim.log.levels.ERROR
+      )
     end
 
     local function merge()
@@ -539,9 +615,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
         "-z",
         "--merge-base=" .. base,
         msha or "HEAD",
-        sha or wt.branch,
+        sha or llm.branch,
       }
-      git(args, main.path, function(m)
+      git(args, target.path, function(m)
         if m.code > 1 then -- 1 means conflicts
           return notify(
             "git merge-tree failed, nothing changed:\n" .. vim.trim(m.stderr or ""),
@@ -577,16 +653,17 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           for _, entry in ipairs(stages) do
             table.insert(info, entry .. "\0")
           end
-          git({ "update-index", "-z", "--index-info" }, main.path, cb, nil, table.concat(info))
+          git({ "update-index", "-z", "--index-info" }, target.path, cb, nil, table.concat(info))
         end
 
         local function record_conflicts()
           local list = table.concat(conflicts, "\0")
-          git({ "hash-object", "-w", "--stdin" }, main.path, function(h)
+          git({ "hash-object", "-w", "--stdin" }, target.path, function(h)
             if h.code ~= 0 then
               return Logger.warn("could not save the conflict list: " .. vim.trim(h.stderr), CTX)
             end
-            git({ "update-ref", CONFLICTS, vim.trim(h.stdout) }, main.path, function(u)
+            local ref = undo_ref(target, "conflicts")
+            git({ "update-ref", ref, vim.trim(h.stdout) }, target.path, function(u)
               if u.code ~= 0 then
                 Logger.warn("could not save the conflict list: " .. vim.trim(u.stderr), CTX)
               end
@@ -594,12 +671,17 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           end, nil, list)
         end
 
-        -- the worktree brought nothing main lacks, e.g. main undid the last pull: a merge keeps
+        -- the worktree brought nothing target lacks, e.g. it undid the last pull: a merge keeps
         -- that undo, only a re-pull applies those changes again
         if result == mtree then
-          notify(("Nothing new from %s since the last pull, main unchanged"):format(wt.branch))
-          record_pulled(main, wt, sha)
-          return prune_backups(main.path)
+          notify(
+            ("Nothing new from %s since the last pull, %s unchanged"):format(
+              llm.branch,
+              label(target)
+            )
+          )
+          record_pulled(target, llm, sha)
+          return prune_backups(target.path)
         end
 
         local steps = {
@@ -613,10 +695,10 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
         local function step(i)
           local s = steps[i]
           if not s then
-            return restore_staging(main, staged, function(z)
+            return restore_staging(target, staged, function(z)
               local function done()
-                record_pulled(main, wt, sha)
-                prune_backups(main.path)
+                record_pulled(target, llm, sha)
+                prune_backups(target.path)
                 vim.cmd("checktime")
               end
 
@@ -630,8 +712,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
               end
               if #conflicts == 0 then
                 notify(
-                  ("Merged %s into main as unstaged changes%s"):format(
-                    wt.branch,
+                  ("Merged %s into %s as unstaged changes%s"):format(
+                    llm.branch,
+                    label(target),
                     staged and ", your staged changes kept" or ""
                   )
                 )
@@ -662,12 +745,12 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
             end)
           end
 
-          git(s, main.path, function(r)
+          git(s, target.path, function(r)
             if r.code ~= 0 then
-              return restore_staging(main, staged, function()
-                local msg = "Could not apply the merge to main, nothing changed (git %s):\n%s"
+              return restore_staging(target, staged, function()
+                local msg = "Could not apply the merge to %s, nothing changed (git %s):\n%s"
                 notify(
-                  msg:format(table.concat(s, " "), vim.trim(r.stderr or "")) .. hint,
+                  msg:format(label(target), table.concat(s, " "), vim.trim(r.stderr or "")) .. hint,
                   vim.log.levels.ERROR
                 )
                 vim.cmd("checktime")
@@ -677,7 +760,7 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
           end)
         end
 
-        save_undo(main, wt, mtree, staged, function()
+        save_undo(target, llm, mtree, staged, function()
           step(1)
         end)
       end)
@@ -687,8 +770,9 @@ local function pull_from_base(main, wt, base, sha, staged, hint)
       return merge()
     end
     local backup = backup_ref()
-    must({ "update-ref", backup, msha }, main.path, "backing up main", function()
-      Logger.info("main backed up as " .. backup, CTX)
+    local what = "backing up " .. label(target)
+    must({ "update-ref", backup, msha }, target.path, what, function()
+      Logger.info(label(target) .. " backed up as " .. backup, CTX)
       merge()
     end)
   end)
@@ -700,29 +784,24 @@ function M.pull_from_llm_worktree(opts)
   if busy() then
     return
   end
-  local dir = vim.uv.cwd()
-  if not dir then
-    return notify("No working directory", vim.log.levels.ERROR)
-  end
 
-  git({ "worktree", "list", "--porcelain" }, dir, function(w)
-    if w.code ~= 0 then
-      return notify("Not a git repo:" .. dir, vim.log.levels.ERROR)
-    end
-    local list = parse(w.stdout)
+  with_target(function(list, target)
     local main = list[1]
-
     warn_detached(list, main)
-    local llm_wts = llm_worktrees(list, main)
+
+    local llm_wts = vim.tbl_filter(function(llm)
+      return llm ~= target
+    end, llm_worktrees(list, main))
+
     if #llm_wts == 0 then
-      return notify("No LLM worktrees", vim.log.levels.WARN)
+      return notify("No LLM worktrees to pull from", vim.log.levels.WARN)
     end
 
-    local function run(wt)
-      staged_tree(main.path, function(staged, serr)
+    local function run(llm)
+      staged_tree(target.path, function(staged, serr)
         if serr then
           return notify(
-            "Could not read main's staging, nothing changed:\n" .. serr,
+            ("Could not read %s's staging, nothing changed:\n"):format(label(target)) .. serr,
             vim.log.levels.ERROR
           )
         end
@@ -730,55 +809,56 @@ function M.pull_from_llm_worktree(opts)
         local hint = ""
         if staged then
           hint = "\nYour staging from before the pull: git read-tree " .. staged
-          Logger.info("main's staged state saved as tree " .. staged, CTX)
+          Logger.info(label(target) .. "'s staged state saved as tree " .. staged, CTX)
         end
 
-        snapshot(wt.path, function(sha, err)
+        snapshot(llm.path, function(sha, err)
           if err then
             notify("Snapshot failed, merging committed work only:\n" .. err, vim.log.levels.WARN)
           end
-          local ref = sha or wt.branch
+          local ref = sha or llm.branch
 
           if again then
-            return git({ "merge-base", "HEAD", ref }, main.path, function(c)
+            return git({ "merge-base", "HEAD", ref }, target.path, function(c)
               if c.code ~= 0 then
                 local why = c.code == 1 and "no common commit" or vim.trim(c.stderr or "")
                 return notify(
-                  ("Could not find where %s started, nothing changed:\n%s"):format(wt.branch, why),
+                  ("Could not find where %s started, nothing changed:\n%s"):format(llm.branch, why),
                   vim.log.levels.ERROR
                 )
               end
-              pull_from_base(main, wt, vim.trim(c.stdout), sha, staged, hint)
+              pull_from_base(target, llm, vim.trim(c.stdout), sha, staged, hint)
             end)
           end
 
-          git({ "rev-parse", "--verify", "-q", PULLED .. wt.branch }, main.path, function(b)
+          git({ "rev-parse", "--verify", "-q", pulled_ref(target, llm) }, target.path, function(b)
             if b.code == 0 then
-              return pull_from_base(main, wt, vim.trim(b.stdout), sha, staged, hint)
+              return pull_from_base(target, llm, vim.trim(b.stdout), sha, staged, hint)
             end
 
             -- first pull of this worktree: nothing recorded, let git find the common base
             local extra = sha and " + uncommitted" or ""
-            Logger.info(("Squash-merging %s%s into main..."):format(wt.branch, extra), CTX)
+            local into = label(target)
+            Logger.info(("Squash-merging %s%s into %s..."):format(llm.branch, extra, into), CTX)
 
-            working_tree(main.path, function(mtree, merr)
+            working_tree(target.path, function(mtree, merr)
               if merr then
                 return notify(
-                  "Could not snapshot main, nothing changed:\n" .. merr,
+                  ("Could not snapshot %s, nothing changed:\n"):format(into) .. merr,
                   vim.log.levels.ERROR
                 )
               end
 
-              save_undo(main, wt, mtree, staged, function()
-                git({ "merge", "--squash", "--autostash", ref }, main.path, function(r)
+              save_undo(target, llm, mtree, staged, function()
+                git({ "merge", "--squash", "--autostash", ref }, target.path, function(r)
                   local out = vim.trim((r.stdout or "") .. "\n" .. (r.stderr or ""))
 
                   if r.code == 0 then
                     -- clean merge, but the autostash reapply can conflict
-                    git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                    git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
                       local unmerged = vim.trim(u.stdout or "")
                       if unmerged ~= "" then
-                        record_pulled(main, wt, sha)
+                        record_pulled(target, llm, sha)
                         notify(
                           "Merged, but conflicts remain (resolve with git tooling, then"
                             .. " `git reset`):\n"
@@ -789,9 +869,9 @@ function M.pull_from_llm_worktree(opts)
                         return vim.cmd("checktime")
                       end
 
-                      restore_staging(main, staged, function(z)
+                      restore_staging(target, staged, function(z)
                         Logger.info("git merge output:\n" .. out, CTX)
-                        record_pulled(main, wt, sha)
+                        record_pulled(target, llm, sha)
                         if z.code ~= 0 then
                           notify(
                             "Merged, but restoring your staging failed:\n"
@@ -801,8 +881,9 @@ function M.pull_from_llm_worktree(opts)
                           )
                         else
                           notify(
-                            ("Merged %s into main as unstaged changes%s"):format(
-                              wt.branch,
+                            ("Merged %s into %s as unstaged changes%s"):format(
+                              llm.branch,
+                              label(target),
                               staged and ", your staged changes kept" or ""
                             )
                           )
@@ -812,10 +893,10 @@ function M.pull_from_llm_worktree(opts)
                     end)
                   else
                     -- merge failed: unmerged files = conflict, none = never ran
-                    git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+                    git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
                       local unmerged = vim.trim(u.stdout or "")
                       if unmerged ~= "" then
-                        record_pulled(main, wt, sha)
+                        record_pulled(target, llm, sha)
                         notify(
                           "Conflicts (resolve with git tooling, then `git reset`):\n"
                             .. unmerged
@@ -841,9 +922,9 @@ function M.pull_from_llm_worktree(opts)
     end
 
     select(llm_wts, {
-      prompt = "Merge worktree into main (unstaged)",
-      format_item = function(wt)
-        return wt.branch .. "  (" .. wt.path .. ")"
+      prompt = ("Merge worktree into %s (unstaged)"):format(label(target)),
+      format_item = function(llm)
+        return llm.branch .. "  (" .. llm.path .. ")"
       end,
     }, function(choice)
       if choice then
@@ -853,29 +934,24 @@ function M.pull_from_llm_worktree(opts)
   end)
 end
 
---- Put main back to right before the last pull: files on disk (untracked ones too), staging, and
---- the worktree's pulled mark, so the next pull offers those changes again.
+--- Put the cwd's worktree back to right before its last pull: files on disk (untracked ones too),
+--- staging, and the pulled worktree's pulled mark, so the next pull offers those changes again.
 function M.undo_pull()
   if busy() then
     return
   end
-  local dir = vim.uv.cwd()
-  if not dir then
-    return notify("No working directory", vim.log.levels.ERROR)
-  end
 
-  git({ "worktree", "list", "--porcelain" }, dir, function(w)
-    if w.code ~= 0 then
-      return notify("Not a git repo: " .. dir, vim.log.levels.ERROR)
-    end
-    local main = parse(w.stdout)[1]
+  with_target(function(_, target)
+    local undo = undo_ref(target, "pull")
+    local name = label(target)
 
     local fmt = "--format=%(parent)%0a%(contents)"
-    git({ "for-each-ref", fmt, UNDO }, main.path, function(l)
+    git({ "for-each-ref", fmt, undo }, target.path, function(l)
       if l.code ~= 0 then
         local err = vim.trim(l.stderr or "")
-        return notify("Could not read " .. UNDO .. ": " .. err, vim.log.levels.ERROR)
+        return notify("Could not read " .. undo .. ": " .. err, vim.log.levels.ERROR)
       end
+
       if l.stdout == "" then
         return notify("No pull to undo", vim.log.levels.WARN)
       end
@@ -886,54 +962,58 @@ function M.undo_pull()
       if not branch then
         local subject = l.stdout:match("\n([^\n]*)") or ""
         return notify(
-          ("%s does not point to an undo point (commit message: %q)"):format(UNDO, subject),
+          ("%s does not point to an undo point (commit message: %q)"):format(undo, subject),
           vim.log.levels.ERROR
         )
       end
 
-      must({ "rev-parse", "HEAD" }, main.path, "rev-parse HEAD in main", function(head)
+      local pulled_mark = pulled_ref(target, { path = "", branch = branch })
+
+      must({ "rev-parse", "HEAD" }, target.path, "rev-parse HEAD in " .. name, function(head)
         if head ~= parents[1] then
           local msg = "HEAD moved since the pull, not undoing. Files before it:"
             .. " git checkout %s -- ."
-          return notify(msg:format(UNDO), vim.log.levels.WARN)
+          return notify(msg:format(undo), vim.log.levels.WARN)
         end
 
-        local ask = "Undo the pull of %s? Edits made in main since are discarded (backed up first)"
-        if vim.fn.confirm(ask:format(branch), "&Yes\n&No", 2) ~= 1 then
+        local ask = "Undo the pull of %s into %s? Edits made since are discarded (backed up first)"
+        if vim.fn.confirm(ask:format(branch, name), "&Yes\n&No", 2) ~= 1 then
           return
         end
 
-        snapshot(main.path, function(msha, merr)
+        snapshot(target.path, function(msha, merr)
           if merr then
             return notify(
-              "Could not back up main, nothing changed:\n" .. merr,
+              ("Could not back up %s, nothing changed:\n"):format(name) .. merr,
               vim.log.levels.ERROR
             )
           end
           local backup = msha and backup_ref()
-          local saved = backup and ("\nWhat main had since the pull is saved as " .. backup) or ""
+          local saved = backup
+              and ("\nWhat %s had since the pull is saved as %s"):format(name, backup)
+            or ""
 
           local steps = {
-            -- the index takes the files on disk, so the next step also removes the ones the pull
-            -- added (it only removes files the index has); this also clears conflict stages
+            -- read-tree -u only deletes files the index tracks, and files the pull added are
+            -- untracked: add -A tracks them so it deletes them too (and replaces conflict entries)
             { "add", "-A" },
-            { "read-tree", "-u", "--reset", UNDO },
+            { "read-tree", "-u", "--reset", undo },
             parents[2] and { "read-tree", parents[2] } or { "reset", "-q" },
-            pulled == "none" and { "update-ref", "-d", PULLED .. branch }
-              or { "update-ref", PULLED .. branch, pulled },
-            { "update-ref", "-d", UNDO },
-            { "update-ref", "-d", CONFLICTS },
+            pulled == "none" and { "update-ref", "-d", pulled_mark }
+              or { "update-ref", pulled_mark, pulled },
+            { "update-ref", "-d", undo },
+            { "update-ref", "-d", undo_ref(target, "conflicts") },
           }
 
           local function step(i)
             local s = steps[i]
             if not s then
-              notify(("Main is back to right before the pull of %s%s"):format(branch, saved))
-              prune_backups(main.path)
+              notify(("%s is back to right before the pull of %s%s"):format(name, branch, saved))
+              prune_backups(target.path)
               return vim.cmd("checktime")
             end
 
-            git(s, main.path, function(r)
+            git(s, target.path, function(r)
               if r.code ~= 0 then
                 notify(
                   ("Undo stopped at git %s:\n%s%s"):format(
@@ -953,8 +1033,8 @@ function M.undo_pull()
             return step(1)
           end
 
-          local what = "Backing up main (nothing changed)"
-          must({ "update-ref", backup, msha }, main.path, what, function()
+          local what = ("Backing up %s (nothing changed)"):format(name)
+          must({ "update-ref", backup, msha }, target.path, what, function()
             step(1)
           end)
         end)
@@ -970,32 +1050,23 @@ function M.restore_resolved_staging()
     return
   end
 
-  local dir = vim.uv.cwd()
-  if not dir then
-    return notify("No working directory", vim.log.levels.ERROR)
-  end
-
-  git({ "worktree", "list", "--porcelain" }, dir, function(w)
-    if w.code ~= 0 then
-      return notify("Not a git repo: " .. dir, vim.log.levels.ERROR)
-    end
-    local main = parse(w.stdout)[1]
-
-    git({ "cat-file", "blob", CONFLICTS }, main.path, function(c)
+  with_target(function(_, target)
+    local undo = undo_ref(target, "pull")
+    git({ "cat-file", "blob", undo_ref(target, "conflicts") }, target.path, function(c)
       if c.code ~= 0 then
         return notify("No conflicted pull to restore the staging of", vim.log.levels.WARN)
       end
       local paths = vim.split(c.stdout, "\0", { plain = true, trimempty = true })
 
-      git({ "diff", "--name-only", "--diff-filter=U" }, main.path, function(u)
+      git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
         local unmerged = vim.trim(u.stdout or "")
         if unmerged ~= "" then
           return notify("Resolve these first:\n" .. unmerged, vim.log.levels.WARN)
         end
 
         -- parent 2 = the staging before the pull, none = nothing was staged (parent 1 = HEAD)
-        git({ "rev-parse", "--verify", "-q", UNDO .. "^2" }, main.path, function(p)
-          local source = p.code == 0 and vim.trim(p.stdout) or UNDO .. "^1"
+        git({ "rev-parse", "--verify", "-q", undo .. "^2" }, target.path, function(p)
+          local source = p.code == 0 and vim.trim(p.stdout) or undo .. "^1"
           local restore = {
             "--literal-pathspecs",
             "restore",
@@ -1004,7 +1075,7 @@ function M.restore_resolved_staging()
             "--pathspec-from-file=-",
             "--pathspec-file-nul",
           }
-          git(restore, main.path, function(r)
+          git(restore, target.path, function(r)
             if r.code ~= 0 then
               return notify(
                 "Could not restore the staging:\n" .. vim.trim(r.stderr or ""),
@@ -1023,185 +1094,164 @@ function M.overwrite_llm_worktree()
   if busy() then
     return
   end
-  local dir = vim.uv.cwd()
-  if not dir then
-    return notify("No working directory", vim.log.levels.ERROR)
-  end
-
-  git({ "worktree", "list", "--porcelain" }, dir, function(w)
-    if w.code ~= 0 then
-      return notify("Not a git repo", vim.log.levels.ERROR)
+  pick_llm_worktree("Sync %s into", function(target, llm)
+    if not target.branch then
+      return notify(label(target) .. " has a detached HEAD", vim.log.levels.ERROR)
     end
 
-    local list = parse(w.stdout)
-    local main = list[1]
-    if not main.branch then
-      return notify("Main has detached HEAD", vim.log.levels.ERROR)
-    end
+    local function mirror(llm_sha, llm_head, target_sha, target_head)
+      local ref = backup_ref()
 
-    warn_detached(list, main)
-    local llm_wts = llm_worktrees(list, main)
-    if #llm_wts == 0 then
-      return notify("No LLM worktrees", vim.log.levels.WARN)
-    end
+      local backup = { "update-ref", ref, llm_sha or llm_head }
+      must(backup, llm.path, "backing up the worktree", function()
+        Logger.info("worktree backed up as " .. ref, CTX)
 
-    local function run(wt)
-      local function mirror(wsha, wtip, msha, mhead)
-        local ref = backup_ref()
+        local steps = { { "reset", "--hard", target_sha or target_head }, { "clean", "-fd" } }
+        if target_sha then
+          table.insert(steps, { "reset", "-q", target_head })
+        end
 
-        must({ "update-ref", ref, wsha or wtip }, wt.path, "backing up the worktree", function()
-          Logger.info("worktree backed up as " .. ref, CTX)
-          local steps = { { "reset", "--hard", msha or mhead }, { "clean", "-fd" } }
-          if msha then
-            table.insert(steps, { "reset", "-q", mhead })
-          end
+        local undo = { { "reset", "--hard", ref } }
+        if llm_sha then
+          table.insert(undo, { "reset", "-q", llm_head })
+        end
 
-          local undo = { { "reset", "--hard", ref } }
-          if wsha then
-            table.insert(undo, { "reset", "-q", wtip })
-          end
+        local function rollback(why)
+          local function undo_step(i)
+            local u = undo[i]
+            if not u then
+              return notify(
+                why .. "\nThe worktree was restored from " .. ref .. ".",
+                vim.log.levels.ERROR
+              )
+            end
 
-          local function rollback(why)
-            local function undo_step(i)
-              local u = undo[i]
-              if not u then
+            git(u, llm.path, function(r)
+              if r.code ~= 0 then
+                local msg = "%s\nRestoring failed too (git %s):\n%s\nRestore by hand: %s"
                 return notify(
-                  why .. "\nThe worktree was restored from " .. ref .. ".",
+                  msg:format(
+                    why,
+                    table.concat(u, " "),
+                    vim.trim(r.stderr or ""),
+                    "git reset --hard " .. ref
+                  ),
                   vim.log.levels.ERROR
                 )
               end
 
-              git(u, wt.path, function(r)
-                if r.code ~= 0 then
-                  local msg = "%s\nRestoring failed too (git %s):\n%s\nRestore by hand: %s"
-                  return notify(
-                    msg:format(
-                      why,
-                      table.concat(u, " "),
-                      vim.trim(r.stderr or ""),
-                      "git reset --hard " .. ref
-                    ),
-                    vim.log.levels.ERROR
-                  )
-                end
-                undo_step(i + 1)
-              end)
-            end
-            undo_step(1)
-          end
-
-          local function step(i)
-            local s = steps[i]
-            if not s then
-              notify(
-                (
-                  "%s now mirrors %s.\n"
-                  .. "What it had is saved as %s (restore files: git checkout %s -- .)"
-                ):format(wt.branch, main.branch, ref, ref)
-              )
-              prune_backups(wt.path)
-              return git({ "update-ref", PULLED .. wt.branch, msha or mhead }, wt.path, function(u)
-                if u.code ~= 0 then
-                  Logger.warn("could not record the mirrored state: " .. vim.trim(u.stderr), CTX)
-                end
-              end)
-            end
-
-            git(s, wt.path, function(r)
-              if r.code ~= 0 then
-                return rollback(
-                  ("git %s failed:\n%s"):format(table.concat(s, " "), vim.trim(r.stderr or ""))
-                )
-              end
-              step(i + 1)
+              undo_step(i + 1)
             end)
           end
-          step(1)
-        end)
-      end
 
-      local function do_merge()
-        Logger.info(("Mirroring %s onto %s..."):format(main.branch, wt.branch), CTX)
-        snapshot(wt.path, function(wsha, werr, wtree)
-          if werr then
-            return notify(
-              "Could not snapshot the worktree, nothing changed:\n" .. werr,
-              vim.log.levels.ERROR
+          undo_step(1)
+        end
+
+        local function step(i)
+          local s = steps[i]
+          if not s then
+            notify(
+              (
+                "%s now mirrors %s.\n"
+                .. "What it had is saved as %s (restore files: git checkout %s -- .)"
+              ):format(llm.branch, target.branch, ref, ref)
             )
+            prune_backups(llm.path)
+            local mark = { "update-ref", pulled_ref(target, llm), target_sha or target_head }
+            return git(mark, llm.path, function(u)
+              if u.code ~= 0 then
+                Logger.warn("could not record the mirrored state: " .. vim.trim(u.stderr), CTX)
+              end
+            end)
           end
-          must({ "rev-parse", "HEAD" }, wt.path, "rev-parse HEAD in the worktree", function(wtip)
-            must({ "rev-parse", "HEAD" }, main.path, "rev-parse HEAD in main", function(mhead)
-              snapshot(main.path, function(msha, merr)
-                if merr then
+
+          git(s, llm.path, function(r)
+            if r.code ~= 0 then
+              return rollback(
+                ("git %s failed:\n%s"):format(table.concat(s, " "), vim.trim(r.stderr or ""))
+              )
+            end
+            step(i + 1)
+          end)
+        end
+        step(1)
+      end)
+    end
+
+    local function do_merge()
+      Logger.info(("Mirroring %s onto %s..."):format(target.branch, llm.branch), CTX)
+
+      snapshot(llm.path, function(llm_sha, llm_err, llm_tree)
+        if llm_err then
+          return notify(
+            "Could not snapshot the worktree, nothing changed:\n" .. llm_err,
+            vim.log.levels.ERROR
+          )
+        end
+
+        must({ "rev-parse", "HEAD" }, llm.path, "rev-parse HEAD in the worktree", function(llm_head)
+          local what = "rev-parse HEAD in " .. label(target)
+
+          must({ "rev-parse", "HEAD" }, target.path, what, function(target_head)
+            snapshot(target.path, function(target_sha, target_err)
+              if target_err then
+                return notify(
+                  ("Could not snapshot %s, nothing changed:\n"):format(label(target)) .. target_err,
+                  vim.log.levels.ERROR
+                )
+              end
+
+              working_tree(llm.path, function(llm_tree_now, now_err)
+                if now_err then
                   return notify(
-                    "Could not snapshot main, nothing changed:\n" .. merr,
+                    "Could not re-check the worktree, nothing changed:\n" .. now_err,
                     vim.log.levels.ERROR
                   )
                 end
-                working_tree(wt.path, function(wtree2, err2)
-                  if err2 then
-                    return notify(
-                      "Could not re-check the worktree, nothing changed:\n" .. err2,
-                      vim.log.levels.ERROR
-                    )
-                  end
-                  if wtree2 ~= wtree then
-                    return notify(
-                      "The worktree changed while preparing, nothing was changed."
-                        .. " Try to run again.",
-                      vim.log.levels.WARN
-                    )
-                  end
-                  mirror(wsha, wtip, msha, mhead)
-                end)
+
+                if llm_tree_now ~= llm_tree then
+                  return notify(
+                    "The worktree changed while preparing, nothing was changed."
+                      .. " Try to run again.",
+                    vim.log.levels.WARN
+                  )
+                end
+
+                mirror(llm_sha, llm_head, target_sha, target_head)
               end)
             end)
           end)
         end)
-      end
-
-      if vim.uv.fs_stat(wt.path .. "/.git") then
-        return do_merge()
-      end
-
-      Logger.warn("Worktree dir missing, recreating " .. wt.path, CTX)
-      git({ "worktree", "prune" }, main.path, function()
-        git({ "worktree", "add", wt.path, wt.branch }, main.path, function(a)
-          if a.code ~= 0 then
-            return notify(vim.trim(a.stderr), vim.log.levels.ERROR)
-          end
-          do_merge()
-        end)
       end)
     end
 
-    if #llm_wts == 1 then
-      return run(llm_wts[1])
+    if vim.uv.fs_stat(llm.path .. "/.git") then
+      return do_merge()
     end
-    select(llm_wts, {
-      prompt = "Sync " .. main.branch .. " into",
-      format_item = function(wt)
-        return wt.branch .. "  (" .. wt.path .. ")"
-      end,
-    }, function(choice)
-      if choice then
-        run(choice)
-      end
+
+    Logger.warn("Worktree dir missing, recreating " .. llm.path, CTX)
+    git({ "worktree", "prune" }, target.path, function()
+      git({ "worktree", "add", llm.path, llm.branch }, target.path, function(a)
+        if a.code ~= 0 then
+          return notify(vim.trim(a.stderr), vim.log.levels.ERROR)
+        end
+        do_merge()
+      end)
     end)
   end)
 end
 
--- Stage every unstaged changes in main that the LLM worktree does not have.
+-- Stage every unstaged changes in current worktree that the LLM worktree does not have.
 function M.stage_unshared_hunks()
   if busy() then
     return
   end
-  pick_llm_worktree("Stage hunks missing from", function(main, wt)
-    if not vim.uv.fs_stat(wt.path .. "/.git") then
-      return notify("Worktree dir missing: " .. wt.path, vim.log.levels.ERROR)
+  pick_llm_worktree("Stage hunks of %s missing from:", function(target, llm)
+    if not vim.uv.fs_stat(llm.path .. "/.git") then
+      return notify("Worktree dir missing: " .. llm.path, vim.log.levels.ERROR)
     end
     local index_before, index_err, index_read
-    staged_tree(main.path, function(tree, err)
+    staged_tree(target.path, function(tree, err)
       index_before, index_err, index_read = tree, err, true
     end)
     local diff_file = vim.fn.tempname()
@@ -1215,7 +1265,7 @@ function M.stage_unshared_hunks()
         "--unified=0",
         "--output=" .. diff_file,
       },
-      main.path,
+      target.path,
       function(d)
         local text = read_file(diff_file) or ""
         os.remove(diff_file)
@@ -1233,7 +1283,7 @@ function M.stage_unshared_hunks()
         end
 
         if #tasks == 0 then
-          return notify("No unstaged hunks in main")
+          return notify("No unstaged hunks in " .. label(target))
         end
 
         local skipped = {}
@@ -1283,7 +1333,7 @@ function M.stage_unshared_hunks()
               ("Nothing to stage: %d of %d unstaged hunk(s) are already in %s%s"):format(
                 shared,
                 #tasks,
-                wt.branch,
+                llm.branch,
                 uncompared_note
               )
             )
@@ -1305,7 +1355,7 @@ function M.stage_unshared_hunks()
             )
           end
 
-          staged_tree(main.path, function(index_now, now_err)
+          staged_tree(target.path, function(index_now, now_err)
             if now_err then
               return notify(
                 "Could not read the index, nothing staged:\n" .. now_err,
@@ -1322,7 +1372,7 @@ function M.stage_unshared_hunks()
 
             local patch = vim.fn.tempname()
             write_file(patch, table.concat(parts))
-            git({ "apply", "--cached", "--unidiff-zero", patch }, main.path, function(r)
+            git({ "apply", "--cached", "--unidiff-zero", patch }, target.path, function(r)
               os.remove(patch)
               if r.code ~= 0 then
                 return notify(
@@ -1337,7 +1387,7 @@ function M.stage_unshared_hunks()
                   #tasks,
                   nfiles,
                   shared,
-                  wt.branch,
+                  llm.branch,
                   uncompared_note
                 )
               )
@@ -1390,8 +1440,8 @@ function M.stage_unshared_hunks()
             check_file(i + 1)
           end
 
-          local main_file, wt_file = main.path .. "/" .. path, wt.path .. "/" .. path
-          local mtext, wtext = read_file(main_file), read_file(wt_file)
+          local target_file, llm_file = target.path .. "/" .. path, llm.path .. "/" .. path
+          local mtext, wtext = read_file(target_file), read_file(llm_file)
           if f.header:find("\ndeleted file mode", 1, true) then
             return finish(function()
               return wtext == nil
@@ -1419,10 +1469,10 @@ function M.stage_unshared_hunks()
               "--unified=0",
               "--ignore-space-at-eol",
               "--",
-              main_file,
-              wt_file,
+              target_file,
+              llm_file,
             },
-            main.path,
+            target.path,
             function(r)
               -- 0 = same, 1 = they differ; anything else says nothing about the worktree
               if r.code ~= 0 and r.code ~= 1 then
