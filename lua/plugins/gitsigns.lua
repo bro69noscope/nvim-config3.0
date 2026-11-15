@@ -138,9 +138,11 @@ return {
       local function create_diff_tab(base, vertical)
         local original_buf = vim.api.nvim_get_current_buf()
         local buffers_before = vim.api.nvim_list_bufs()
+        local cursor = vim.api.nvim_win_get_cursor(0)
 
         vim.cmd("tabnew")
         vim.cmd("buffer #")
+        vim.api.nvim_win_set_cursor(0, cursor)
         local filename = vim.fn.expand("%:t")
         local head_suffix = base and ("(" .. base .. ")") or ""
         vim.t.custom_tabname = "gs diff" .. head_suffix .. ": " .. filename
