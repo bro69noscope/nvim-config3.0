@@ -13,7 +13,7 @@ local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%
 ---@class Worktree
 ---@field path string
 ---@field branch string? nil when the worktree has a detached HEAD
----@field is_main boolean? true for the main checkout (first in `git worktree list`)
+---@field is_main_wt boolean? true for the main worktree (first in `git worktree list`)
 
 local in_flight = 0
 
@@ -93,15 +93,23 @@ local function must(args, cwd, what, cb)
   end)
 end
 
--- Refs are shared by all worktrees, so the ones about a pull name the worktree pulled into
--- (target). Main keeps the plain names, which predate pulling into other worktrees.
+---@param target Worktree
+---@return string
+local function target_key(target)
+  -- All worktrees share the same refs, so a pull ref names the worktree that receives the pull. A
+  -- linked worktree uses its branch name. The main worktree always uses "-main", whichever branch
+  -- it has checked out. The "-" prevents a clash: a linked worktree can check out a branch named
+  -- "main", and "main" would then point both at the same refs. A branch name cannot start with "-",
+  -- so "-main" is safe.
+  return target.is_main_wt and "-main" or assert(target.branch, "linked worktree has no branch")
+end
 
 --- What the last pull of llm into target brought in, the base of the next pull
 ---@param target Worktree
 ---@param llm Worktree
 ---@return string
 local function pulled_ref(target, llm)
-  return PULLED .. llm.branch .. (target.is_main and "" or "@" .. target.branch)
+  return PULLED .. llm.branch .. "@" .. target_key(target)
 end
 
 --- The undo point of target's last pull ("pull"), or the blob listing the files that pull left
@@ -110,7 +118,7 @@ end
 ---@param name "pull"|"conflicts"
 ---@return string
 local function undo_ref(target, name)
-  return "refs/wt-undo/" .. (target.is_main and "" or "@" .. target.branch .. "/") .. name
+  return "refs/wt-undo/@" .. target_key(target) .. "/" .. name
 end
 
 ---@param cwd string
@@ -275,7 +283,7 @@ local function parse(out)
     end
   end
   if list[1] then
-    list[1].is_main = true
+    list[1].is_main_wt = true
   end
   return list
 end
@@ -321,7 +329,7 @@ local function with_target(cb)
       return notify("The cwd is in no worktree of this repo: " .. dir, vim.log.levels.ERROR)
     end
 
-    if not target.is_main and not target.branch then
+    if not target.is_main_wt and not target.branch then
       return notify(
         target.path .. " has a detached HEAD, check out a branch first",
         vim.log.levels.ERROR
@@ -335,7 +343,7 @@ end
 ---@param target Worktree
 ---@return string
 local function label(target)
-  return target.is_main and "main" or target.branch
+  return target.is_main_wt and "main" or target_key(target)
 end
 
 ---@param wt Worktree
@@ -522,7 +530,7 @@ local function overlaps(lo1, hi1, lo2, hi2)
   return lo1 < hi2 and lo2 < hi1
 end
 
----@param main Worktree
+---@param target Worktree
 ---@param staged string? tree from staged_tree
 ---@param cb fun(r: vim.SystemCompleted)
 local function restore_staging(target, staged, cb)
