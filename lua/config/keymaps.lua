@@ -499,14 +499,10 @@ map("n", "<leader>iq", function()
   require("scripts.ui.claude-qf-notes.navigate").clear()
 end, { desc = "Clear ai notes" })
 
--- search visual selection in snacks pickers
+-- search visual selection in snacks explorer
 map("x", "<leader>se", function()
   require("scripts.ux.open-selection-in-picker").open_selection_in_explorer()
 end, { desc = "Open selection in explorer", icon = "󱥰" })
-
-map("x", "<leader>s;", function()
-  require("scripts.ux.open-selection-in-picker").open_selection_in_files()
-end, { desc = "Open selection in files", icon = "󱥰" })
 
 -- Repeatable movement for misspelled words
 local function next_spell()
