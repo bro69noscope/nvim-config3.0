@@ -55,7 +55,7 @@ end
 ---@param config table
 ---@param base? string
 local function carry_scope(picker, config, base)
-  local o = picker.opts
+  local o = picker.opts --[[@as snacks.picker.grep.Config]]
   config.cwd = o.cwd
   config.show_empty = o.show_empty
   config.regex = o.regex
