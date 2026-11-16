@@ -1,3 +1,5 @@
+local TITLE = "short summary of what these notes explain"
+
 local notes = {
   {
     file = "path/to/file.ext",
@@ -18,9 +20,12 @@ local notes = {
 
 -- for proper nvim ui navigation capabilities, these must match in the config with:
 -- lua/scripts/ui/claude-qf-notes/navigate.lua
--- this script must be saved as ".claude-qf-notes.lua" (NOTES_FILE in navigate.lua)
+-- this script must be saved as ".claude-qf-notes/<NNN>.lua" (NOTES_DIR in navigate.lua)
 local NAMESPACE = vim.api.nvim_create_namespace("claude_qf_notes")
 local QFLIST_TITLE = "claude_qf_notes"
+
+-- the path of this script, stored in the quickfix list so the config knows which note set is shown
+local SOURCE = vim.fs.normalize(vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p"))
 
 for _, b in ipairs(vim.api.nvim_list_bufs()) do
   vim.api.nvim_buf_clear_namespace(b, NAMESPACE, 0, -1)
@@ -84,17 +89,25 @@ end
 local list_nr
 
 for nr = vim.fn.getqflist({ nr = "$" }).nr, 1, -1 do
-  if vim.fn.getqflist({ nr = nr, title = 0 }).title == QFLIST_TITLE then
+  if vim.startswith(vim.fn.getqflist({ nr = nr, title = 0 }).title, QFLIST_TITLE) then
     list_nr = nr
     break
   end
 end
 
+-- all note sets share one list, so switching between them does not fill the quickfix stack
+local what = {
+  title = QFLIST_TITLE .. ": " .. TITLE,
+  items = items,
+  context = { claude_qf_notes_file = SOURCE },
+}
+
 if list_nr then
-  vim.fn.setqflist({}, "r", { nr = list_nr, title = QFLIST_TITLE, items = items })
+  what.nr = list_nr
+  vim.fn.setqflist({}, "r", what)
   vim.cmd("silent " .. list_nr .. "chistory")
 else
-  vim.fn.setqflist({}, " ", { title = QFLIST_TITLE, items = items })
+  vim.fn.setqflist({}, " ", what)
 end
 
 if failed > 0 then

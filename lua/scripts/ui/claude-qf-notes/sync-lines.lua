@@ -2,7 +2,8 @@ local M = {}
 
 local navigate = require("scripts.ui.claude-qf-notes.navigate")
 
----Rewrite the `line = N,` of the notes placed in buf to the rows their extmarks are at now.
+---Rewrite the `line = N,` of the notes placed in buf to the rows their extmarks are at now, in the
+---note set file that drew them.
 ---@param buf integer
 function M.sync(buf)
   local rows = {}
@@ -14,8 +15,8 @@ function M.sync(buf)
     rows[m[1]] = m[2] + 1
   end
 
-  local path = vim.fn.fnamemodify(navigate.NOTES_FILE, ":p")
-  if vim.fn.filereadable(path) == 0 then
+  local path = navigate.shown_set()
+  if not path or vim.fn.filereadable(path) == 0 then
     return
   end
   local lines = vim.fn.readfile(path)
@@ -43,7 +44,7 @@ function M.sync(buf)
     return
   end
   if vim.fn.writefile(lines, path) ~= 0 then
-    vim.notify("could not update " .. navigate.NOTES_FILE, vim.log.levels.WARN)
+    vim.notify("could not update " .. path, vim.log.levels.WARN)
     return
   end
   -- reload the notes file if it is open, so a stale buffer is not shown or written back over it

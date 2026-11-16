@@ -469,24 +469,35 @@ map("n", "<leader>cl", function()
   })
 end, { desc = "Add current line to quickfix" })
 
--- go to the last visited ai notes step, regenerating the notes first if the file has changed
-map("n", "<leader>cn", function()
+-- AI qf notes keymaps
+map("n", "<leader>in", function()
   require("scripts.ui.claude-qf-notes.navigate").open({ copen = false })
-end, { desc = "Open ai notes (no qf win)", icon = "" })
+end, { desc = "Open ai notes (no qf win)" })
 
-map("n", "<leader>cN", function()
+map("n", "<leader>iN", function()
   require("scripts.ui.claude-qf-notes.navigate").open()
-end, { desc = "Open ai notes with qflist", icon = "" })
+end, { desc = "Open ai notes with qflist" })
 
--- show the ai note on the cursor line as real text in a float
-map("n", "<leader>cs", function()
+local next_ai_notes, prev_ai_notes = RepeatablePairs.track_pair(function()
+  require("scripts.ui.claude-qf-notes.navigate").cycle(1, { copen = false })
+end, function()
+  require("scripts.ui.claude-qf-notes.navigate").cycle(-1, { copen = false })
+end)
+
+map("n", "<leader>ij", next_ai_notes, { desc = "Next (newer) ai notes" })
+map("n", "<leader>ik", prev_ai_notes, { desc = "Prev. (older) ai notes" })
+
+map("n", "<leader>i/", function()
+  require("scripts.ui.claude-qf-notes.navigate").pick({ copen = false })
+end, { desc = "Pick ai notes by title" })
+
+map("n", "<leader>ix", function()
   require("scripts.ui.claude-qf-notes.expand-note").peek()
 end, { desc = "Peek ai note as real text" })
 
--- clear the ai notes virtual text
-map("n", "<leader>cq", function()
+map("n", "<leader>iq", function()
   require("scripts.ui.claude-qf-notes.navigate").clear()
-end, { desc = "Clear claude notes" })
+end, { desc = "Clear ai notes" })
 
 -- search visual selection in snacks pickers
 map("x", "<leader>se", function()

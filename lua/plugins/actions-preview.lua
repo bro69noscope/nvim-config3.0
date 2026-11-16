@@ -14,7 +14,7 @@ return {
   },
   keys = {
     {
-      "<leader>cp",
+      "<leader>cP",
       function()
         require("actions-preview").code_actions()
       end,

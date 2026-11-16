@@ -4,5 +4,5 @@ PowerShellEditorServices.json
 .repro
 logs
 spell/en.utf-8.add.spl
-.claude-qf-notes.lua
+.claude-qf-notes/
 .claude/worktrees/flow-test
