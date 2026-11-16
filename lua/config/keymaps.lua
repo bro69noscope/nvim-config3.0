@@ -344,6 +344,7 @@ map("n", "<leader>gJ", function()
   require("scripts.ux.worktrees.worktree-jump").jump({ diff = true })
 end, { desc = "Diff file vs other worktree" })
 
+-- Ai worktree custom workflow keymaps:
 -- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
 map("n", "<leader>ip", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree()
@@ -354,7 +355,7 @@ map("n", "<leader>iP", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ again = true })
 end, { desc = "Re-pull all from LLM worktree" })
 
--- Put main back to right before the last pull (files, staging, pulled mark)
+-- Put current wt back to right before the last pull (files, staging, pulled mark)
 map("n", "<leader>iu", function()
   require("scripts.ux.worktrees.llm-worktreemerge").undo_pull()
 end, { desc = "Undo last LLM worktree pull" })
@@ -364,12 +365,28 @@ map("n", "<leader>ir", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_resolved_staging()
 end, { desc = "Restore staging after LLM pull" })
 
+-- Pull so that only the pulled code is unstaged, to review and tweak it before keeping it
+map("n", "<leader>iv", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ review = true })
+end, { desc = "Review pull from LLM worktree" })
+
+-- Send the reviewed tree back to the LLM worktree, with your tweaks as its HEAD commit, then
+-- revert the review pull
+map("n", "<leader>ib", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").send_review()
+end, { desc = "Send review back to LLM worktree" })
+
+-- Same as <leader>ib, and copy a prompt that tells the LLM to read tweaks
+map("n", "<leader>iB", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").send_review({ copy_prompt = true })
+end, { desc = "Send review back to LLM worktree, copy LLM prompt" })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()
 end, { desc = "Send to LLM worktree" })
 
--- Stage the hunks of my unstaged changes that the LLM worktree doesn't have
+-- Stage the hunks of our unstaged changes that the LLM worktree doesn't have
 map("n", "<leader>ih", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_unshared_hunks()
 end, { desc = "Stage non-LLM-worktree hunks" })
