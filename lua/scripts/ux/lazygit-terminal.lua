@@ -204,6 +204,10 @@ function M.run_tinygit_command(command)
     80,
     80,
     vim.schedule_wrap(function()
+      if check_timer:is_closing() then
+        return
+      end
+
       local gitcommit_windows_exist = false
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         local buf = vim.api.nvim_win_get_buf(win)
@@ -212,6 +216,7 @@ function M.run_tinygit_command(command)
           break
         end
       end
+
       if not gitcommit_windows_exist then
         if vim.api.nvim_win_is_valid(lazygit_term.win) then
           vim.api.nvim_set_current_win(lazygit_term.win)
