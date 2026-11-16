@@ -538,6 +538,41 @@ local function restore_staging(target, staged, cb)
   git(reset, target.path, cb)
 end
 
+---@class UndoMessage
+---@field branch string branch of the LLM worktree that was pulled
+---@field pulled CommitSha|"none" pulled mark before the pull, "none" = there was none
+
+local UNDO_SUBJECT = "worktreemerge undo point"
+local UNDO_KEYS = { "branch", "pulled" }
+
+---@param m UndoMessage
+---@return string
+local function undo_message(m)
+  local lines = { UNDO_SUBJECT, "" }
+  for _, key in ipairs(UNDO_KEYS) do
+    if m[key] then
+      table.insert(lines, key .. " " .. m[key])
+    end
+  end
+  return table.concat(lines, "\n")
+end
+
+---@param text string
+---@return UndoMessage? nil when text is not an undo point message
+local function parse_undo_message(text)
+  if text:match("^[^\n]*") ~= UNDO_SUBJECT then
+    return nil
+  end
+  local m = {}
+  for _, key in ipairs(UNDO_KEYS) do
+    m[key] = text:match("\n" .. key .. " (%S+)")
+  end
+  if not (m.branch and m.pulled) then
+    return nil
+  end
+  return m
+end
+
 ---@param target Worktree
 ---@param llm Worktree
 ---@param tree string target's files on disk, from working_tree
@@ -545,12 +580,14 @@ end
 ---@param cb fun()
 local function save_undo(target, llm, tree, staged, cb)
   local what = "Saving the undo point (nothing changed yet)"
+
   git({ "rev-parse", "--verify", "-q", pulled_ref(target, llm) }, target.path, function(p)
-    -- what undo_pull resets the pulled mark to, "none" = first pull
-    local msg = ("worktreemerge undo point\n\nbranch %s\npulled %s"):format(
-      llm.branch,
-      p.code == 0 and vim.trim(p.stdout) or "none"
-    )
+    local msg = undo_message({
+      branch = llm.branch,
+      -- what undo_pull resets the pulled mark to, "none" = first pull
+      pulled = p.code == 0 and vim.trim(p.stdout) or "none",
+    })
+
     -- parents: HEAD, then the staging if any (a parent must be a commit, so it gets wrapped)
     local function save(parents)
       local args = vim.list_extend({ "commit-tree", tree, "-p", "HEAD" }, parents)
@@ -965,16 +1002,18 @@ function M.undo_pull()
         return notify("No pull to undo", vim.log.levels.WARN)
       end
 
-      local parents = vim.split(l.stdout:match("^[^\n]*"), " ", { plain = true, trimempty = true })
-      local branch, pulled = l.stdout:match("\nbranch (%S+)\npulled (%S+)")
+      local parent_line, contents = l.stdout:match("^([^\n]*)\n(.*)$")
+      local parents = vim.split(parent_line or "", " ", { plain = true, trimempty = true })
+      local m = parse_undo_message(contents or "")
 
-      if not branch then
-        local subject = l.stdout:match("\n([^\n]*)") or ""
+      if not m then
+        local subject = (contents or ""):match("^[^\n]*")
         return notify(
           ("%s does not point to an undo point (commit message: %q)"):format(undo, subject),
           vim.log.levels.ERROR
         )
       end
+      local branch, pulled = m.branch, m.pulled
 
       local pulled_mark = pulled_ref(target, { path = "", branch = branch })
 
