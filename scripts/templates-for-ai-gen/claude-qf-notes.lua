@@ -1,4 +1,4 @@
-local TITLE = "short summary of what these notes explain"
+local TITLE = "[a3] short summary of what these notes explain"
 
 local notes = {
   {
