@@ -1469,10 +1469,171 @@ end
 ---@class StageReviewOpts
 ---@field with_staged? boolean keep the staging from before the pull too
 
+--- The line regions of the conflict blocks (<<<<<<< to >>>>>>>)
+---@param text string
+---@return LineRegion[]regions
+local function marker_blocks(text)
+  local blocks, start, n = {}, nil, 0
+  for line in (text .. "\n"):gmatch("([^\n]*)\n") do
+    n = n + 1
+    if line:find("^<<<<<<<%s") or line == "<<<<<<<" then
+      start = n
+    elseif start and (line:find("^>>>>>>>%s") or line == ">>>>>>>") then
+      table.insert(blocks, { start - 0.5, n + 0.5 })
+      start = nil
+    end
+  end
+  return blocks
+end
+
+---@param target Worktree
+---@param point UndoPoint
+---@param cb fun(tree: TreeSha?, err: string?, note: string?) note: what stays unstaged
+local function review_result(target, point, cb)
+  git({ "cat-file", "blob", undo_ref(target, "conflicts") }, target.path, function(conflicts)
+    if conflicts.code ~= 0 then
+      return cb(point.review)
+    end
+
+    local paths = vim.split(conflicts.stdout, "\0", { plain = true, trimempty = true })
+    local list = table.concat(paths, "\n")
+
+    git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
+      local unmerged = vim.trim(u.stdout or "")
+      if unmerged ~= "" then
+        return cb(nil, "Resolve these first:\n" .. unmerged)
+      end
+
+      local markers = { "--literal-pathspecs", "grep", "--untracked", "-lE" }
+      vim.list_extend(markers, { "^(<<<<<<<|=======|>>>>>>>)([[:space:]]|$)", "--" })
+      git(vim.list_extend(markers, paths), target.path, function(g)
+        if g.code == 0 then
+          return cb(nil, "These files still have conflict markers:\n" .. vim.trim(g.stdout))
+        elseif g.code ~= 1 then
+          return cb(nil, vim.trim(g.stderr or ""))
+        end
+
+        local idx = vim.fn.tempname()
+        local env = { GIT_INDEX_FILE = idx }
+
+        local function done(tree, err, note)
+          os.remove(idx)
+          cb(tree, err, note)
+        end
+
+        local function step(args, next, stdin)
+          git(args, target.path, function(r)
+            if r.code ~= 0 then
+              return done(nil, vim.trim(r.stderr or ""))
+            end
+            next(r.stdout or "")
+          end, env, stdin)
+        end
+
+        local blocks, whole = {}, {}
+        local function scan(i, next)
+          local path = paths[i]
+          if not path then
+            return next()
+          end
+
+          git({ "cat-file", "blob", point.review .. ":" .. path }, target.path, function(b)
+            local found = b.code == 0 and marker_blocks(b.stdout) or {}
+            if #found > 0 then
+              blocks[path] = found
+            else
+              table.insert(whole, path)
+            end
+            scan(i + 1, next)
+          end)
+        end
+
+        local function add_whole(next)
+          if #whole == 0 then
+            return next()
+          end
+          local add = { "--literal-pathspecs", "add", "-A", "--pathspec-from-file=-" }
+          table.insert(add, "--pathspec-file-nul")
+          step(add, next, table.concat(whole, "\0"))
+        end
+
+        local skipped = 0
+        local function add_resolutions(next)
+          local block_paths = vim.tbl_keys(blocks)
+          if #block_paths == 0 then
+            return next()
+          end
+
+          local diff = { "--literal-pathspecs", "diff", "--no-color", "--no-ext-diff" }
+          vim.list_extend(diff, { "--no-textconv", "--unified=0", "--" })
+          step(vim.list_extend(diff, block_paths), function(d)
+            local parts = {}
+            for _, f in ipairs(parse_diff(d)) do
+              local regions = blocks[diff_path(f.header) or ""]
+              local delta, kept = 0, {}
+
+              for _, h in ipairs(f.hunks) do
+                local r = diff_regions("\n" .. h.head)[1]
+                -- no regions: the header path is not a key of blocks (not parsed, or quoted
+                -- by git, such as "t\303\251.txt"). Keep all hunks: the whole file is staged.
+                local touches = not regions
+                  or vim.iter(regions):any(function(b)
+                    return overlaps(r[1], r[2], b[1], b[2])
+                  end)
+
+                if touches then
+                  local head
+                  head, delta = renumber(h.head, delta)
+                  table.insert(kept, head .. table.concat(h.body))
+                else
+                  skipped = skipped + 1
+                end
+              end
+
+              if #kept > 0 then
+                table.insert(parts, f.header .. table.concat(kept))
+              end
+            end
+
+            if #parts == 0 then
+              return next()
+            end
+
+            local patch = vim.fn.tempname()
+            write_file(patch, table.concat(parts))
+            step({ "apply", "--cached", "--unidiff-zero", patch }, function()
+              os.remove(patch)
+              next()
+            end)
+          end)
+        end
+
+        step({ "read-tree", point.review }, function()
+          scan(1, function()
+            add_whole(function()
+              add_resolutions(function()
+                step({ "write-tree" }, function(tree)
+                  Logger.info("staging the resolution from disk for:\n" .. list, CTX)
+                  local fmt = "%d edit(s) made after the pull in conflicted files stay unstaged"
+                  local note = skipped > 0 and fmt:format(skipped) or nil
+                  done(vim.trim(tree), nil, note)
+                end)
+              end)
+            end)
+          end)
+        end)
+      end)
+    end)
+  end)
+end
+
 --- After a review pull: stage the pulled code (the review result minus the files before the pull).
 --- The files on disk do not change. When a pulled hunk conflicts with what it is staged on, the
 --- pulled side wins. A current limitation is that this hunk can then also stage some unstaged lines
 --- next to it.
+--- If the review pull had conflicts, your resolution of each conflict block is staged from disk.
+--- Other changes that you made to these files after the pull stay unstaged, except on lines next
+--- to a block.
 --- - default: the index is HEAD + the pulled code. Staging from before the pull is saved, so
 --- restore_staging_after_review puts it back after you commit.
 ---@param opts? StageReviewOpts
@@ -1488,67 +1649,79 @@ function M.stage_review(opts)
         return notify("The last pull was not a review pull", vim.log.levels.WARN)
       end
 
-      local name = label(target)
-      local staging = point.parents[2]
-      local ours = opts.with_staged and staging and staging .. "^{tree}" or "HEAD^{tree}"
-      local args = {
-        "merge-tree",
-        "--write-tree",
-        "--name-only",
-        "-X",
-        "theirs",
-        "--merge-base=" .. point.ref .. "^{tree}",
-        ours,
-        point.review,
-      }
-
-      git(args, target.path, function(m)
-        local lines = vim.split(m.stdout or "", "\n", { plain = true })
-        if m.code ~= 0 then
-          -- 1: conflicts that -X theirs can't resolve, for example a file the pull changed that
-          -- is not in what it is staged on (a new file we did not stage)
-          local files = {}
-
-          for i = 2, #lines do
-            if lines[i] == "" then
-              break
-            end
-            table.insert(files, lines[i])
-          end
-
-          local why = m.code == 1
-              and "-X theirs could not resolve these conflicts:\n" .. table.concat(files, "\n")
-            or vim.trim(m.stderr or "")
-
+      review_result(target, point, function(theirs, err, note)
+        if not theirs then
           return notify(
-            "Could not stage the pulled code, nothing changed:\n" .. why,
+            "Could not stage the pulled code, nothing changed:\n" .. err,
             vim.log.levels.ERROR
           )
         end
 
-        local what = "Staging the pulled code in " .. name
+        local name = label(target)
+        local staging = point.parents[2]
+        local ours = opts.with_staged and staging and staging .. "^{tree}" or "HEAD^{tree}"
 
-        local function stage()
-          restore_staging(target, lines[1], function(r)
-            if r.code ~= 0 then
-              return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
+        local args = {
+          "merge-tree",
+          "--write-tree",
+          "--name-only",
+          "-X",
+          "theirs",
+          "--merge-base=" .. point.ref .. "^{tree}",
+          ours,
+          theirs,
+        }
+
+        git(args, target.path, function(m)
+          local lines = vim.split(m.stdout or "", "\n", { plain = true })
+          if m.code ~= 0 then
+            -- 1: conflicts that -X theirs can't resolve, for example a file the pull changed that
+            -- is not in what it is staged on (a new file we did not stage)
+            local files = {}
+
+            for i = 2, #lines do
+              if lines[i] == "" then
+                break
+              end
+              table.insert(files, lines[i])
             end
 
-            local msg = opts.with_staged
-                and "Staged the pulled code on top of your pre-pull staging"
-              or "Staged only the pulled code. After you commit, restore_staging_after_review"
-                .. " puts your staging from before the pull back"
+            local why = m.code == 1
+                and "-X theirs could not resolve these conflicts:\n" .. table.concat(files, "\n")
+              or vim.trim(m.stderr or "")
 
-            notify(msg .. ". Check git diff --cached")
-          end)
-        end
+            return notify(
+              "Could not stage the pulled code, nothing changed:\n" .. why,
+              vim.log.levels.ERROR
+            )
+          end
 
-        local saved = undo_ref(target, "staging")
-        if opts.with_staged or not staging then
-          -- nothing of yours is unstaged, so there is nothing to put back later
-          return must({ "update-ref", "-d", saved }, target.path, what, stage)
-        end
-        must({ "update-ref", saved, staging }, target.path, what, stage)
+          local what = "Staging the pulled code in " .. name
+
+          local function stage()
+            restore_staging(target, lines[1], function(r)
+              if r.code ~= 0 then
+                return notify(
+                  what .. " failed:\n" .. vim.trim(r.stderr or ""),
+                  vim.log.levels.ERROR
+                )
+              end
+
+              local msg = opts.with_staged
+                  and "Staged the pulled code on top of your pre-pull staging"
+                or "Staged only the pulled code. After you commit, restore_staging_after_review"
+                  .. " puts your staging from before the pull back"
+
+              notify(msg .. ". Check git diff --cached" .. (note and "\n" .. note or ""))
+            end)
+          end
+
+          local saved = undo_ref(target, "staging")
+          if opts.with_staged or not staging then
+            return must({ "update-ref", "-d", saved }, target.path, what, stage)
+          end
+          must({ "update-ref", saved, staging }, target.path, what, stage)
+        end)
       end)
     end)
   end)
