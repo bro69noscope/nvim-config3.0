@@ -133,10 +133,10 @@ end
 --- The undo point of target's last pull ("pull"), or the blob listing the files that pull left
 --- conflicted, NUL-separated ("conflicts"). One slot per target.
 ---@param target Worktree
----@param name "pull"|"conflicts"
+---@param type "pull"|"conflicts"|"staging"
 ---@return string
-local function undo_ref(target, name)
-  return "refs/wt-undo/@" .. target_key(target) .. "/" .. name
+local function undo_ref(target, type)
+  return "refs/wt-undo/@" .. target_key(target) .. "/" .. type
 end
 
 ---@param cwd string
@@ -853,12 +853,13 @@ local function pull_from_base(p, base)
   end)
 end
 
----@param opts? { again?: boolean, review?: boolean }
---- again: ignore the last pull and merge from the common commit.
---- review: only the pulled code ends up unstaged, for send_review to send back with your tweaks.
+---@class PullOpts
+---@field again? boolean ignore the last pull and merge from the common commit
+---@field review? boolean only the pulled code is unstaged, for send_review to send with your tweaks
+
+---@param opts? PullOpts
 function M.pull_from_llm_worktree(opts)
-  local again = opts and opts.again
-  local review = opts and opts.review
+  opts = opts or {}
   if busy() then
     return
   end
@@ -905,7 +906,7 @@ function M.pull_from_llm_worktree(opts)
             llm_sha = llm_sha,
             staged = staged,
             hint = hint,
-            review = review,
+            review = opts.review,
           }
 
           local function from_merge_base()
@@ -921,7 +922,7 @@ function M.pull_from_llm_worktree(opts)
             end)
           end
 
-          if again then
+          if opts.again then
             return from_merge_base()
           end
 
@@ -930,7 +931,7 @@ function M.pull_from_llm_worktree(opts)
               return pull_from_base(p, vim.trim(b.stdout))
             end
 
-            if review then
+            if opts.review then
               return from_merge_base()
             end
 
@@ -1036,7 +1037,8 @@ end
 ---@field ref string ref of the undo point commit, its tree is the target files before the pull
 ---@field parents CommitSha[] HEAD at the pull, then the staging commit if any
 
---- Read target's undo point. Refuses when HEAD moved since the pull, as the saved files are
+--- Read target's undo point: the state target was in before its most recent pull, until an undo or
+--- a send_review deletes it. Refuses when HEAD moved since the pull, as the saved files are
 --- relative to that commit.
 ---@param target Worktree
 ---@param cb fun(point: UndoPoint)
@@ -1375,15 +1377,18 @@ function M.overwrite_llm_worktree()
   end)
 end
 
+---@class SendReviewOpts
+---@field copy_prompt? boolean also copies the LLM prompt to the clipboard
+
 --- For use after a review pull. Sends all files of target to the LLM worktree that the review
 --- pull came from: your edits, the pulled code and your tweaks. Then reverts target to before
 --- the review pull.
 --- The LLM worktree gets two commits on top of target's HEAD:
 ---   "review: before your tweaks": the files after the review pull (point.review)
 ---   "review: your tweaks": the files now. `git show HEAD` shows only your tweaks.
----@param opts? { copy_prompt?: boolean } copy_prompt: also copies the LLM prompt to the clipboard
+---@param opts? SendReviewOpts
 function M.send_review(opts)
-  local copy_prompt = opts and opts.copy_prompt
+  opts = opts or {}
   if busy() then
     return
   end
@@ -1439,7 +1444,7 @@ function M.send_review(opts)
             must(b, llm.path, what, function(t)
               must({ "reset", "-q", t }, llm.path, what, function()
                 local msg = ("Tweaks are %s's HEAD commit"):format(llm.branch)
-                if copy_prompt then
+                if opts.copy_prompt then
                   vim.fn.setreg(
                     "+",
                     "I reviewed the code."
