@@ -77,6 +77,14 @@ local function lg_float_term(opts)
         os.remove(newdir_file)
         local newdir = ok and out[1] or ""
 
+        if vim.api.nvim_win_is_valid(lazygit_term.win) then
+          vim.api.nvim_win_close(lazygit_term.win, true)
+        end
+
+        if vim.api.nvim_buf_is_valid(lazygit_term.buf) then
+          vim.api.nvim_buf_delete(lazygit_term.buf, { force = true })
+        end
+
         local function key(p)
           p = vim.fs.normalize(p)
           return OnWindows and p:lower() or p
@@ -85,14 +93,6 @@ local function lg_float_term(opts)
         if newdir ~= "" and key(newdir) ~= key(vim.fn.getcwd()) then
           vim.cmd.cd(vim.fn.fnameescape(newdir))
           vim.notify("cwd -> " .. vim.fn.getcwd(), vim.log.levels.INFO, { title = "Lazygit" })
-        end
-
-        if vim.api.nvim_win_is_valid(lazygit_term.win) then
-          vim.api.nvim_win_close(lazygit_term.win, true)
-        end
-
-        if vim.api.nvim_buf_is_valid(lazygit_term.buf) then
-          vim.api.nvim_buf_delete(lazygit_term.buf, { force = true })
         end
 
         vim.cmd("checktime")
