@@ -131,7 +131,8 @@ local function pulled_ref(target, llm)
 end
 
 --- The undo point of target's last pull ("pull"), or the blob listing the files that pull left
---- conflicted, NUL-separated ("conflicts"). One slot per target.
+--- conflicted, NUL-separated ("conflicts"), or the staging that stage_review removed, as a
+--- commit whose parent is HEAD at that time ("staging"). One slot per target.
 ---@param target Worktree
 ---@param type "pull"|"conflicts"|"staging"
 ---@return string
@@ -1457,6 +1458,144 @@ function M.send_review(opts)
                 notify(msg)
                 undo_review()
               end)
+            end)
+          end)
+        end)
+      end)
+    end)
+  end)
+end
+
+---@class StageReviewOpts
+---@field with_staged? boolean keep the staging from before the pull too
+
+--- After a review pull: stage the pulled code (the review result minus the files before the pull).
+--- The files on disk do not change. When a pulled hunk conflicts with what it is staged on, the
+--- pulled side wins. A current limitation is that this hunk can then also stage some unstaged lines
+--- next to it.
+--- - default: the index is HEAD + the pulled code. Staging from before the pull is saved, so
+--- restore_staging_after_review puts it back after you commit.
+---@param opts? StageReviewOpts
+function M.stage_review(opts)
+  opts = opts or {}
+  if busy() then
+    return
+  end
+
+  with_target(function(_, target)
+    read_undo(target, function(point)
+      if not point.review then
+        return notify("The last pull was not a review pull", vim.log.levels.WARN)
+      end
+
+      local name = label(target)
+      local staging = point.parents[2]
+      local ours = opts.with_staged and staging and staging .. "^{tree}" or "HEAD^{tree}"
+      local args = {
+        "merge-tree",
+        "--write-tree",
+        "--name-only",
+        "-X",
+        "theirs",
+        "--merge-base=" .. point.ref .. "^{tree}",
+        ours,
+        point.review,
+      }
+
+      git(args, target.path, function(m)
+        local lines = vim.split(m.stdout or "", "\n", { plain = true })
+        if m.code ~= 0 then
+          -- 1: conflicts that -X theirs can't resolve, for example a file the pull changed that
+          -- is not in what it is staged on (a new file we did not stage)
+          local files = {}
+
+          for i = 2, #lines do
+            if lines[i] == "" then
+              break
+            end
+            table.insert(files, lines[i])
+          end
+
+          local why = m.code == 1
+              and "-X theirs could not resolve these conflicts:\n" .. table.concat(files, "\n")
+            or vim.trim(m.stderr or "")
+
+          return notify(
+            "Could not stage the pulled code, nothing changed:\n" .. why,
+            vim.log.levels.ERROR
+          )
+        end
+
+        local what = "Staging the pulled code in " .. name
+
+        local function stage()
+          restore_staging(target, lines[1], function(r)
+            if r.code ~= 0 then
+              return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
+            end
+
+            local msg = opts.with_staged
+                and "Staged the pulled code on top of your pre-pull staging"
+              or "Staged only the pulled code. After you commit, restore_staging_after_review"
+                .. " puts your staging from before the pull back"
+
+            notify(msg .. ". Check git diff --cached")
+          end)
+        end
+
+        local saved = undo_ref(target, "staging")
+        if opts.with_staged or not staging then
+          -- nothing of yours is unstaged, so there is nothing to put back later
+          return must({ "update-ref", "-d", saved }, target.path, what, stage)
+        end
+        must({ "update-ref", saved, staging }, target.path, what, stage)
+      end)
+    end)
+  end)
+end
+
+--- After we commit what stage_review staged: put our staging from before the review pull back on
+--- top of the new HEAD. Where it touches the same lines as the commit, the commit wins.
+function M.restore_staging_after_review()
+  if busy() then
+    return
+  end
+
+  with_target(function(_, target)
+    local saved = undo_ref(target, "staging")
+    git({ "rev-parse", "--verify", "-q", saved }, target.path, function(s)
+      if s.code ~= 0 then
+        return notify("No staging saved by stage_review", vim.log.levels.WARN)
+      end
+      local staging = vim.trim(s.stdout)
+
+      git({ "diff", "--cached", "--quiet" }, target.path, function(d)
+        if d.code ~= 0 then
+          return notify(
+            "Something is staged. Commit it or unstage it first, nothing changed",
+            vim.log.levels.WARN
+          )
+        end
+
+        -- base = HEAD when the staging was saved, so only your staged changes are applied
+        local args = {
+          "merge-tree",
+          "--write-tree",
+          "-X",
+          "ours",
+          "--merge-base=" .. staging .. "^",
+          "HEAD",
+          staging,
+        }
+        local what = "Restoring the staging"
+        must(args, target.path, what, function(out)
+          local tree = out:match("^[^\n]*")
+          restore_staging(target, tree, function(r)
+            if r.code ~= 0 then
+              return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
+            end
+            must({ "update-ref", "-d", saved }, target.path, what, function()
+              notify("Staging from before the review pull restored")
             end)
           end)
         end)

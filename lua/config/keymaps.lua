@@ -381,6 +381,21 @@ map("n", "<leader>iB", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review({ copy_prompt = true })
 end, { desc = "Send review back to LLM worktree, copy LLM prompt" })
 
+-- After a review pull: stage only the pulled code (your staging is saved for <leader>ig)
+map("n", "<leader>ia", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").stage_review()
+end, { desc = "Stage only the reviewed LLM code" })
+
+-- After a review pull: stage the pulled code on top of your staging from before the pull
+map("n", "<leader>iA", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").stage_review({ with_staged = true })
+end, { desc = "Stage reviewed LLM code + prior staging" })
+
+-- After committing what stage_review staged: put your staging from before the review pull back
+map("n", "<leader>ig", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").restore_staging_after_review()
+end, { desc = "Restore staging from before review" })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()
