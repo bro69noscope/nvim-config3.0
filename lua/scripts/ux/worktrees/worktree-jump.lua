@@ -1,6 +1,7 @@
 local M = {}
 
 local TITLE = "WorktreeJump"
+local DIM_PREFIXES = { "cc/" }
 
 local function notify(msg, level)
   vim.notify(msg, level or vim.log.levels.INFO, { title = TITLE })
@@ -31,6 +32,15 @@ end
 local function label(wt)
   local name = wt.branch or ("detached @ " .. (wt.head or "?"):sub(1, 7))
   return name .. "  (" .. wt.path .. ")"
+end
+
+local function is_dimmed(wt)
+  for _, prefix in ipairs(DIM_PREFIXES) do
+    if wt.branch and vim.startswith(wt.branch, prefix) then
+      return true
+    end
+  end
+  return false
 end
 
 local function open(target, diff)
@@ -102,10 +112,14 @@ function M.jump(opts)
     return go(targets[1])
   end
 
-  vim.ui.select(targets, {
+  Snacks.picker.select(targets, {
     prompt = (diff and "Diff " or "Jump to ") .. rel .. " in",
-    format_item = function(t)
-      return label(t.wt) .. (t.exists and "" or "  [file missing]")
+    format_item = function(t, supports_chunks)
+      local text = label(t.wt) .. (t.exists and "" or "  [file missing]")
+      if not supports_chunks then
+        return text
+      end
+      return { { text, is_dimmed(t.wt) and "Comment" or nil } }
     end,
   }, function(choice)
     if choice then
