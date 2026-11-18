@@ -13,6 +13,7 @@ vim.opt.undofile = true
 vim.opt.clipboard = ""
 vim.opt.swapfile = false -- Annoying as fuck so testing temporary disable
 vim.opt.shortmess:append("s") -- Don't show "search hit BOTTOM, continuing at TOP" messages
+vim.opt.shada = (vim.o.shada:gsub("'%d+", "'1000"))
 
 vim.opt.wrap = true
 vim.opt.scrolloff = 14
