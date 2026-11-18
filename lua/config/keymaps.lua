@@ -321,10 +321,10 @@ map("n", "<leader>gg", function()
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "" })
 end, { desc = "Open Lazygit in floating terminal" })
 
-map("n", "<leader>G", function()
+map("n", "<leader>gG", function()
   require("scripts.ux.move-cwd-level").set_cwd_to_project_root({ look_up = false })
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "" })
-end, { desc = "Open Lazygit in current buf git root" })
+end, { desc = "Open LG in current buf git root" })
 
 map("n", "<leader>gol", function()
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "log" })
