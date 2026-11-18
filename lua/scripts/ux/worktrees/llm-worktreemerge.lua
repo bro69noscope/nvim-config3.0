@@ -478,12 +478,12 @@ local function parse_diff(text)
   return files
 end
 
---- Rewrite a hunk header's new-side start so it fits a patch where some earlier hunks of the
---- same file were left out.
----@param head string
----@param delta integer
----@return string head
----@return integer delta
+--- Rewrite a hunk header's new-side start. This way, it will fit a patch where some earlier hunks
+--- of the same file were left out.
+---@param head string hunk header, such as "@@ -20,5 +17,1 @@ name\n"
+---@param delta integer the number of lines that the hunks kept before this one add to the file
+---@return string head the header with the new start changed: "@@ -20,5 +16,1 @@ name\n"
+---@return integer delta the delta for the next kept hunk: this delta + the lines this hunk adds
 local function renumber(head, delta)
   local a, b, _, d, rest = head:match("^@@ %-(%d+),?(%d*) %+(%d+),?(%d*) @@(.*)$")
   a = tonumber(a)
@@ -528,8 +528,10 @@ local function changed_span(hunk)
   return lo, hi
 end
 
----@param text string
----@return number[][] regions each { lo, hi }
+---@alias LineRegion [number, number] { lo, hi }: line span with bounds between lines (linenum.5)
+
+---@param text string diff output: each "\n@@ -a,b" hunk header gives one old-side region
+---@return LineRegion[] regions
 local function diff_regions(text)
   local regions = {}
   for a_str, b_str in text:gmatch("\n@@ %-(%d+),?(%d*) ") do
@@ -545,6 +547,9 @@ local function diff_regions(text)
   return regions
 end
 
+-- true when the two LineRegions share a part. The order does not matter, and neither region must
+-- be inside the other: { 7.5, 10.5 } overlaps { 4.5, 8.5 }. Two empty regions (insertion
+-- points, lo == hi) overlap only at the same point.
 ---@return boolean
 local function overlaps(lo1, hi1, lo2, hi2)
   if lo1 == hi1 and lo2 == hi2 then
