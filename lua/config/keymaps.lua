@@ -48,8 +48,8 @@ vim.keymap.del("n", "[<C-T>")
 -- })
 
 -- lateral movement with m-h and m-l (meta key)
-map("n", "<m-h>", "15zh", { desc = "Move cursor 15 spaces to the left" })
-map("n", "<m-l>", "15zl", { desc = "Move cursor 15 spaces to the right" })
+map("n", "<m-h>", "15zh", { desc = "Move cursor 15 spaces left" })
+map("n", "<m-l>", "15zl", { desc = "Move cursor 15 spaces right" })
 
 -- better indenting
 map("v", "<", "<gv", { desc = "Indent left aNd reselect" })
@@ -94,7 +94,7 @@ map("n", "<C-I>", "<C-I>zz", { desc = "Jump forward and center" })
 map("n", "n", "nzz", { desc = "Next search and center" })
 map("n", "N", "Nzz", { desc = "Previous search and center" })
 map("n", "*", "*zz", { desc = "Search word under cursor" })
-map("n", "#", "#zz", { desc = "Search word under cursor backward" })
+map("n", "#", "#zz", { desc = "Search cursor word backward" })
 -- map("n", "%", "%zz", { desc = "Match bracket and center" })
 map({ "n", "i" }, "<PageUp>", "<Cmd>normal! <C-b>zz<CR>")
 map({ "n", "i" }, "<PageDown>", "<Cmd>normal! <C-f>zz<CR>")
@@ -116,12 +116,12 @@ map("n", "<esc>", function()
   end
   local clear = require("scripts.ui.close-floating-windows")
   clear.clear_stuff()
-end, { desc = "Close floating wins/disable search hl" })
+end, { desc = "Close floats/disable search hl" })
 
 -- Set focus on solo windows + main filetree explorer
 map("n", "<leader>wo", function()
   require("scripts.ui.close-other-windows").solo_window_with_filetree()
-end, { desc = "Close others (and opens File Explorer)", icon = "" })
+end, { desc = "Close others, open explorer", icon = "" })
 
 -- Search within visual selection
 map("x", "<leader>/", "<Esc>/\\%V", { desc = "Search within selection" })
@@ -212,7 +212,7 @@ end, { desc = "Copy file content to clipboard" })
 
 map("n", "<leader>yA", function()
   clip_utils.append_file_to_system_register()
-end, { desc = "Append file content to clipboard" })
+end, { desc = "Append file content to clip" })
 
 map("n", "<leader>yc", function()
   clip_utils.copy_code_to_system_register()
@@ -240,7 +240,7 @@ map("n", "<leader>yF", function()
   local file_name = vim.fn.expand("%:t")
   vim.fn.setreg("+", file_name)
   vim.notify("File path copied to clipboard: " .. file_name, vim.log.levels.INFO)
-end, { desc = "Yank current fname + ext. to clip", icon = "" })
+end, { desc = "Yank fname + ext. to clip", icon = "" })
 
 map("n", "<leader>y.", function()
   local cwd = vim.fn.getcwd()
@@ -256,7 +256,7 @@ end, { desc = "Get current buffer info" })
 
 map("n", "<leader>ut", function()
   various_utils.list_treesitter_installed_parsers()
-end, { desc = "List installed treesitter parsers", icon = "🌲" })
+end, { desc = "List installed TS parsers", icon = "🌲" })
 
 map("n", "<leader>ud", "<cmd>diffthis<CR>", { desc = "diffthis", icon = "󰆊" })
 -- Path quick conversion
@@ -292,24 +292,24 @@ end, { desc = "Restore window size" })
 
 map("n", "<leader>wh", function()
   require("scripts.ui.resize-windows").half_size_window_horizontal()
-end, { desc = "Set window to half the horizontal size" })
+end, { desc = "Halve window horizontal size" })
 
 map("n", "<leader>wH", function()
   require("scripts.ui.resize-windows").half_size_window_vertical()
-end, { desc = "Set window to half the vertical size" })
+end, { desc = "Halve window vertical size" })
 
 -- Yank buffer's paths to clipboard
 map("n", "<leader>yp", function()
   local relative_path = vim.fn.expand("%:p:~:.")
   vim.fn.setreg("+", relative_path)
   vim.notify("Relative path copied to clipboard: " .. relative_path, vim.log.levels.INFO)
-end, { desc = "Yank buffer rel path to clip", icon = "" })
+end, { desc = "Clip buffer relative path", icon = "" })
 
 map("n", "<leader>yP", function()
   local absolute_path = vim.fn.expand("%:p")
   vim.fn.setreg("+", absolute_path)
   vim.notify("Absolute path copied to clipboard: " .. absolute_path, vim.log.levels.INFO)
-end, { desc = "Yank buffer absolute path to clip", icon = "" })
+end, { desc = "Clip buffer absolute path", icon = "" })
 
 -- Delete marks with gmd
 map("n", "gmd", function()
@@ -319,16 +319,16 @@ end, { desc = "Delete mark(s)", icon = { icon = "❌", color = "red" } })
 -- Open Lazygit in a floating terminal
 map("n", "<leader>gg", function()
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "" })
-end, { desc = "Open Lazygit in floating terminal" })
+end, { desc = "Open Lazygit in float term" })
 
 map("n", "<leader>gG", function()
   require("scripts.ux.move-cwd-level").set_cwd_to_project_root({ look_up = false })
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "" })
-end, { desc = "Open LG in current buf git root" })
+end, { desc = "Open LG in buffer git root" })
 
 map("n", "<leader>gol", function()
   require("scripts.ux.lazygit-terminal").start_lazygit({ cmd_args = "log" })
-end, { desc = "Open Lazygit logs in floating term" })
+end, { desc = "Open Lazygit logs (float)" })
 
 -- Git pull current branch
 local gitpull = require("scripts.ux.gitpull")
@@ -342,7 +342,7 @@ end, { desc = "Jump to file in other worktree" })
 
 map("n", "<leader>gJ", function()
   require("scripts.ux.worktrees.worktree-jump").jump({ diff = true })
-end, { desc = "Diff file against other worktree" })
+end, { desc = "Diff file vs other worktree" })
 
 -- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
 map("n", "<leader>ip", function()
@@ -352,17 +352,17 @@ end, { desc = "Pull from LLM worktree" })
 -- Pull again ignoring the last pull, so changes main undid since come back
 map("n", "<leader>iP", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ again = true })
-end, { desc = "Re-pull everything from LLM worktree" })
+end, { desc = "Re-pull all from LLM worktree" })
 
 -- Put main back to right before the last pull (files, staging, pulled mark)
 map("n", "<leader>iu", function()
   require("scripts.ux.worktrees.llm-worktreemerge").undo_pull()
-end, { desc = "Undo last pull from LLM worktree" })
+end, { desc = "Undo last LLM worktree pull" })
 
 -- After resolving a pull's conflicts, put those files' staging back to before the pull
 map("n", "<leader>ir", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_resolved_staging()
-end, { desc = "Restore staging after resolving LLM pull" })
+end, { desc = "Restore staging after LLM pull" })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
@@ -372,7 +372,7 @@ end, { desc = "Send to LLM worktree" })
 -- Stage the hunks of my unstaged changes that the LLM worktree doesn't have
 map("n", "<leader>ih", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_unshared_hunks()
-end, { desc = "Stage hunks not in LLM worktree" })
+end, { desc = "Stage non-LLM-worktree hunks" })
 
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
 map("n", "<leader>xo", function()
@@ -404,7 +404,7 @@ map("n", "<leader>rs", function()
       },
     })
   end
-end, { desc = "Generate symbol refactor template" })
+end, { desc = "Gen symbol refactor template" })
 
 -- Open custom log file in new tab
 map("n", "<leader>ol", function()
@@ -421,14 +421,14 @@ end, { desc = "Open WezTerm tab at cwd" })
 
 map("n", "<leader>tO", function()
   require("scripts.ux.open-cwd-wezterm").new_cwd_this_file_wezterm_tab()
-end, { desc = "Open WezTerm tab at current file's cwd" })
+end, { desc = "Open WezTerm tab at file's cwd" })
 
 -- Try to format lines too long without lsp/formatter
 map(
   "n",
   "<leader>rl",
   require("scripts.ux.format-longlines").makeshift_format,
-  { desc = "Scuffed Format long lines in file", icon = "🤡" }
+  { desc = "Scuffed format long lines", icon = "🤡" }
 )
 
 -- set cwd to parent directory of current file
@@ -527,7 +527,7 @@ local function unalign()
   vim.cmd(range .. [[s/\S\zs\s\{2,}/ /g]])
 end
 
-map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-space to single" })
+map({ "n", "x" }, "<leader>ua", unalign, { desc = "Unalign: collapse multi-spaces" })
 
 -- Run current file ?? (pwsh safe, unsure about why we need the `&` now...)
 map("n", "<leader>uR", function()
@@ -541,7 +541,7 @@ map("n", "<leader>uX", function()
       vim.api.nvim_buf_delete(buf, {})
     end
   end
-end, { desc = "Close all buffers except current", icon = "❌" })
+end, { desc = "Close all other buffers", icon = "❌" })
 
 -- Pipe git diffs to clipboard
 local pipe_git_diff = require("scripts.ux.pipe-git-diff-to-clip")
@@ -549,7 +549,7 @@ map("n", "<leader>g<leader>f", function()
   pipe_git_diff.file_diff()
 end, {
   silent = true,
-  desc = "Pipe file git diff to clipboard",
+  desc = "Copy file git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -557,7 +557,7 @@ map("n", "<leader>g<leader>F", function()
   pipe_git_diff.file_diff({ staged = true })
 end, {
   silent = true,
-  desc = "Pipe file diff to clipboard (incl. staged)",
+  desc = "Copy file diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -565,7 +565,7 @@ map("n", "<leader>g<leader>d", function()
   pipe_git_diff.cwd_diff()
 end, {
   silent = true,
-  desc = "Pipe cwd git diff to clipboard",
+  desc = "Copy cwd git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -573,7 +573,7 @@ map("n", "<leader>g<leader>D", function()
   pipe_git_diff.cwd_diff({ staged = true })
 end, {
   silent = true,
-  desc = "Pipe cwd diff to clipboard (incl. staged)",
+  desc = "Copy cwd diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -581,7 +581,7 @@ map("n", "<leader>g<leader>q", function()
   pipe_git_diff.qf_list()
 end, {
   silent = true,
-  desc = "Pipe quickfix git diff to clipboard",
+  desc = "Copy quickfix git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -589,7 +589,7 @@ map("n", "<leader>g<leader>Q", function()
   pipe_git_diff.qf_list({ staged = true })
 end, {
   silent = true,
-  desc = "Pipe quickfix diff to clipboard (incl. staged)",
+  desc = "Copy qf diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
@@ -600,7 +600,7 @@ end, { desc = "Show current buffer full path", icon = "󰇘" })
 
 map("n", "<leader>up", function()
   require("scripts.ui.show-buffer-fullpath").show_fullpath_cwd()
-end, { desc = "Show current buffer path (git root)", icon = "󰇘" })
+end, { desc = "Show buffer path (git root)", icon = "󰇘" })
 
 map("n", "<leader>u.", function()
   require("scripts.ui.show-buffer-fullpath").show_cwd()

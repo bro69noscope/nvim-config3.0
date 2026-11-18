@@ -2,7 +2,7 @@
 --- This is to ensure having at least 3 columns of which-key ui for keymaps
 local M = {}
 
-local MAX_DESC = 33
+local MAX_DESC = 30
 local ns = vim.api.nvim_create_namespace("whichkey-desc-lint")
 
 -- Match: { ..., desc = "<text>", ... } in any table

@@ -123,7 +123,7 @@ return {
       function()
         toggle_or_create_terminal_float(vim.fn.expand("%:p:h"))
       end,
-      desc = "Toggleterm float at current file",
+      desc = "Toggleterm float at file",
       icon = { icon = "", color = "red" },
     })
 

@@ -125,7 +125,7 @@ return {
           args = {},
         })
       end,
-      desc = "Visual selection or word (bounded)",
+      desc = "Selection or word (bounds)",
       mode = { "n", "x" },
     },
     -- smart from imode
@@ -160,7 +160,7 @@ return {
         end
         require("modules.snacks.picker.explorer.open-with-flags").open({ follow_file = false })
       end,
-      desc = "Toggle Snacks Explorer (No Follow File)",
+      desc = "Snacks Explorer No Follow File",
     },
 
     {
@@ -168,7 +168,7 @@ return {
       function()
         require("modules.snacks.picker.explorer.force-reveal").reveal_current()
       end,
-      desc = "Reveal current file in explorer",
+      desc = "Reveal file in explorer",
     },
 
     -- Words
@@ -259,7 +259,7 @@ return {
           end,
         })
       end,
-      desc = "Find .log files / log(s) folders",
+      desc = "Find .log files / log dirs",
     },
 
     -- marks with only user marks a-z / A-Z. Exclude automated marks

@@ -302,7 +302,7 @@ vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
             vim.cmd("normal! zz")
           end
         end)
-      end, { buffer = args.buf, silent = true, desc = "Close diff tab and jump to line" })
+      end, { buffer = args.buf, silent = true, desc = "Close diff tab, jump to line" })
     end
   end,
 })
@@ -332,5 +332,5 @@ for _, key in ipairs({ "*", "#", "g*", "g#" }) do
     local pos = vim.api.nvim_win_get_cursor(0)
     vim.api.nvim_buf_set_mark(0, Automated_marks.search_jumps.key, pos[1], pos[2], {})
     vim.cmd.normal({ vim.v.count1 .. key, bang = true })
-  end, { desc = "Search word and mark origin with s" })
+  end, { desc = "Search word, mark origin (s)" })
 end

@@ -16,7 +16,7 @@ return {
     desc = "Restore Last Session", mode = { "n", "v" } },
 
     { "<leader>qd", function() require("persistence").stop(); vim.cmd("qa") end,
-    desc = "Don't Save Current Session and Quit", mode = { "n", "v" } },
+    desc = "Quit without saving session", mode = { "n", "v" } },
 
     { "<leader>qs", function() require("persistence").save() end,
     desc = "Save Session", mode = { "n", "v" } },

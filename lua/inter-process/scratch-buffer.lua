@@ -66,11 +66,11 @@ if launched_as_scratch then
 
   map("n", "<localleader>x", function()
     close_and_clip(false)
-  end, { desc = "Close scratch, clip contents, signal AHK", icon = "💃" })
+  end, { desc = "Clip scratch, close, ping AHK", icon = "💃" })
 
   map("x", "<localleader>x", function()
     close_and_clip(true)
-  end, { desc = "Close scratch, clip selection, signal AHK", icon = "💃" })
+  end, { desc = "Clip visual, close, ping AHK", icon = "💃" })
 
   local watcher = assert(vim.uv.new_timer(), "failed to create scratch-buffer timer")
   watcher:start(

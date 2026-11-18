@@ -38,7 +38,7 @@ return {
         require("grapple").reset()
         require("grapple").tag()
       end,
-      desc = "Grapple wipe tags and add current file",
+      desc = "Grapple: wipe tags, add file",
     },
     {
       "g_",
