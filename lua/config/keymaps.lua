@@ -370,7 +370,15 @@ map("n", "<leader>iv", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ review = true })
 end, { desc = "Review pull from LLM worktree" })
 
--- Send the reviewed tree back to the LLM worktree, with your tweaks as its HEAD commit, then
+-- Same as <leader>iv, but ignore the last pull, so changes main undid since come back
+map("n", "<leader>iV", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({
+    again = true,
+    review = true,
+  })
+end, { desc = "Re-pull everything from LLM wt for review" })
+
+-- Send the reviewed tree back to the LLM worktree, with user tweaks as its HEAD commit, then
 -- revert the review pull
 map("n", "<leader>ib", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review()
