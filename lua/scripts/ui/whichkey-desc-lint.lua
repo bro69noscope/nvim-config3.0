@@ -109,7 +109,11 @@ M.setup = function()
     group = vim.api.nvim_create_augroup("whichkey-desc-lint", { clear = true }),
     pattern = "*.lua",
     callback = function(args)
-      M.lint(args.buf)
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(args.buf) then
+          M.lint(args.buf)
+        end
+      end)
     end,
   })
 end
