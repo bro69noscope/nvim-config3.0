@@ -18,4 +18,37 @@ return {
       "yazi.nvim",
     },
   },
+  config = function(_, opts)
+    require("lazydev").setup(opts)
+
+    local Util = require("lazydev.util")
+    local Workspace = require("lazydev.workspace")
+    local add = Workspace.add
+    local config = Util.norm(vim.uv.fs_realpath(vim.fn.stdpath("config")))
+
+    -- true when root is a linked worktree of the config repo: its .git file points into
+    -- <config>/.git/worktrees/
+    local function is_config_worktree(root)
+      local f = io.open(root .. "/.git")
+      local line = f and f:read("*l")
+      if f then
+        f:close()
+      end
+      local gitdir = line and line:match("^gitdir: (.+)$")
+      return gitdir ~= nil and vim.startswith(Util.norm(gitdir), config .. "/.git/worktrees/")
+    end
+
+    -- a worktree of this config has its own copy of the config modules: do not also add the
+    -- main checkout (stdpath("config")) as a library, or each module is defined twice
+    function Workspace:add(path)
+      local real = type(path) == "string" and vim.uv.fs_realpath(path)
+      real = real and Util.norm(real)
+      local in_config = real and (real == config or vim.startswith(real, config .. "/"))
+
+      if in_config and not Workspace.is_special(self.root) and is_config_worktree(self.root) then
+        return
+      end
+      return add(self, path)
+    end
+  end,
 }
