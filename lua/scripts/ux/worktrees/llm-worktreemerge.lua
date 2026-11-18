@@ -1743,7 +1743,10 @@ function M.restore_staging_after_review()
     local saved = undo_ref(target, "staging")
     git({ "rev-parse", "--verify", "-q", saved }, target.path, function(s)
       if s.code ~= 0 then
-        return notify("No staging saved by stage_review", vim.log.levels.WARN)
+        return notify(
+          "No staging saved. After a review pull, run stage_review and commit, then run this",
+          vim.log.levels.WARN
+        )
       end
       local staging = vim.trim(s.stdout)
 

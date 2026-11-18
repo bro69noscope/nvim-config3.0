@@ -345,30 +345,39 @@ map("n", "<leader>gJ", function()
 end, { desc = "Diff file vs other worktree" })
 
 -- Ai worktree custom workflow keymaps:
+-- which-key has no pink color preset, so use a custom highlight group. Set it again after a
+-- colorscheme change, because the change clears it.
+local function set_llm_icon_hl()
+  vim.api.nvim_set_hl(0, "LlmWorktreeIcon", { fg = "#f5a3d0" })
+end
+set_llm_icon_hl()
+vim.api.nvim_create_autocmd("ColorScheme", { callback = set_llm_icon_hl })
+local llm_icon = { icon = "󱚥", hl = "LlmWorktreeIcon" }
+
 -- Pull the LLM worktree's work into main as unstaged changes (real git conflicts)
 map("n", "<leader>ip", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree()
-end, { desc = "Pull from LLM worktree" })
+end, { desc = "Pull from LLM worktree", icon = llm_icon })
 
 -- Pull again ignoring the last pull, so changes main undid since come back
 map("n", "<leader>iP", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ again = true })
-end, { desc = "Re-pull all from LLM worktree" })
+end, { desc = "Re-pull all from LLM worktree", icon = llm_icon })
 
 -- Put current wt back to right before the last pull (files, staging, pulled mark)
 map("n", "<leader>iu", function()
   require("scripts.ux.worktrees.llm-worktreemerge").undo_pull()
-end, { desc = "Undo last LLM worktree pull" })
+end, { desc = "Undo last LLM worktree pull", icon = llm_icon })
 
 -- After resolving a pull's conflicts, put those files' staging back to before the pull
 map("n", "<leader>ir", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_resolved_staging()
-end, { desc = "Restore staging after LLM pull" })
+end, { desc = "Restore staging after LLM pull", icon = llm_icon })
 
 -- Pull so that only the pulled code is unstaged, to review and tweak it before keeping it
 map("n", "<leader>iv", function()
   require("scripts.ux.worktrees.llm-worktreemerge").pull_from_llm_worktree({ review = true })
-end, { desc = "Review pull from LLM worktree" })
+end, { desc = "Review pull from LLM worktree", icon = llm_icon })
 
 -- Same as <leader>iv, but ignore the last pull, so changes main undid since come back
 map("n", "<leader>iV", function()
@@ -376,43 +385,43 @@ map("n", "<leader>iV", function()
     again = true,
     review = true,
   })
-end, { desc = "Re-pull everything from LLM wt for review" })
+end, { desc = "Re-pull everything from LLM wt for review", icon = llm_icon })
 
 -- Send the reviewed tree back to the LLM worktree, with user tweaks as its HEAD commit, then
 -- revert the review pull
 map("n", "<leader>ib", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review()
-end, { desc = "Send review back to LLM worktree" })
+end, { desc = "Send review back to LLM worktree", icon = llm_icon })
 
 -- Same as <leader>ib, and copy a prompt that tells the LLM to read tweaks
 map("n", "<leader>iB", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review({ copy_prompt = true })
-end, { desc = "Send review back to LLM worktree, copy LLM prompt" })
+end, { desc = "Send review back to LLM wt, copy prompt", icon = llm_icon })
 
 -- After a review pull: stage only the pulled code (your staging is saved for <leader>ig)
 map("n", "<leader>ia", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review()
-end, { desc = "Stage only the reviewed LLM code" })
+end, { desc = "Stage only the reviewed LLM code", icon = llm_icon })
 
 -- After a review pull: stage the pulled code on top of your staging from before the pull
 map("n", "<leader>iA", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review({ with_staged = true })
-end, { desc = "Stage reviewed LLM code + prior staging" })
+end, { desc = "Stage reviewed LLM code + prior staging", icon = llm_icon })
 
 -- After committing what stage_review staged: put your staging from before the review pull back
 map("n", "<leader>ig", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_staging_after_review()
-end, { desc = "Restore staging from before review" })
+end, { desc = "Restore pre-review staging after commit", icon = llm_icon })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()
-end, { desc = "Send to LLM worktree" })
+end, { desc = "Send to LLM worktree", icon = llm_icon })
 
 -- Stage the hunks of our unstaged changes that the LLM worktree doesn't have
 map("n", "<leader>ih", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_unshared_hunks()
-end, { desc = "Stage non-LLM-worktree hunks" })
+end, { desc = "Stage non-LLM-worktree hunks", icon = llm_icon })
 
 -- Open multiple buffers (meant to populate diagnostics over multiple files)
 map("n", "<leader>xo", function()
