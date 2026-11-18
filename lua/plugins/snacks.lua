@@ -177,6 +177,7 @@ return {
       function()
         local repeat_reverse = require("modules.snacks.words.repeat-reverse")
         local next_ref, _ = repeat_reverse.setup_snacks_words()
+        repeat_reverse.snapshot()
         local pos = vim.api.nvim_win_get_cursor(0)
         vim.api.nvim_buf_set_mark(0, Automated_marks.snacks_words_jumps.key, pos[1], pos[2], {})
         next_ref()
@@ -188,6 +189,9 @@ return {
       function()
         local repeat_reverse = require("modules.snacks.words.repeat-reverse")
         local _, prev_ref = repeat_reverse.setup_snacks_words()
+        repeat_reverse.snapshot()
+        local pos = vim.api.nvim_win_get_cursor(0)
+        vim.api.nvim_buf_set_mark(0, Automated_marks.snacks_words_jumps.key, pos[1], pos[2], {})
         prev_ref()
       end,
       desc = "Previous Snacks Word",
