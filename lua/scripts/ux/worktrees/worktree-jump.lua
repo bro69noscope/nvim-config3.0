@@ -112,6 +112,9 @@ function M.jump(opts)
     return go(targets[1])
   end
 
+  local backdrop = require("scripts.ui.create-backdrop-window")
+  local bd = backdrop.open({ blend = 60 })
+
   Snacks.picker.select(targets, {
     prompt = (diff and "Diff " or "Jump to ") .. rel .. " in",
     format_item = function(t, supports_chunks)
@@ -122,6 +125,7 @@ function M.jump(opts)
       return { { text, is_dimmed(t.wt) and "Comment" or nil } }
     end,
   }, function(choice)
+    backdrop.close(bd)
     if choice then
       go(choice)
     end
