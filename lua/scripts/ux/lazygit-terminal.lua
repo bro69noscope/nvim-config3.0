@@ -170,7 +170,7 @@ function M.start_lazygit(opts)
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    vim.g.maplocalleader .. "e",
+    "<M-e>",
     string.format(
       [[<Cmd>lua require('scripts.ux.lazygit-terminal').lazygit_edit(%d)<CR>]],
       current_buffer
@@ -179,7 +179,7 @@ function M.start_lazygit(opts)
   )
 
   -- Quit lazygit and apply its cwd to nvim
-  vim.keymap.set("t", vim.g.maplocalleader .. "q", function()
+  vim.keymap.set("t", "<M-q>", function()
     lazygit_term.apply_cwd = true
     vim.fn.chansend(vim.b[float_term.buf].terminal_job_id, "q")
   end, { buffer = float_term.buf, silent = true, desc = "Lazygit quit + cd" })
@@ -187,16 +187,16 @@ function M.start_lazygit(opts)
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    vim.g.maplocalleader .. "c",
-    [[<C-\><C-n>:lua RunTinygitSmartCommit()<CR>]],
+    "<M-c>",
+    [[<C-\><C-n><Cmd>lua RunTinygitSmartCommit()<CR>]],
     { noremap = true, silent = true }
   )
 
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    vim.g.maplocalleader .. "a",
-    [[<C-\><C-n>:lua RunTinygitAmendOnlyMessage()<CR>]],
+    "<M-a>",
+    [[<C-\><C-n><Cmd>lua RunTinygitAmendOnlyMessage()<CR>]],
     { noremap = true, silent = true }
   )
 
