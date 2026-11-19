@@ -2,6 +2,7 @@ local M = {}
 local lazygit_term = {
   buf = nil,
   win = nil,
+  apply_cwd = false,
 }
 
 local function notify_error(msg)
@@ -57,6 +58,8 @@ local function lg_float_term(opts)
 
   lazygit_term.buf = buf
   lazygit_term.win = float
+  lazygit_term.apply_cwd = false
+
   local backdrop = require("scripts.ui.create-backdrop-window")
   local bd = backdrop.open({ blend = 40 })
   backdrop.link_to_window(float, bd)
@@ -90,7 +93,7 @@ local function lg_float_term(opts)
           return OnWindows and p:lower() or p
         end
 
-        if newdir ~= "" and key(newdir) ~= key(vim.fn.getcwd()) then
+        if lazygit_term.apply_cwd and newdir ~= "" and key(newdir) ~= key(vim.fn.getcwd()) then
           vim.cmd.cd(vim.fn.fnameescape(newdir))
           vim.notify("cwd -> " .. vim.fn.getcwd(), vim.log.levels.INFO, { title = "Lazygit" })
         end
@@ -104,6 +107,7 @@ local function lg_float_term(opts)
 
         lazygit_term.buf = nil
         lazygit_term.win = nil
+        lazygit_term.apply_cwd = false
       end)
     end,
   })
@@ -173,6 +177,12 @@ function M.start_lazygit(opts)
     ),
     { noremap = true, silent = true }
   )
+
+  -- Quit lazygit and apply its cwd to nvim
+  vim.keymap.set("t", vim.g.maplocalleader .. "q", function()
+    lazygit_term.apply_cwd = true
+    vim.fn.chansend(vim.b[float_term.buf].terminal_job_id, "q")
+  end, { buffer = float_term.buf, silent = true, desc = "Lazygit quit + cd" })
 
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
