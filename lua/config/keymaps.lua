@@ -385,33 +385,33 @@ map("n", "<leader>iV", function()
     again = true,
     review = true,
   })
-end, { desc = "Re-pull everything from LLM wt for review", icon = llm_icon })
+end, { desc = "Re-pull LLM wt for review", icon = llm_icon })
 
 -- Send the reviewed tree back to the LLM worktree, with user tweaks as its HEAD commit, then
 -- revert the review pull
 map("n", "<leader>ib", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review()
-end, { desc = "Send review back to LLM worktree", icon = llm_icon })
+end, { desc = "Send review back to LLM wt", icon = llm_icon })
 
 -- Same as <leader>ib, and copy a prompt that tells the LLM to read tweaks
 map("n", "<leader>iB", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review({ copy_prompt = true })
-end, { desc = "Send review back to LLM wt, copy prompt", icon = llm_icon })
+end, { desc = "Send review + clip LLM prompt", icon = llm_icon })
 
 -- After a review pull: stage only the pulled code (your staging is saved for <leader>ig)
 map("n", "<leader>ia", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review()
-end, { desc = "Stage only the reviewed LLM code", icon = llm_icon })
+end, { desc = "Stage only reviewed LLM code", icon = llm_icon })
 
 -- After a review pull: stage the pulled code on top of your staging from before the pull
 map("n", "<leader>iA", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review({ with_staged = true })
-end, { desc = "Stage reviewed LLM code + prior staging", icon = llm_icon })
+end, { desc = "Stage reviewed + prior staging", icon = llm_icon })
 
 -- After committing what stage_review staged: put your staging from before the review pull back
 map("n", "<leader>ig", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_staging_after_review()
-end, { desc = "Restore pre-review staging after commit", icon = llm_icon })
+end, { desc = "Restore pre-review staging", icon = llm_icon })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
