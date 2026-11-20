@@ -1,5 +1,6 @@
 local M = {}
-M.path_inserts = require("modules.snacks.picker.actions.path-inserts")
+M.path_inserts = require("modules.snacks.picker.actions.insert-paths")
+M.yank_entries = require("modules.snacks.picker.actions.yank-entries")
 M.setup_picker_keys = require("modules.snacks.picker.keys.setup-picker-keys")
 M.case_aware_grep = require("modules.snacks.picker.finders.case-aware-grep")
 M.patched_jumps = require("modules.snacks.picker.finders.patched-jumps")
@@ -43,6 +44,12 @@ return {
       matcher = { frecency = true },
     },
     git_status_all = M.git_status_all,
+    git_branches = {
+      win = {
+        input = { keys = { ["gy"] = { "yank_branch" } } },
+        list = { keys = { ["gy"] = { "yank_branch" } } },
+      },
+    },
     lsp_definitions = {
       jump = { reuse_win = false }, -- Prevent using a different window for gd, etc.
     },
@@ -115,10 +122,16 @@ return {
       M.path_inserts.insert_python_import_path(picker)
     end,
     clip_full_path = function(picker)
-      M.path_inserts.clip_full_path(picker)
+      M.yank_entries.clip_full_path(picker)
     end,
     yank_filename = function(picker)
-      M.path_inserts.yank_filename(picker)
+      M.yank_entries.yank_filename(picker)
+    end,
+    yank_entry = function(picker)
+      M.yank_entries.yank_entry(picker)
+    end,
+    yank_branch = function(picker)
+      M.yank_entries.yank_branch(picker)
     end,
     qflist_append = function(picker)
       M.append_to_qflist(picker)
@@ -157,6 +170,7 @@ return {
         -- ["<bs>"] = { "insert_python_import_path",  }, NOTE: idk about keeping this
         ["+"] = { "clip_full_path" },
         ["gy"] = { "yank_filename" },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
@@ -177,6 +191,7 @@ return {
       keys = {
         ["+"] = { "clip_full_path" },
         ["gy"] = { "yank_filename" },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["O"] = { { "pick_win", "jump" } },
