@@ -77,14 +77,16 @@ local function busy()
   return true
 end
 
---- vim.ui.select that keeps busy() true while the picker is open
+--- Snacks.picker.select that keeps busy() true while the picker is open
 ---@generic T
 ---@param items T[]
 ---@param opts table
 ---@param cb fun(choice: T?)
 local function select(items, opts, cb)
   in_flight = in_flight + 1
-  local ok, err = pcall(vim.ui.select, items, opts, function(choice)
+  -- Snacks directly, not vim.ui.select: dressing.nvim replaces vim.ui.select, and it does not
+  -- draw the highlight chunks of format_item
+  local ok, err = pcall(Snacks.picker.select, items, opts, function(choice)
     -- cb starts its own git calls first, so the counter stays above 0 across the hand-over
     local cb_ok, cb_err = pcall(cb, choice)
     in_flight = in_flight - 1
@@ -384,6 +386,27 @@ local function llm_worktrees(list, main)
   end, list)
 end
 
+---@param llm Worktree
+---@param target Worktree
+---@return boolean
+local function is_for_target(llm, target)
+  local branch = (llm.branch or ""):gsub("^cc/", "")
+  return target.branch ~= nil and vim.startswith(branch, target.branch)
+end
+
+-- format_item for a picker of LLM worktrees: the ones for another branch are dimmed
+---@param target Worktree
+---@return fun(llm: Worktree, supports_chunks: boolean): string|snacks.picker.Highlight[]
+local function llm_item(target)
+  return function(llm, supports_chunks)
+    local text = llm.branch .. "  (" .. llm.path .. ")"
+    if not supports_chunks then
+      return text
+    end
+    return { { text, not is_for_target(llm, target) and "Comment" or nil } }
+  end
+end
+
 -- LLM worktrees with a detached HEAD (checkout <sha>, mid-rebase, bisect...) have no branch
 ---@param list Worktree[]
 ---@param main Worktree
@@ -417,9 +440,7 @@ local function pick_llm_worktree(prompt, cb)
 
     select(llm_wts, {
       prompt = prompt:format(label(target)),
-      format_item = function(llm)
-        return llm.branch .. "  (" .. llm.path .. ")"
-      end,
+      format_item = llm_item(target),
     }, function(choice)
       if choice then
         cb(target, choice)
@@ -1028,9 +1049,7 @@ function M.pull_from_llm_worktree(opts)
 
     select(llm_wts, {
       prompt = ("Merge worktree into %s (unstaged)"):format(label(target)),
-      format_item = function(llm)
-        return llm.branch .. "  (" .. llm.path .. ")"
-      end,
+      format_item = llm_item(target),
     }, function(choice)
       if choice then
         run(choice)
