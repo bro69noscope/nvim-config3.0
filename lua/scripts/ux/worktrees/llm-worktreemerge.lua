@@ -109,6 +109,7 @@ local function must(args, cwd, what, cb)
     if r.code ~= 0 then
       return notify(("%s failed:\n%s"):format(what, vim.trim(r.stderr or "")), vim.log.levels.ERROR)
     end
+
     cb(vim.trim(r.stdout or ""))
   end)
 end
@@ -182,25 +183,31 @@ end
 local function working_tree(cwd, cb)
   local idx = vim.fn.tempname()
   local env = { GIT_INDEX_FILE = idx }
+
   local function done(tree, err)
     os.remove(idx)
     cb(tree, err)
   end
+
   local function fail(r)
     done(nil, vim.trim(r.stderr or ""))
   end
+
   git({ "read-tree", "HEAD" }, cwd, function(a)
     if a.code ~= 0 then
       return fail(a)
     end
+
     git({ "add", "-A" }, cwd, function(b)
       if b.code ~= 0 then
         return fail(b)
       end
+
       git({ "write-tree" }, cwd, function(c)
         if c.code ~= 0 then
           return fail(c)
         end
+
         done(vim.trim(c.stdout))
       end, env)
     end, env)
@@ -215,17 +222,21 @@ local function take_snapshot(cwd, cb)
     if err then
       return cb(nil, err)
     end
+
     git({ "rev-parse", "HEAD^{tree}" }, cwd, function(d)
       if d.code ~= 0 then
         return cb(nil, vim.trim(d.stderr or ""))
       end
+
       if vim.trim(d.stdout) == tree then
         return cb(nil, nil, tree)
       end
+
       git({ "commit-tree", tree, "-p", "HEAD", "-m", "worktreemerge snapshot" }, cwd, function(e)
         if e.code ~= 0 then
           return cb(nil, vim.trim(e.stderr or ""))
         end
+
         cb(vim.trim(e.stdout), nil, tree)
       end)
     end)
@@ -242,6 +253,7 @@ local function snapshot(cwd, cb)
   git({ "ls-files", "--others", "--exclude-standard", "-z" }, cwd, function(u)
     local paths = u.code == 0 and vim.split(u.stdout, "\0", { plain = true, trimempty = true })
       or {}
+
     if #paths <= UNTRACKED_LIMIT then
       return take_snapshot(cwd, cb)
     end
@@ -278,14 +290,18 @@ local function staged_tree(cwd, cb)
     if a.code ~= 0 then
       return cb(nil, vim.trim(a.stderr or ""))
     end
+
     local tree = vim.trim(a.stdout)
+
     git({ "rev-parse", "HEAD^{tree}" }, cwd, function(b)
       if b.code ~= 0 then
         return cb(nil, vim.trim(b.stderr or ""))
       end
+
       if vim.trim(b.stdout) == tree then
         return cb(nil)
       end
+
       cb(tree)
     end)
   end)
@@ -296,8 +312,10 @@ end
 ---@return Worktree[]
 local function parse(out)
   local list, cur = {}, nil
+
   for line in out:gmatch("[^\r\n]+") do
     local p = line:match("^worktree (.+)$")
+
     if p then
       cur = { path = p }
       table.insert(list, cur)
@@ -308,9 +326,11 @@ local function parse(out)
       end
     end
   end
+
   if list[1] then
     list[1].is_main_wt = true
   end
+
   return list
 end
 
@@ -327,12 +347,14 @@ end
 ---@return Worktree?
 local function worktree_at(list, dir)
   local d, found = norm_path(dir), nil
+
   for _, wt in ipairs(list) do
     local p = norm_path(wt.path)
     if (d == p or vim.startswith(d, p .. "/")) and (not found or #wt.path > #found.path) then
       found = wt
     end
   end
+
   return found
 end
 
@@ -418,11 +440,14 @@ local function select_llm(llm_wts, target, prompt, cb)
     prompt = prompt .. " (" .. LAST_KEY .. " to pick " .. LAST_ICON .. "last)",
     format_item = function(llm, supports_chunks)
       local text = llm.branch .. "  (" .. llm.path .. ")"
+
       if not supports_chunks then
         return text
       end
+
       local icon = llm == last and LAST_ICON or (" "):rep(vim.fn.strdisplaywidth(LAST_ICON))
       local hl = not is_for_target(llm, target) and "Comment" or nil
+
       return { { icon, "SnacksPickerSpecial" }, { text, hl } }
     end,
   }
@@ -470,13 +495,16 @@ local function pick_llm_worktree(prompt, cb)
   with_target(function(list, target)
     local main = list[1]
     warn_detached(list, main)
+
     -- a target that is itself an LLM worktree can't pair with itself
     local llm_wts = vim.tbl_filter(function(llm)
       return llm ~= target
     end, llm_worktrees(list, main))
+
     if #llm_wts == 0 then
       return notify("No other LLM worktrees", vim.log.levels.WARN)
     end
+
     if #llm_wts == 1 then
       return cb(target, llm_wts[1])
     end
@@ -494,8 +522,10 @@ local function read_file(path)
   if not f then
     return nil
   end
+
   local s = f:read("*a")
   f:close()
+
   return s
 end
 
@@ -520,6 +550,7 @@ end
 ---@return DiffFile[]
 local function parse_diff(text)
   local files, file, hunk = {}, nil, nil
+
   for line in text:gmatch("[^\n]*\n") do
     if line:find("^diff %-%-git ") then
       file = { header = line, hunks = {} }
@@ -534,6 +565,7 @@ local function parse_diff(text)
       file.header = file.header .. line
     end
   end
+
   return files
 end
 
@@ -545,9 +577,11 @@ end
 ---@return integer delta the delta for the next kept hunk: this delta + the lines this hunk adds
 local function renumber(head, delta)
   local a, b, _, d, rest = head:match("^@@ %-(%d+),?(%d*) %+(%d+),?(%d*) @@(.*)$")
+
   a = tonumber(a)
   b = b == "" and 1 or tonumber(b)
   d = d == "" and 1 or tonumber(d)
+
   -- git counts the new start from the line before when a side is empty
   local adj = (b == 0 and 1) or (d == 0 and -1) or 0
   local new_start = a + adj + delta
@@ -569,10 +603,13 @@ end
 local function changed_span(hunk)
   local c, d = hunk.head:match("^@@ %-%d+,?%d* %+(%d+),?(%d*) @@")
   local n = tonumber(c)
+
   if d == "0" then
     n = n + 1 -- pure deletion: git gives the line before the gap, we want the line after
   end
+
   local lo, hi = math.huge, -math.huge
+
   for _, line in ipairs(hunk.body) do
     local kind = line:sub(1, 1)
     if kind == " " then
@@ -584,6 +621,7 @@ local function changed_span(hunk)
       lo, hi = math.min(lo, n - 0.5), math.max(hi, n - 0.5)
     end
   end
+
   return lo, hi
 end
 
@@ -593,9 +631,11 @@ end
 ---@return LineRegion[] regions
 local function diff_regions(text)
   local regions = {}
+
   for a_str, b_str in text:gmatch("\n@@ %-(%d+),?(%d*) ") do
     local a = tonumber(a_str)
     local b = b_str == "" and 1 or tonumber(b_str)
+
     if b > 0 then
       table.insert(regions, { a - 0.5, a + b - 0.5 })
     else
@@ -603,6 +643,7 @@ local function diff_regions(text)
       table.insert(regions, { a + 0.5, a + 0.5 })
     end
   end
+
   return regions
 end
 
@@ -637,11 +678,13 @@ local UNDO_KEYS = { "branch", "pulled", "review" }
 ---@return string
 local function undo_message(m)
   local lines = { UNDO_SUBJECT, "" }
+
   for _, key in ipairs(UNDO_KEYS) do
     if m[key] then
       table.insert(lines, key .. " " .. m[key])
     end
   end
+
   return table.concat(lines, "\n")
 end
 
@@ -651,13 +694,16 @@ local function parse_undo_message(text)
   if text:match("^[^\n]*") ~= UNDO_SUBJECT then
     return nil
   end
+
   local m = {}
   for _, key in ipairs(UNDO_KEYS) do
     m[key] = text:match("\n" .. key .. " (%S+)")
   end
+
   if not (m.branch and m.pulled) then
     return nil
   end
+
   return m
 end
 
@@ -703,6 +749,7 @@ end
 ---@param p Pull
 local function record_pulled(p)
   local target, llm, llm_sha = p.target, p.llm, p.llm_sha
+
   local function save(commit)
     git({ "update-ref", pulled_ref(target, llm), commit }, target.path, function(r)
       if r.code ~= 0 then
@@ -730,6 +777,7 @@ end
 local function pull_from_base(p, base)
   local target, llm, llm_sha = p.target, p.llm, p.llm_sha
   local staged, hint, review = p.staged, p.hint, p.review
+
   snapshot(target.path, function(target_sha, target_err, target_tree)
     if target_err then
       return notify(
@@ -763,8 +811,10 @@ local function pull_from_base(p, base)
           if fields[i] == "" then
             break
           end
+
           table.insert(stages, fields[i])
           local path = fields[i]:match("\t(.*)$")
+
           if path and not seen[path] then
             seen[path] = true
             table.insert(conflicts, path)
@@ -776,22 +826,27 @@ local function pull_from_base(p, base)
         ---@param cb fun(r: vim.SystemCompleted)
         local function mark_conflicts(cb)
           local info = {}
+
           for _, path in ipairs(conflicts) do
             -- mode 0 drops the path's normal entry
             table.insert(info, "0 " .. ("0"):rep(#result) .. "\t" .. path .. "\0")
           end
+
           for _, entry in ipairs(stages) do
             table.insert(info, entry .. "\0")
           end
+
           git({ "update-index", "-z", "--index-info" }, target.path, cb, nil, table.concat(info))
         end
 
         local function record_conflicts()
           local list = table.concat(conflicts, "\0")
+
           git({ "hash-object", "-w", "--stdin" }, target.path, function(h)
             if h.code ~= 0 then
               return Logger.warn("could not save the conflict list: " .. vim.trim(h.stderr), CTX)
             end
+
             local ref = undo_ref(target, "conflicts")
             git({ "update-ref", ref, vim.trim(h.stdout) }, target.path, function(u)
               if u.code ~= 0 then
@@ -896,6 +951,7 @@ local function pull_from_base(p, base)
                 vim.cmd("checktime")
               end)
             end
+
             step(i + 1)
           end)
         end
@@ -909,6 +965,7 @@ local function pull_from_base(p, base)
     if not target_sha then
       return merge()
     end
+
     local backup = backup_ref()
     local what = "backing up " .. label(target)
     must({ "update-ref", backup, target_sha }, target.path, what, function()
@@ -983,6 +1040,7 @@ function M.pull_from_llm_worktree(opts)
                   vim.log.levels.ERROR
                 )
               end
+
               pull_from_base(p, vim.trim(c.stdout))
             end)
           end
@@ -1021,6 +1079,7 @@ function M.pull_from_llm_worktree(opts)
                     -- clean merge, but the autostash reapply can conflict
                     git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
                       local unmerged = vim.trim(u.stdout or "")
+
                       if unmerged ~= "" then
                         record_pulled(p)
                         notify(
@@ -1036,6 +1095,7 @@ function M.pull_from_llm_worktree(opts)
                       restore_staging(target, staged, function(z)
                         Logger.info("git merge output:\n" .. out, CTX)
                         record_pulled(p)
+
                         if z.code ~= 0 then
                           notify(
                             "Merged, but restoring your staging failed:\n"
@@ -1052,6 +1112,7 @@ function M.pull_from_llm_worktree(opts)
                             )
                           )
                         end
+
                         vim.cmd("checktime")
                       end)
                     end)
@@ -1059,6 +1120,7 @@ function M.pull_from_llm_worktree(opts)
                     -- merge failed: unmerged files = conflict, none = never ran
                     git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
                       local unmerged = vim.trim(u.stdout or "")
+
                       if unmerged ~= "" then
                         record_pulled(p)
                         notify(
@@ -1070,6 +1132,7 @@ function M.pull_from_llm_worktree(opts)
                       else
                         notify("Merge not applied:\n" .. out, vim.log.levels.ERROR)
                       end
+
                       vim.cmd("checktime")
                     end)
                   end
@@ -1192,6 +1255,7 @@ local function apply_undo(target, point, pulled)
           )
           return vim.cmd("checktime")
         end
+
         step(i + 1)
       end)
     end
@@ -1234,6 +1298,7 @@ function M.restore_resolved_staging()
 
   with_target(function(_, target)
     local undo = undo_ref(target, "pull")
+
     git({ "cat-file", "blob", undo_ref(target, "conflicts") }, target.path, function(c)
       if c.code ~= 0 then
         return notify("No conflicted pull to restore the staging of", vim.log.levels.WARN)
@@ -1242,6 +1307,7 @@ function M.restore_resolved_staging()
 
       git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
         local unmerged = vim.trim(u.stdout or "")
+
         if unmerged ~= "" then
           return notify("Resolve these first:\n" .. unmerged, vim.log.levels.WARN)
         end
@@ -1257,6 +1323,7 @@ function M.restore_resolved_staging()
             "--pathspec-from-file=-",
             "--pathspec-file-nul",
           }
+
           git(restore, target.path, function(r)
             if r.code ~= 0 then
               return notify(
@@ -1339,10 +1406,12 @@ local function sync_into(target, llm, on_done)
           )
           prune_backups(llm.path)
           local mark = { "update-ref", pulled_ref(target, llm), target_sha or target_head }
+
           return git(mark, llm.path, function(u)
             if u.code ~= 0 then
               Logger.warn("could not record the mirrored state: " .. vim.trim(u.stderr), CTX)
             end
+
             if on_done then
               on_done()
             end
@@ -1355,9 +1424,11 @@ local function sync_into(target, llm, on_done)
               ("git %s failed:\n%s"):format(table.concat(s, " "), vim.trim(r.stderr or ""))
             )
           end
+
           step(i + 1)
         end)
       end
+
       step(1)
     end)
   end
@@ -1578,6 +1649,7 @@ end
 ---@return LineRegion[]regions
 local function marker_blocks(text)
   local blocks, start, n = {}, nil, 0
+
   for line in (text .. "\n"):gmatch("([^\n]*)\n") do
     n = n + 1
     if line:find("^<<<<<<<%s") or line == "<<<<<<<" then
@@ -1587,6 +1659,7 @@ local function marker_blocks(text)
       start = nil
     end
   end
+
   return blocks
 end
 
@@ -1604,6 +1677,7 @@ local function review_result(target, point, cb)
 
     git({ "diff", "--name-only", "--diff-filter=U" }, target.path, function(u)
       local unmerged = vim.trim(u.stdout or "")
+
       if unmerged ~= "" then
         return cb(nil, "Resolve these first:\n" .. unmerged)
       end
@@ -1630,6 +1704,7 @@ local function review_result(target, point, cb)
             if r.code ~= 0 then
               return done(nil, vim.trim(r.stderr or ""))
             end
+
             next(r.stdout or "")
           end, env, stdin)
         end
@@ -1648,6 +1723,7 @@ local function review_result(target, point, cb)
             else
               table.insert(whole, path)
             end
+
             scan(i + 1, next)
           end)
         end
@@ -1656,6 +1732,7 @@ local function review_result(target, point, cb)
           if #whole == 0 then
             return next()
           end
+
           local add = { "--literal-pathspecs", "add", "-A", "--pathspec-from-file=-" }
           table.insert(add, "--pathspec-file-nul")
           step(add, next, table.concat(whole, "\0"))
@@ -1664,6 +1741,7 @@ local function review_result(target, point, cb)
         local skipped = 0
         local function add_resolutions(next)
           local block_paths = vim.tbl_keys(blocks)
+
           if #block_paths == 0 then
             return next()
           end
@@ -1672,6 +1750,7 @@ local function review_result(target, point, cb)
           vim.list_extend(diff, { "--no-textconv", "--unified=0", "--" })
           step(vim.list_extend(diff, block_paths), function(d)
             local parts = {}
+
             for _, f in ipairs(parse_diff(d)) do
               local regions = blocks[diff_path(f.header) or ""]
               local delta, kept = 0, {}
@@ -1705,6 +1784,7 @@ local function review_result(target, point, cb)
 
             local patch = vim.fn.tempname()
             write_file(patch, table.concat(parts))
+
             step({ "apply", "--cached", "--unidiff-zero", patch }, function()
               os.remove(patch)
               next()
@@ -1778,6 +1858,7 @@ function M.stage_review(opts)
 
         git(args, target.path, function(m)
           local lines = vim.split(m.stdout or "", "\n", { plain = true })
+
           if m.code ~= 0 then
             -- 1: conflicts that -X theirs can't resolve, for example a file the pull changed that
             -- is not in what it is staged on (a new file we did not stage)
@@ -1870,10 +1951,12 @@ function M.restore_staging_after_review()
         local what = "Restoring the staging"
         must(args, target.path, what, function(out)
           local tree = out:match("^[^\n]*")
+
           restore_staging(target, tree, function(r)
             if r.code ~= 0 then
               return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
             end
+
             must({ "update-ref", "-d", saved }, target.path, what, function()
               notify("Staging from before the review pull restored")
             end)
@@ -1889,14 +1972,17 @@ function M.stage_unshared_hunks()
   if busy() then
     return
   end
+
   pick_llm_worktree("Stage hunks of %s missing from:", function(target, llm)
     if not vim.uv.fs_stat(llm.path .. "/.git") then
       return notify("Worktree dir missing: " .. llm.path, vim.log.levels.ERROR)
     end
+
     local index_before, index_err, index_read
     staged_tree(target.path, function(tree, err)
       index_before, index_err, index_read = tree, err, true
     end)
+
     local diff_file = vim.fn.tempname()
     git(
       {
@@ -1911,11 +1997,13 @@ function M.stage_unshared_hunks()
       function(d)
         local text = read_file(diff_file) or ""
         os.remove(diff_file)
+
         if d.code ~= 0 then
           return notify("git diff failed:\n" .. vim.trim(d.stderr), vim.log.levels.ERROR)
         end
 
         local files = parse_diff(text)
+
         ---@type { file: DiffFile, hunk: DiffHunk }[]
         local tasks = {}
         for _, f in ipairs(files) do
@@ -1942,6 +2030,7 @@ function M.stage_unshared_hunks()
         local function stage()
           warn_skipped()
           local parts, staged, nfiles, shared, uncompared = {}, 0, 0, 0, 0
+
           for _, f in ipairs(files) do
             for _, h in ipairs(f.hunks) do
               if h.stage == false then
@@ -1951,10 +2040,12 @@ function M.stage_unshared_hunks()
               end
             end
           end
+
           local uncompared_note = uncompared > 0 and (", %d not compared"):format(uncompared) or ""
 
           for _, f in ipairs(files) do
             local delta, kept = 0, {}
+
             for _, h in ipairs(f.hunks) do
               if h.stage then
                 local head
@@ -2014,8 +2105,10 @@ function M.stage_unshared_hunks()
 
             local patch = vim.fn.tempname()
             write_file(patch, table.concat(parts))
+
             git({ "apply", "--cached", "--unidiff-zero", patch }, target.path, function(r)
               os.remove(patch)
+
               if r.code ~= 0 then
                 return notify(
                   "git apply --cached failed, nothing staged:\n" .. vim.trim(r.stderr),
@@ -2038,10 +2131,12 @@ function M.stage_unshared_hunks()
         end
 
         local progress_id
+
         ---@param done integer files checked so far
         ---@param status "running"|"success"|"failed"
         local function progress(done, status)
           local msg = ("checked %d/%d files"):format(done, #files)
+
           progress_id = vim.api.nvim_echo({ { msg } }, false, {
             id = progress_id,
             kind = "progress",
@@ -2055,6 +2150,7 @@ function M.stage_unshared_hunks()
         local function check_file(i)
           local f = files[i]
           progress(i - 1, f and "running" or "success")
+
           if not f then
             return stage()
           end
@@ -2079,11 +2175,13 @@ function M.stage_unshared_hunks()
                 CTX
               )
             end
+
             check_file(i + 1)
           end
 
           local target_file, llm_file = target.path .. "/" .. path, llm.path .. "/" .. path
           local mtext, wtext = read_file(target_file), read_file(llm_file)
+
           if f.header:find("\ndeleted file mode", 1, true) then
             return finish(function()
               return wtext == nil
@@ -2127,7 +2225,9 @@ function M.stage_unshared_hunks()
                   vim.log.levels.ERROR
                 )
               end
+
               local regions = diff_regions(r.stdout or "")
+
               finish(function(h)
                 local lo, hi = changed_span(h)
                 for _, g in ipairs(regions) do
@@ -2135,14 +2235,17 @@ function M.stage_unshared_hunks()
                     return false
                   end
                 end
+
                 return true
               end)
             end
           )
         end
+
         check_file(1)
       end
     )
   end)
 end
+
 return M
