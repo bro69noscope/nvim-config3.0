@@ -3,13 +3,13 @@
 -- Temporarily override keymaps and restore whatever was there before,
 -- including Lua-callback mappings (expr, silent, noremap, etc. preserved).
 -- Useful for plugins that need to borrow a key for the duration of some
--- mode/state (e.g. vim-visual-multi borrowing <C-j>/<C-k> from blink.cmp).
+-- mode/state (e.g. vim-visual-multi borrowing <c-j>/<c-k> from blink.cmp).
 --
 -- Usage:
---   stash:save("i", "<C-j>")
---   vim.keymap.set("i", "<C-j>", my_fn, { buffer = true, expr = true })
+--   stash:save("i", "<c-j>")
+--   vim.keymap.set("i", "<c-j>", my_fn, { buffer = true, expr = true })
 --   ...
---   stash:restore("i", "<C-j>")   -- restores single key
+--   stash:restore("i", "<c-j>")   -- restores single key
 --   stash:restore_all()           -- or restore everything saved on this stash
 
 local M = {}
@@ -36,7 +36,7 @@ function Stash:save(mode, lhs)
   end
 end
 
---- Save a batch at once: stash:save_many("i", { "<C-j>", "<C-k>" })
+--- Save a batch at once: stash:save_many("i", { "<c-j>", "<c-k>" })
 function Stash:save_many(mode, lhs_list)
   for _, lhs in ipairs(lhs_list) do
     self:save(mode, lhs)

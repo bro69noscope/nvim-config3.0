@@ -130,7 +130,7 @@ return {
     },
     -- smart from imode
     {
-      "<C-t>",
+      "<c-t>",
       function()
         local has_blink_cmp, blink_cmp = pcall(require, "blink.cmp")
         if has_blink_cmp and blink_cmp.is_visible() then

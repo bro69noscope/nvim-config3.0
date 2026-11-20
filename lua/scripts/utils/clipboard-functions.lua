@@ -132,7 +132,7 @@ M.append_yank_to_system_reg_op = function(motion_type)
   if motion_type == "line" then
     sel_cmd = "'[V']"
   elseif motion_type == "block" then
-    sel_cmd = "`[\22`]" -- <C-v>
+    sel_cmd = "`[\22`]" -- <c-v>
   else -- "char"
     sel_cmd = "`[v`]"
   end

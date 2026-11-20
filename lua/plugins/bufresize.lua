@@ -9,15 +9,15 @@ return {
     require("bufresize").setup({
       register = {
         keys = {
-          --     { "n", "<C-w><", "<C-w><", opts },
-          --     { "n", "<C-w>>", "<C-w>>", opts },
-          --     { "n", "<C-w>+", "<C-w>+", opts },
-          --     { "n", "<C-w>-", "<C-w>-", opts },
-          --     { "n", "<C-w>_", "<C-w>_", opts },
-          --     { "n", "<C-w>=", "<C-w>=", opts },
-          --     { "n", "<C-w>|", "<C-w>|", opts },
+          --     { "n", "<c-w><", "<c-w><", opts },
+          --     { "n", "<c-w>>", "<c-w>>", opts },
+          --     { "n", "<c-w>+", "<c-w>+", opts },
+          --     { "n", "<c-w>-", "<c-w>-", opts },
+          --     { "n", "<c-w>_", "<c-w>_", opts },
+          --     { "n", "<c-w>=", "<c-w>=", opts },
+          --     { "n", "<c-w>|", "<c-w>|", opts },
           --     { "", "<LeftRelease>", "<LeftRelease>", opts },
-          --     { "i", "<LeftRelease>", "<LeftRelease><C-o>", opts },
+          --     { "i", "<LeftRelease>", "<LeftRelease><c-o>", opts },
         },
         trigger_events = {
           -- "BufWinEnter",

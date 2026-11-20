@@ -27,14 +27,14 @@ vim.keymap.del("n", "[L")
 vim.keymap.del("n", "]A")
 vim.keymap.del("n", "[A")
 
-vim.keymap.del("n", "]<C-L>")
-vim.keymap.del("n", "[<C-L>")
+vim.keymap.del("n", "]<c-L>")
+vim.keymap.del("n", "[<c-L>")
 
-vim.keymap.del("n", "[<C-Q>")
-vim.keymap.del("n", "]<C-Q>")
+vim.keymap.del("n", "[<c-Q>")
+vim.keymap.del("n", "]<c-Q>")
 
-vim.keymap.del("n", "]<C-T>")
-vim.keymap.del("n", "[<C-T>")
+vim.keymap.del("n", "]<c-T>")
+vim.keymap.del("n", "[<c-T>")
 
 -- lateral movement with H and L except in neo-tree
 -- vim.api.nvim_create_autocmd("FileType", {
@@ -60,11 +60,11 @@ map("n", "<leader>>", ">", { desc = "Indent line (operator)" })
 map("n", "<leader><", "<", { desc = "Unindenk line (operator)" })
 
 -- Exit terminal mode
-map("t", "<C-q>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
+map("t", "<c-q>", [[<C-\><c-n>]], { desc = "Exit terminal mode" })
 
 -- quit commands
-map({ "n", "v" }, "<leader>qq", ":<C-u>qa<CR>", { desc = "Quit all", silent = true })
-map({ "n", "v" }, "<leader>qf", ":<C-u>cq<CR>", { desc = "Quit and fail", silent = true })
+map({ "n", "v" }, "<leader>qq", ":<c-u>qa<CR>", { desc = "Quit all", silent = true })
+map({ "n", "v" }, "<leader>qf", ":<c-u>cq<CR>", { desc = "Quit and fail", silent = true })
 map({ "n", "v" }, "<leader>qt", "<cmd>TabcloseBetter<cr>", { desc = "Close tab", silent = true })
 map({ "n", "v" }, "<leader>qo", "<cmd>tabonly<cr>", { desc = "Close other tabs", silent = true })
 map("n", "<leader>q<BS>", function()
@@ -73,22 +73,22 @@ map("n", "<leader>q<BS>", function()
   vim.cmd("qa!")
 end, { desc = "Clip buffer content & quit", icon = "📋", silent = true })
 
--- save with C-S
-map("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
+-- save with c-S
+map("n", "<c-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
 -- noa save
 map(
   "n",
-  "<leader><C-s>",
+  "<leader><c-s>",
   "<cmd>noa w<cr><esc>",
   { desc = "Save file (no autocommands)", silent = true }
 )
 
 -- Center after most code navigation commands
 map("n", "G", "Gzz", { desc = "Go to end and center" })
-map("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and center" })
-map("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and center" })
-map("n", "<C-O>", "<C-O>zz", { desc = "Jump back and center" })
-map("n", "<C-I>", "<C-I>zz", { desc = "Jump forward and center" })
+map("n", "<c-d>", "<c-d>zz", { desc = "Scroll down and center" })
+map("n", "<c-u>", "<c-u>zz", { desc = "Scroll up and center" })
+map("n", "<c-O>", "<c-O>zz", { desc = "Jump back and center" })
+map("n", "<c-I>", "<c-I>zz", { desc = "Jump forward and center" })
 -- map("n", "{", "{zz", { desc = "Previous paragraph and center" })
 -- map("n", "}", "}zz", { desc = "Next paragraph and center" })
 map("n", "n", "nzz", { desc = "Next search and center" })
@@ -96,8 +96,8 @@ map("n", "N", "Nzz", { desc = "Previous search and center" })
 map("n", "*", "*zz", { desc = "Search word under cursor" })
 map("n", "#", "#zz", { desc = "Search cursor word backward" })
 -- map("n", "%", "%zz", { desc = "Match bracket and center" })
-map({ "n", "i" }, "<PageUp>", "<Cmd>normal! <C-b>zz<CR>")
-map({ "n", "i" }, "<PageDown>", "<Cmd>normal! <C-f>zz<CR>")
+map({ "n", "i" }, "<PageUp>", "<Cmd>normal! <c-b>zz<CR>")
+map({ "n", "i" }, "<PageDown>", "<Cmd>normal! <c-f>zz<CR>")
 
 -- Open Lazy floating window
 map("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy", icon = "󰒲" })
@@ -187,7 +187,7 @@ map("v", "gW", format_with_width, { desc = "Format with custom width" })
 -- Clipboard operations
 local clip_utils = require("scripts.utils.clipboard-functions")
 
-map({ "n", "v" }, "<C-c>", function()
+map({ "n", "v" }, "<c-c>", function()
   vim.fn.feedkeys('"+y')
 end, { desc = "Yank to clipboard" })
 

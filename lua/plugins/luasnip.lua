@@ -34,20 +34,20 @@ return {
     require("luasnip.loaders.from_vscode").lazy_load()
 
     -- Movement inside snippets slots
-    vim.keymap.set({ "i", "s" }, "<C-n>", function()
+    vim.keymap.set({ "i", "s" }, "<c-n>", function()
       return ls.jumpable(1) and "<Plug>luasnip-jump-next" or "<Tab>"
     end, { expr = true, silent = true })
 
-    vim.keymap.set({ "i", "s" }, "<C-p>", function()
+    vim.keymap.set({ "i", "s" }, "<c-p>", function()
       return ls.jumpable(-1) and "<Plug>luasnip-jump-prev" or "<S-Tab>"
     end, { expr = true, silent = true })
 
-    -- vim.keymap.set({ "i" }, "<C-l>", function()
+    -- vim.keymap.set({ "i" }, "<c-l>", function()
     --   --- @ diagnostic disable-next-line: missing-parameter
     --   ls.expand()
     -- end, { silent = true })
     --
-    -- vim.keymap.set({ "i", "s" }, "<C-e>", function()
+    -- vim.keymap.set({ "i", "s" }, "<c-e>", function()
     --   if ls.choice_active() then
     --     ls.change_choice(1)
     --   end

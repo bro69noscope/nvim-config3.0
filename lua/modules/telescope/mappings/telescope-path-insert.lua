@@ -66,6 +66,6 @@ telescope.setup({
   },
 })
 
-vim.keymap.set("i", "<C-t>", function()
+vim.keymap.set("i", "<c-t>", function()
   require("telescope.builtin").find_files()
 end, { noremap = true, silent = true, desc = "Telescope find files" })

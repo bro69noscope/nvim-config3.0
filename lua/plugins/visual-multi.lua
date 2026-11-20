@@ -6,7 +6,7 @@ return {
     { "<C-Left>", desc = "Toggle cursor mappings" },
     { "<C-Up>", desc = "Add cursor up" },
     { "<C-Down>", desc = "Add cursor down" },
-    { "<C-n>", mode = { "n", "v" }, desc = "Select next word" },
+    { "<c-n>", mode = { "n", "v" }, desc = "Select next word" },
   },
   config = function()
     local overwritten_keys = { "<CR>", "<BS>", "<Up>", "<Down>" }

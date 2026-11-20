@@ -13,7 +13,7 @@ return {
   },
   config = function(_, opts)
     require("match-up").setup(opts)
-    vim.keymap.del("i", "<C-G>%") -- invasive keymap for imode c-g binds
+    vim.keymap.del("i", "<c-G>%") -- invasive keymap for imode c-g binds
 
     local function plug(name)
       return function()

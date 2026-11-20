@@ -188,7 +188,7 @@ function M.start_lazygit(opts)
     float_term.buf,
     "t",
     "<M-c>",
-    [[<C-\><C-n><Cmd>lua RunTinygitSmartCommit()<CR>]],
+    [[<C-\><c-n><Cmd>lua RunTinygitSmartCommit()<CR>]],
     { noremap = true, silent = true }
   )
 
@@ -196,7 +196,7 @@ function M.start_lazygit(opts)
     float_term.buf,
     "t",
     "<M-a>",
-    [[<C-\><C-n><Cmd>lua RunTinygitAmendOnlyMessage()<CR>]],
+    [[<C-\><c-n><Cmd>lua RunTinygitAmendOnlyMessage()<CR>]],
     { noremap = true, silent = true }
   )
 
