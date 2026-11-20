@@ -11,8 +11,11 @@ if vim.g.neovide == true then
   local function paste()
     vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
   end
+
+  vim.g.neovide_hide_mouse_when_typing = true
   vim.g.neovide_fullscreen = true
   vim.g.neovide_scale_factor = zoomed_scale
+
   vim.keymap.set("n", "<F11>", ":let g:neovide_fullscreen = !g:neovide_fullscreen<CR>", {})
   vim.keymap.set({ "n", "i", "v", "c", "t" }, "<c-s-v>", paste, { silent = true, desc = "Paste" })
 
@@ -39,4 +42,5 @@ if vim.g.neovide == true then
   end, { silent = true, desc = "Reset zoom" })
   return true
 end
+
 return false
