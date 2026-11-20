@@ -163,43 +163,49 @@ return {
   win = {
     input = {
       keys = {
-        ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
-        ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
         ["-"] = { "insert_relative_path" },
         ["="] = { "insert_absolute_path" },
         -- ["<bs>"] = { "insert_python_import_path",  }, NOTE: idk about keeping this
         ["+"] = { "clip_full_path" },
         ["gy"] = { "yank_filename" },
-        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
-        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
-        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
-        ["<a-s>"] = { "flash", mode = { "n", "i" } },
         ["O"] = { { "pick_win", "jump" } },
-        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
-        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
+
+        ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
+        ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
+
         ["<a-d>"] = { "grapple_diff_review", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
+        ["<a-s>"] = { "flash", mode = { "n", "i" } },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
+
         ["<F4>"] = { "scope_to_git", mode = { "n", "i" } },
         ["<F5>"] = { "scope_to_cwd", mode = { "n", "i" } },
         ["<F6>"] = { "scope_to_all", mode = { "n", "i" } },
+
+        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
       },
     },
     list = {
       keys = {
         ["+"] = { "clip_full_path" },
         ["gy"] = { "yank_filename" },
-        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["O"] = { { "pick_win", "jump" } },
-        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
-        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
+
         ["<a-d>"] = { "grapple_diff_review", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
+
         [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
         [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
       },
