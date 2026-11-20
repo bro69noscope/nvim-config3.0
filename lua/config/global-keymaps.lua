@@ -1,12 +1,15 @@
-_G.NextDiffChangeBind = "<m-j>"
-_G.PrevDiffChangeBind = "<m-k>"
-_G.NextDiffConflictBind = "<c-J>"
-_G.PrevDiffConflictBind = "<c-K>"
+_G.SwapLineUpBind = "<c-K>"
+_G.SwapLineDownBind = "<c-J>"
 
 if OnNeovide then
-  _G.NextDiffConflictBind = "<c-s-j>"
-  _G.PrevDiffConflictBind = "<c-s-k>"
+  _G.SwapLineUpBind = "<c-s-k>"
+  _G.SwapLineDownBind = "<c-s-j>"
 end
+
+_G.NextDiffChangeBind = "<m-j>"
+_G.PrevDiffChangeBind = "<m-k>"
+_G.NextDiffConflictBind = "<m-J>"
+_G.PrevDiffConflictBind = "<m-K>"
 
 _G.HideTerminalBind = "<c-o>"
 

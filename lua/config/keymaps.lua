@@ -501,8 +501,8 @@ map("n", "<leader>`", function()
 end, { desc = "Set cwd to project root" })
 
 -- move lines up and down
-map("n", "<M-K>", ":m .-2<CR>==", { silent = true })
-map("n", "<M-J>", ":m .+1<CR>==", { silent = true })
+map("n", SwapLineUpBind, ":m .-2<CR>==", { silent = true })
+map("n", SwapLineDownBind, ":m .+1<CR>==", { silent = true })
 
 -- add current line to quickfix list
 map("n", "<leader>cl", function()
