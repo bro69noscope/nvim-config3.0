@@ -421,6 +421,7 @@ local last_picked = {}
 
 local LAST_ICON = "● "
 local LAST_KEY = "<c-l>"
+local backdrop = require("scripts.ui.create-backdrop-window")
 
 ---@param llm_wts Worktree[]
 ---@param target Worktree
@@ -467,8 +468,12 @@ local function select_llm(llm_wts, target, prompt, cb)
     }
   end
 
+  local bd = backdrop.open({ blend = 60 })
+
   select(llm_wts, opts, function(choice)
     choice = choice or (picked_last and last or nil)
+    backdrop.close(bd)
+
     if choice then
       done(choice)
     end
