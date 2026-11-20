@@ -1,80 +1,75 @@
 local M = {}
-local function insert_path(picker, use_relative, as_python_import)
-  local item = picker:current()
-  if item == nil then
-    vim.notify("No selection", vim.log.levels.WARN)
-    return
+
+-- Get the file paths of the selected items, or of the current item if no selection
+local function selected_paths(picker)
+  local paths = {}
+  for _, item in ipairs(picker:selected({ fallback = true })) do
+    if item.file then
+      table.insert(paths, item.file)
+    end
   end
 
-  local path = item.file
-  if path == nil then
+  if #paths == 0 then
     vim.notify("No path", vim.log.levels.WARN)
+    return nil
+  end
+  return paths
+end
+
+local function insert_path(picker, use_relative, as_python_import)
+  local paths = selected_paths(picker)
+  if paths == nil then
     return
   end
 
-  -- Convert path format
-  local function convert_path(p)
-    return p:gsub("\\", "/")
-  end
+  local lines = {}
+  for _, path in ipairs(paths) do
+    if use_relative then
+      path = vim.fn.fnamemodify(path, ":.")
+    end
+    path = path:gsub("\\", "/")
 
-  local function get_relative_path(p)
-    local relative = vim.fn.fnamemodify(p, ":.")
-    return convert_path(relative)
-  end
+    if as_python_import then
+      path = path:gsub("/__init__%.py$", "")
+      path = path:gsub("%.py$", "")
+      path = path:gsub("/", ".")
+      path = path:gsub("^%.", "")
+      path = "from " .. path .. " import "
+    end
 
-  if use_relative then
-    path = get_relative_path(path)
-  else
-    path = convert_path(path)
-  end
-
-  if as_python_import then
-    path = path:gsub("/__init__%.py$", "")
-    path = path:gsub("%.py$", "")
-    path = path:gsub("/", ".")
-    path = path:gsub("^%.", "")
-    path = "from " .. path .. " import "
+    table.insert(lines, path)
   end
 
   picker:close()
-  -- Insert the path
-  vim.api.nvim_put({ path }, "", false, true)
+  -- Insert the paths, one path for each line
+  vim.api.nvim_put(lines, "c", false, true)
 end
 
 -- Function to copy full path to clipboard
 M.clip_full_path = function(picker)
-  local item = picker:current()
-  if item == nil then
-    vim.notify("No selection", vim.log.levels.WARN)
-    return
-  end
-  local path = item.file
-  if path == nil then
-    vim.notify("No path", vim.log.levels.WARN)
+  local paths = selected_paths(picker)
+  if paths == nil then
     return
   end
 
   -- Convert path format (using absolute path)
-  path = vim.fn.fnamemodify(path, ":p")
-  path = path:gsub("\\", "/")
+  for i, path in ipairs(paths) do
+    paths[i] = vim.fn.fnamemodify(path, ":p"):gsub("\\", "/")
+  end
 
-  -- Copy to clipboard and close picker
-  vim.fn.setreg("+", path)
-  vim.notify("Full path copied to clipboard" .. path, vim.log.levels.INFO)
-  picker:close()
+  local text = table.concat(paths, "\n")
+  vim.fn.setreg("+", text)
+  vim.notify("clipped:\n" .. text, vim.log.levels.INFO)
 end
 
 M.yank_filename = function(picker)
-  local names = {}
-  for _, item in ipairs(picker:selected({ fallback = true })) do
-    if item.file then
-      table.insert(names, vim.fn.fnamemodify(item.file, ":t"))
-    end
+  local names = selected_paths(picker)
+  if names == nil then
+    return
   end
 
-  if #names == 0 then
-    vim.notify("No file selected to yank", vim.log.levels.WARN)
-    return
+  for i, path in ipairs(names) do
+    names[i] = vim.fn.fnamemodify(path, ":t")
   end
 
   local text = table.concat(names, "\n")

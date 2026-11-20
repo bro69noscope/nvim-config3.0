@@ -175,6 +175,7 @@ return {
     },
     list = {
       keys = {
+        ["+"] = { "clip_full_path" },
         ["gy"] = { "yank_filename" },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
