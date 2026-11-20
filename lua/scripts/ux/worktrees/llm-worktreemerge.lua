@@ -394,17 +394,60 @@ local function is_for_target(llm, target)
   return target.branch ~= nil and vim.startswith(branch, target.branch)
 end
 
--- format_item for a picker of LLM worktrees: the ones for another branch are dimmed
+---@type table<string, string>
+local last_picked = {}
+
+local LAST_ICON = "● "
+local LAST_KEY = "<c-l>"
+
+---@param llm_wts Worktree[]
 ---@param target Worktree
----@return fun(llm: Worktree, supports_chunks: boolean): string|snacks.picker.Highlight[]
-local function llm_item(target)
-  return function(llm, supports_chunks)
-    local text = llm.branch .. "  (" .. llm.path .. ")"
-    if not supports_chunks then
-      return text
-    end
-    return { { text, not is_for_target(llm, target) and "Comment" or nil } }
+---@param prompt string
+---@param cb fun(llm: Worktree)
+local function select_llm(llm_wts, target, prompt, cb)
+  local last = vim.iter(llm_wts):find(function(llm)
+    return llm.path == last_picked[target.path]
+  end)
+
+  local function done(llm)
+    last_picked[target.path] = llm.path
+    cb(llm)
   end
+
+  local opts = {
+    prompt = prompt .. " (" .. LAST_KEY .. " to pick " .. LAST_ICON .. "last)",
+    format_item = function(llm, supports_chunks)
+      local text = llm.branch .. "  (" .. llm.path .. ")"
+      if not supports_chunks then
+        return text
+      end
+      local icon = llm == last and LAST_ICON or (" "):rep(vim.fn.strdisplaywidth(LAST_ICON))
+      local hl = not is_for_target(llm, target) and "Comment" or nil
+      return { { icon, "SnacksPickerSpecial" }, { text, hl } }
+    end,
+  }
+
+  local picked_last = false
+  if last then
+    opts.snacks = {
+      actions = {
+        pick_last = function(picker)
+          -- the picker cannot confirm an item from here: close it, and the flag makes the
+          -- callback use last instead of the nil choice that a close gives
+          picked_last = true
+          picker:close()
+        end,
+      },
+      win = { input = { keys = { [LAST_KEY] = { "pick_last", mode = { "i", "n" } } } } },
+    }
+  end
+
+  select(llm_wts, opts, function(choice)
+    choice = choice or (picked_last and last or nil)
+    if choice then
+      done(choice)
+    end
+  end)
 end
 
 -- LLM worktrees with a detached HEAD (checkout <sha>, mid-rebase, bisect...) have no branch
@@ -438,13 +481,8 @@ local function pick_llm_worktree(prompt, cb)
       return cb(target, llm_wts[1])
     end
 
-    select(llm_wts, {
-      prompt = prompt:format(label(target)),
-      format_item = llm_item(target),
-    }, function(choice)
-      if choice then
-        cb(target, choice)
-      end
+    select_llm(llm_wts, target, prompt:format(label(target)), function(choice)
+      cb(target, choice)
     end)
   end)
 end
@@ -1047,14 +1085,7 @@ function M.pull_from_llm_worktree(opts)
       return run(llm_wts[1])
     end
 
-    select(llm_wts, {
-      prompt = ("Merge worktree into %s (unstaged)"):format(label(target)),
-      format_item = llm_item(target),
-    }, function(choice)
-      if choice then
-        run(choice)
-      end
-    end)
+    select_llm(llm_wts, target, ("Merge worktree into %s (unstaged)"):format(label(target)), run)
   end)
 end
 
@@ -1397,7 +1428,7 @@ function M.overwrite_llm_worktree()
   if busy() then
     return
   end
-  pick_llm_worktree("Sync %s into", function(target, llm)
+  pick_llm_worktree("Sync %s into:", function(target, llm)
     sync_into(target, llm)
   end)
 end
