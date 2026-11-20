@@ -1424,12 +1424,61 @@ local function sync_into(target, llm, on_done)
   end)
 end
 
+---@param target Worktree
+---@param llm Worktree
+---@param cb fun(unpulled: boolean?, err: string?)
+local function has_unpulled(target, llm, cb)
+  working_tree(llm.path, function(tree, err)
+    if err then
+      return cb(nil, err)
+    end
+
+    local function differs(rev)
+      git({ "rev-parse", "--verify", "-q", rev .. "^{tree}" }, target.path, function(r)
+        cb(r.code ~= 0 or vim.trim(r.stdout) ~= tree)
+      end)
+    end
+
+    git({ "rev-parse", "--verify", "-q", pulled_ref(target, llm) }, target.path, function(m)
+      if m.code == 0 then
+        return differs(vim.trim(m.stdout))
+      end
+
+      git({ "merge-base", "HEAD", llm.branch }, target.path, function(b)
+        if b.code ~= 0 then
+          return cb(true)
+        end
+
+        differs(vim.trim(b.stdout))
+      end)
+    end)
+  end)
+end
+
 function M.overwrite_llm_worktree()
   if busy() then
     return
   end
+
   pick_llm_worktree("Sync %s into:", function(target, llm)
-    sync_into(target, llm)
+    has_unpulled(target, llm, function(unpulled, err)
+      if err then
+        return notify(
+          ("Could not read %s, nothing changed:\n%s"):format(llm.branch, err),
+          vim.log.levels.ERROR
+        )
+      end
+
+      if unpulled then
+        local ask = "%s has changes that you did not pull into %s. Sync anyway? "
+          .. "They are backed up first"
+        if vim.fn.confirm(ask:format(llm.branch, label(target)), "&Yes\n&No", 2) ~= 1 then
+          return
+        end
+      end
+
+      sync_into(target, llm)
+    end)
   end)
 end
 
