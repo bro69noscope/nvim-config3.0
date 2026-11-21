@@ -75,6 +75,7 @@ end, { desc = "Clip buffer content & quit", icon = "📋", silent = true })
 
 -- save with c-S
 map("n", "<c-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
+map("n", SaveAllBind, "<cmd>wa<cr><esc>", { desc = "Save all files", silent = true })
 -- noa save
 map(
   "n",
@@ -503,6 +504,10 @@ end, { desc = "Set cwd to project root" })
 -- move lines up and down
 map("n", SwapLineUpBind, ":m .-2<CR>==", { silent = true })
 map("n", SwapLineDownBind, ":m .+1<CR>==", { silent = true })
+
+-- No-op these outside of diffview
+map("n", NextDiffConflictBind, "<Nop>")
+map("n", PrevDiffConflictBind, "<Nop>")
 
 -- add current line to quickfix list
 map("n", "<leader>cl", function()
