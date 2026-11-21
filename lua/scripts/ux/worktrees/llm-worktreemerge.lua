@@ -1943,8 +1943,8 @@ function M.stage_review(opts)
 end
 
 --- After we commit what stage_review staged: put our staging from before the review pull back on
---- top of the new HEAD. Where it touches the same lines as the commit, the commit wins. Can run
---- again after unstaging everything: the saved staging stays until the next stage_review.
+--- top of the current index. Where it touches the same lines as the index, the index wins, so
+--- nothing staged is lost. Can run again: the saved staging stays until the next stage_review.
 function M.restore_staging_after_review()
   if busy() then
     return
@@ -1959,27 +1959,21 @@ function M.restore_staging_after_review()
           vim.log.levels.WARN
         )
       end
+
       local staging = vim.trim(s.stdout)
+      local what = "Restoring the staging"
 
-      git({ "diff", "--cached", "--quiet" }, target.path, function(d)
-        if d.code ~= 0 then
-          return notify(
-            "Something is staged. Commit it or unstage it first, nothing changed",
-            vim.log.levels.WARN
-          )
-        end
-
-        -- base = HEAD when the staging was saved, so only your staged changes are applied
+      must({ "write-tree" }, target.path, what, function(index)
         local args = {
           "merge-tree",
           "--write-tree",
           "-X",
           "ours",
           "--merge-base=" .. staging .. "^",
-          "HEAD",
+          index,
           staging,
         }
-        local what = "Restoring the staging"
+
         must(args, target.path, what, function(out)
           local tree = out:match("^[^\n]*")
 
