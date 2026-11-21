@@ -339,13 +339,10 @@ gitpull.setup({})
 map("n", "<leader>gp", gitpull.pull, { desc = "Git pull current branch" })
 
 -- Git unstage
-map("n", "<leader>gu", function()
-  require("scripts.ux.git.gitunstage").unstage_file()
-end, { desc = "Git unstage file" })
-
-map("n", "<leader>gU", function()
-  require("scripts.ux.git.gitunstage").unstage_all()
-end, { desc = "Git unstage all" })
+local gitunstage = require("scripts.ux.git.gitunstage")
+map("n", "<leader>gu", gitunstage.unstage_file, { desc = "Git unstage file" })
+map("n", "<leader>gU", gitunstage.unstage_all, { desc = "Git unstage all" })
+map("n", "<leader>g<m-u>", gitunstage.restore, { desc = "Git undo unstage" })
 
 -- Jump to / live-diff the same file in another worktree (same line, picker if several)
 map("n", "<leader>gj", function()
