@@ -1352,12 +1352,17 @@ local function sync_into(target, llm, on_done)
     return notify(label(target) .. " has a detached HEAD", vim.log.levels.ERROR)
   end
 
-  local function mirror(llm_sha, llm_head, target_sha, target_head)
-    local ref = backup_ref()
+  ---@param backup boolean false: llm loses nothing, so no backup ref is made
+  local function mirror(llm_sha, llm_head, target_sha, target_head, backup)
+    local ref = backup and backup_ref() or (llm_sha or llm_head)
 
-    local backup = { "update-ref", ref, llm_sha or llm_head }
-    must(backup, llm.path, "backing up the worktree", function()
-      Logger.info("worktree backed up as " .. ref, CTX)
+    local save = backup and { "update-ref", ref, llm_sha or llm_head }
+      or { "rev-parse", "--verify", "-q", ref }
+
+    must(save, llm.path, "backing up the worktree", function()
+      if backup then
+        Logger.info("worktree backed up as " .. ref, CTX)
+      end
 
       local steps = { { "reset", "--hard", target_sha or target_head }, { "clean", "-fd" } }
       if target_sha then
@@ -1403,13 +1408,19 @@ local function sync_into(target, llm, on_done)
       local function step(i)
         local s = steps[i]
         if not s then
-          notify(
-            (
-              "%s now mirrors %s.\n"
-              .. "What it had is saved as %s (restore files: git checkout %s -- .)"
-            ):format(llm.branch, target.branch, ref, ref)
-          )
-          prune_backups(llm.path)
+          if backup then
+            notify(
+              (
+                "%s now mirrors %s.\n"
+                .. "What it had is saved as %s (restore files: git checkout %s -- .)"
+              ):format(llm.branch, target.branch, ref, ref)
+            )
+            prune_backups(llm.path)
+          else
+            notify(
+              ("%s was already mirroring %s. No backup was made"):format(llm.branch, target.branch)
+            )
+          end
           local mark = { "update-ref", pulled_ref(target, llm), target_sha or target_head }
 
           return git(mark, llm.path, function(u)
@@ -1453,7 +1464,7 @@ local function sync_into(target, llm, on_done)
         local what = "rev-parse HEAD in " .. label(target)
 
         must({ "rev-parse", "HEAD" }, target.path, what, function(target_head)
-          snapshot(target.path, function(target_sha, target_err)
+          snapshot(target.path, function(target_sha, target_err, target_tree)
             if target_err then
               return notify(
                 ("Could not snapshot %s, nothing changed:\n"):format(label(target)) .. target_err,
@@ -1477,7 +1488,21 @@ local function sync_into(target, llm, on_done)
                 )
               end
 
-              mirror(llm_sha, llm_head, target_sha, target_head)
+              if llm_tree ~= target_tree then
+                return mirror(llm_sha, llm_head, target_sha, target_head, true)
+              end
+
+              -- same files: back up only new commits that are not "review: ..."
+              local log = { "log", "--format=%s", target_head .. ".." .. llm_head }
+              git(log, llm.path, function(l)
+                local subjects = vim.split(l.stdout or "", "\n", { trimempty = true })
+
+                local own = vim.iter(subjects):any(function(s)
+                  return not vim.startswith(s, "review: ")
+                end)
+
+                mirror(llm_sha, llm_head, target_sha, target_head, l.code ~= 0 or own)
+              end)
             end)
           end)
         end)
@@ -1565,8 +1590,8 @@ end
 --- pull came from: your edits, the pulled code and your tweaks. Then reverts target to before
 --- the review pull.
 --- The LLM worktree gets two commits on top of target's HEAD:
----   "review: before your tweaks": the files after the review pull (point.review)
----   "review: your tweaks": the files now. `git show HEAD` shows only your tweaks.
+---   "review: before user tweaks": the files after the review pull (point.review)
+---   "review: user tweaks": the files now. `git show HEAD` shows only your tweaks.
 ---@param opts? SendReviewOpts
 function M.send_review(opts)
   opts = opts or {}
