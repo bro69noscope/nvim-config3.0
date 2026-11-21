@@ -45,5 +45,11 @@ vim.api.nvim_create_autocmd("User", {
       local tog = require("modules.snacks.toggle.custom-toggles.vim-options").expandtab_toggle
       tog:map("<leader>u<tab>")
     end
+
+    do
+      local tog =
+        require("modules.snacks.toggle.custom-toggles.render-markdown").render_markdown_toggle
+      tog:map("<leader>um")
+    end
   end,
 })
