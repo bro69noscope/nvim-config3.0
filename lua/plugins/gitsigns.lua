@@ -200,7 +200,7 @@ return {
       })
 
       -- Text object for hunks
-      map({ "o", "x" }, "ih", ":<c-U>Gitsigns select_hunk<CR>", { desc = "GitSigns Select Hunk" })
+      map({ "o", "x" }, "ih", ":<c-u>Gitsigns select_hunk<CR>", { desc = "GitSigns Select Hunk" })
     end,
   },
 }

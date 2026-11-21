@@ -27,14 +27,14 @@ vim.keymap.del("n", "[L")
 vim.keymap.del("n", "]A")
 vim.keymap.del("n", "[A")
 
-vim.keymap.del("n", "]<c-L>")
-vim.keymap.del("n", "[<c-L>")
+vim.keymap.del("n", "]<c-l>")
+vim.keymap.del("n", "[<c-l>")
 
-vim.keymap.del("n", "[<c-Q>")
-vim.keymap.del("n", "]<c-Q>")
+vim.keymap.del("n", "[<c-q>")
+vim.keymap.del("n", "]<c-q>")
 
-vim.keymap.del("n", "]<c-T>")
-vim.keymap.del("n", "[<c-T>")
+vim.keymap.del("n", "]<c-t>")
+vim.keymap.del("n", "[<c-t>")
 
 -- lateral movement with H and L except in neo-tree
 -- vim.api.nvim_create_autocmd("FileType", {
@@ -73,7 +73,7 @@ map("n", "<leader>q<BS>", function()
   vim.cmd("qa!")
 end, { desc = "Clip buffer content & quit", icon = "📋", silent = true })
 
--- save with c-S
+-- save with c-s
 map("n", "<c-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true })
 map("n", SaveAllBind, "<cmd>wa<cr><esc>", { desc = "Save all files", silent = true })
 -- noa save
@@ -88,8 +88,8 @@ map(
 map("n", "G", "Gzz", { desc = "Go to end and center" })
 map("n", "<c-d>", "<c-d>zz", { desc = "Scroll down and center" })
 map("n", "<c-u>", "<c-u>zz", { desc = "Scroll up and center" })
-map("n", "<c-O>", "<c-O>zz", { desc = "Jump back and center" })
-map("n", "<c-I>", "<c-I>zz", { desc = "Jump forward and center" })
+map("n", "<c-o>", "<c-o>zz", { desc = "Jump back and center" })
+map("n", "<c-i>", "<c-i>zz", { desc = "Jump forward and center" })
 -- map("n", "{", "{zz", { desc = "Previous paragraph and center" })
 -- map("n", "}", "}zz", { desc = "Next paragraph and center" })
 map("n", "n", "nzz", { desc = "Next search and center" })

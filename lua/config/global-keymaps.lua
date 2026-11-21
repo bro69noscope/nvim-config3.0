@@ -6,8 +6,8 @@ _G.SaveAllBind = "<c-s-s>"
 
 _G.NextDiffChangeBind = "<m-j>"
 _G.PrevDiffChangeBind = "<m-k>"
-_G.NextDiffConflictBind = "<m-J>"
-_G.PrevDiffConflictBind = "<m-K>"
+_G.NextDiffConflictBind = "<m-s-j>"
+_G.PrevDiffConflictBind = "<m-s-k>"
 
 _G.HideTerminalBind = "<c-o>"
 
