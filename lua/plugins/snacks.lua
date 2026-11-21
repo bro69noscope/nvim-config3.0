@@ -280,6 +280,22 @@ return {
             local m = item.label
             return m ~= nil and m:match("^%a$") ~= nil and not auto[m]
           end,
+
+          actions = {
+            delete_mark = function(picker)
+              local del_mark = require("scripts.ux.delete-mark").del_mark
+              for _, item in ipairs(picker:selected({ fallback = true })) do
+                del_mark(item.label, item.buf or picker.input.filter.current_buf)
+              end
+              picker.list:set_selected()
+              picker:find()
+            end,
+          },
+
+          win = {
+            input = { keys = { ["<m-d>"] = { "delete_mark", mode = { "n", "i" } } } },
+            list = { keys = { ["<m-d>"] = "delete_mark" } },
+          },
         })
       end,
       desc = "Marks",

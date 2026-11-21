@@ -1,16 +1,20 @@
 local M = {}
 
-local function del_mark(ch)
+---@param ch string mark name
+---@param buf? integer buffer of a local mark (default: current buffer)
+local function del_mark(ch, buf)
   local ok, res
   if ch:match("%u") then
     ok, res = pcall(vim.api.nvim_del_mark, ch)
   elseif ch:match("%l") then
-    ok, res = pcall(vim.api.nvim_buf_del_mark, 0, ch)
+    ok, res = pcall(vim.api.nvim_buf_del_mark, buf or 0, ch)
   else
     return false
   end
   return ok and res
 end
+
+M.del_mark = del_mark
 
 M.delete_mark = function()
   local buf = vim.api.nvim_create_buf(false, true)
