@@ -410,19 +410,26 @@ map("n", "<leader>iB", function()
   require("scripts.ux.worktrees.llm-worktreemerge").send_review({ copy_prompt = true })
 end, { desc = "Send review + clip LLM prompt", icon = llm_icon })
 
--- After a review pull: stage only the pulled code (your staging is saved for <leader>ig)
+-- After a review pull: stage only the pulled code (our staging is saved for <leader>ig)
 map("n", "<leader>ia", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review()
 end, { desc = "Stage only reviewed LLM code", icon = llm_icon })
 
--- After a review pull: stage the pulled code on top of your staging from before the pull
+-- After a review pull: stage the pulled code on top of our staging from before the pull
 map("n", "<leader>iA", function()
   require("scripts.ux.worktrees.llm-worktreemerge").stage_review({ with_staged = true })
 end, { desc = "Stage reviewed + prior staging", icon = llm_icon })
 
--- After committing what stage_review staged: put your staging from before the review pull back
+-- After committing what stage_review staged: put our staging from before the review pull back on
 map("n", "<leader>ig", function()
   require("scripts.ux.worktrees.llm-worktreemerge").restore_staging_after_review()
+end, { desc = "Add pre-review staging", icon = llm_icon })
+
+-- Same as <leader>ig, but unstage everything first: only the staging from before the pull is staged
+map("n", "<leader>iG", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").restore_staging_after_review({
+    only_saved = true,
+  })
 end, { desc = "Restore pre-review staging", icon = llm_icon })
 
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)

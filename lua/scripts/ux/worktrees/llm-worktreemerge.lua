@@ -1945,7 +1945,11 @@ end
 --- After we commit what stage_review staged: put our staging from before the review pull back on
 --- top of the current index. Where it touches the same lines as the index, the index wins, so
 --- nothing staged is lost. Can run again: the saved staging stays until the next stage_review.
-function M.restore_staging_after_review()
+---@class RestoreStagingOpts
+---@field only_saved? boolean unstage everything first: the index becomes HEAD + the saved staging
+---@param opts? RestoreStagingOpts
+function M.restore_staging_after_review(opts)
+  opts = opts or {}
   if busy() then
     return
   end
@@ -1970,7 +1974,7 @@ function M.restore_staging_after_review()
           "-X",
           "ours",
           "--merge-base=" .. staging .. "^",
-          index,
+          opts.only_saved and "HEAD" or index,
           staging,
         }
 
@@ -1982,7 +1986,10 @@ function M.restore_staging_after_review()
               return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
             end
 
-            notify("Staging from before the review pull restored")
+            local msg = opts.only_saved
+                and "Unstaged everything, then staged only your staging from before the review pull" .. "\nTo get the replaced staging back: git read-tree " .. index
+              or "Added your staging from before the review pull to what is staged now"
+            notify(msg)
           end)
         end)
       end)
