@@ -1943,7 +1943,8 @@ function M.stage_review(opts)
 end
 
 --- After we commit what stage_review staged: put our staging from before the review pull back on
---- top of the new HEAD. Where it touches the same lines as the commit, the commit wins.
+--- top of the new HEAD. Where it touches the same lines as the commit, the commit wins. Can run
+--- again after unstaging everything: the saved staging stays until the next stage_review.
 function M.restore_staging_after_review()
   if busy() then
     return
@@ -1987,9 +1988,7 @@ function M.restore_staging_after_review()
               return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
             end
 
-            must({ "update-ref", "-d", saved }, target.path, what, function()
-              notify("Staging from before the review pull restored")
-            end)
+            notify("Staging from before the review pull restored")
           end)
         end)
       end)
