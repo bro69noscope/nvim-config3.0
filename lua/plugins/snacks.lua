@@ -238,7 +238,7 @@ return {
       desc = "Git Status (cwd)",
     },
 
-    -- git status including submodules
+    -- git status including submodules files
     {
       "<leader>ge",
       function()
