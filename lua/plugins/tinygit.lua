@@ -15,12 +15,12 @@ return {
       desc = "Smart commit",
     },
     {
-      "<leader>gp",
+      "<leader>gP",
       "<cmd>Tinygit push<cr>",
       desc = "Push",
     },
     {
-      "<leader>gP",
+      "<leader>g<Space>P",
       function()
         require("tinygit").push({ forceWithLease = true })
       end,
@@ -37,12 +37,12 @@ return {
       desc = "Amend last commit noEdit",
     },
     {
-      "<leader>gH",
+      "<leader>g<Space>/",
       "<cmd>Tinygit fileHistory<cr>",
       desc = "Grep history",
     },
     {
-      "<leader>gU",
+      "<leader>g<Space>u",
       "<cmd>Tinygit undoLastCommitOrAmend<cr>",
       desc = "Undo last commit or amend",
     },

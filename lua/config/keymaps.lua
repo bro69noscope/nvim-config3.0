@@ -332,9 +332,9 @@ map("n", "<leader>gol", function()
 end, { desc = "Open Lazygit logs (float)" })
 
 -- Git pull current branch
-local gitpull = require("scripts.ux.gitpull")
+local gitpull = require("scripts.ux.git.gitpull")
 gitpull.setup({})
-map("n", "<leader>gu", gitpull.pull, { desc = "Git pull current branch" })
+map("n", "<leader>gp", gitpull.pull, { desc = "Git pull current branch" })
 
 -- Jump to / live-diff the same file in another worktree (same line, picker if several)
 map("n", "<leader>gj", function()
