@@ -157,20 +157,22 @@ map("n", "<leader>wt", function()
 end, { desc = "Focus terminal window" })
 
 -- Quickfix navigation
-map("n", "<Up>", function()
-  local ok, err = pcall(vim.cmd.cprev)
+local function qf_step(cmd)
+  -- dont flood the msg board with llm notes qf content
+  local notes = require("scripts.ui.claude-qf-notes.navigate").is_current_list()
+  local ok, err = pcall(vim.cmd, (notes and "silent " or "") .. cmd)
   if not ok then
     vim.notify(err, vim.log.levels.ERROR)
   end
   vim.cmd("normal! zz")
+end
+
+map("n", "<Up>", function()
+  qf_step("cprev")
 end, { desc = "Previous Quickfix Item" })
 
 map("n", "<Down>", function()
-  local ok, err = pcall(vim.cmd.cnext)
-  if not ok then
-    vim.notify(err, vim.log.levels.ERROR)
-  end
-  vim.cmd("normal! zz")
+  qf_step("cnext")
 end, { desc = "Next Quickfix Item" })
 
 -- Format with custom width

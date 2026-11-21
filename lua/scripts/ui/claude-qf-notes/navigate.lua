@@ -15,6 +15,11 @@ local function is_notes_list(title)
   return vim.startswith(title, QFLIST_TITLE)
 end
 
+---@return boolean true when the current quickfix list is the notes list
+function M.is_current_list()
+  return is_notes_list(vim.fn.getqflist({ title = 0 }).title)
+end
+
 local function find_list_nr()
   for nr = vim.fn.getqflist({ nr = "$" }).nr, 1, -1 do
     if is_notes_list(vim.fn.getqflist({ nr = nr, title = 0 }).title) then
@@ -94,7 +99,8 @@ local function jump_to_step(idx)
     return
   end
   idx = idx or marked_step_idx(0) or 1
-  vim.cmd(math.min(idx, size) .. "cc")
+  -- silent: the virtual lines already show the step text
+  vim.cmd("silent " .. math.min(idx, size) .. "cc")
   mark_here()
 end
 
