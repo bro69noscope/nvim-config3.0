@@ -95,7 +95,7 @@ M.lint = function(buf)
           end_col = end_col,
           severity = vim.diagnostic.severity.WARN,
           source = "whichkey-map",
-          message = ("desc too long (%d > %d)"):format(len, MAX_DESC),
+          message = ("desc too long to fit nicely in which-key (%d > %d)"):format(len, MAX_DESC),
         })
       end
     end

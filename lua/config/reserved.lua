@@ -6,10 +6,14 @@ _G.Scratch_registers = { "z", "y", "x" }
 
 -- reserved marks set programmatically
 _G.Automated_marks = {
+
   -- global
-  qf_jumps = { key = "Q", desc = "return to location pre qf jumps" },
-  buffer_browser_jumps = { key = "B", desc = "return to location pre buffer browser jump" },
-  claude_qf_notes_step = { key = "N", desc = "last visited step of the claude notes qf list" },
+  qf_jumps = { key = "Q", desc = "return to location pre [Q]f jumps" },
+
+  -- we wanna keep `B` for manual mark setting
+  buffer_browser_jumps = { key = "L", desc = "return to [L]ocation pre buffer browser jump" },
+  claude_qf_notes_step = { key = "N", desc = "last visited step of the claude [N]otes qf list" },
+
   -- local
   search_jumps = { key = "s", desc = "return to location pre word search jumps" },
   snacks_words_jumps = { key = "r", desc = "return to location pre snacks words jumps" },
