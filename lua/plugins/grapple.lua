@@ -7,8 +7,8 @@ return {
       scope = GrappleDefaultScope,
       scopes = {
         {
-          name = GrappleDiffReviewScope,
-          desc = "Diff review tags (per git root)",
+          name = GrappleReviewScope,
+          desc = "Review tags (per git root)",
           cache = { event = { "BufEnter", "FocusGained" }, debounce = 1000 },
           resolver = function()
             local git = vim.fs.find(".git", { upward = true, stop = vim.uv.os_homedir() })[1]
@@ -16,7 +16,7 @@ return {
               return
             end
             local root = vim.fn.fnamemodify(git, ":h")
-            return root .. "#" .. GrappleDiffReviewScope, root
+            return root .. "#" .. GrappleReviewScope, root
           end,
         },
       },
@@ -43,9 +43,9 @@ return {
     {
       "g_",
       function()
-        require("grapple").use_scope(GrappleDiffReviewScope)
+        require("grapple").use_scope(GrappleReviewScope)
       end,
-      desc = "Grapple use diff_review scope",
+      desc = "Grapple use " .. GrappleReviewScope .. " scope",
     },
     {
       "g=",

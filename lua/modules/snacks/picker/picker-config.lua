@@ -139,8 +139,8 @@ return {
     grapple_default = function(picker)
       M.grapple_replace(picker, GrappleDefaultScope, true)
     end,
-    grapple_diff_review = function(picker)
-      M.grapple_replace(picker, GrappleDiffReviewScope, true, true)
+    grapple_review = function(picker)
+      M.grapple_replace(picker, GrappleReviewScope, true, true)
     end,
     flash = M.setup_flash,
     custom_toggle_hidden = function(picker)
@@ -175,8 +175,8 @@ return {
         ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
         ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
 
-        ["<a-d>"] = { "grapple_diff_review", mode = { "n", "i" } },
         ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
+        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
@@ -199,8 +199,8 @@ return {
         ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["O"] = { { "pick_win", "jump" } },
 
-        ["<a-d>"] = { "grapple_diff_review", mode = { "n", "i" } },
         ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
+        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" } },
         ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
         ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
         ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
