@@ -1,5 +1,5 @@
 local M = {}
-M.grep_qf_files = function()
+M.open = function()
   local qflist = vim.fn.getqflist()
   local filetable = {}
   local hashlist = {}
@@ -11,7 +11,6 @@ M.grep_qf_files = function()
     end
   end
 
-  -- Extract just the filenames (tails)
   local filenames = {}
   for _, filepath in ipairs(filetable) do
     table.insert(filenames, vim.fn.fnamemodify(filepath, ":t"))

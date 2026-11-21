@@ -1,3 +1,11 @@
+---Keymap callback that opens a picker from modules/snacks/picker/pickers/.
+---@param name string module file name, without .lua
+local function custom_picker(name)
+  return function()
+    require("modules.snacks.picker.pickers." .. name).open()
+  end
+end
+
 return {
   "folke/snacks.nvim",
   enabled = true,
@@ -59,92 +67,16 @@ return {
     require("modules.snacks.move-debug").setup()
   end,
   keys = {
-    -- buffers scoped to cwd, without gitignored files
-    {
-      "<leader>,",
-      function()
-        local cwd = vim.fn.getcwd()
-        local files = {}
-        for _, b in ipairs(vim.api.nvim_list_bufs()) do
-          local name = vim.api.nvim_buf_get_name(b)
-          if vim.bo[b].buflisted and name ~= "" then
-            files[#files + 1] = vim.fs.normalize(name)
-          end
-        end
 
-        local function open(ignored)
-          Snacks.picker.buffers({
-            title = "Buffers (cwd)",
-            cwd = cwd,
-            filter = { cwd = true },
-            transform = function(item)
-              local file = item.file
-              if not file then
-                return
-              end
-              if ignored[vim.fs.normalize(file)] or not vim.uv.fs_stat(file) then
-                return false
-              end
-            end,
-          })
-        end
+    --
+    -- Explorer:
+    --
 
-        -- single async git call; picker opens in callback
-        vim.system(
-          { "git", "-C", cwd, "check-ignore", "-z", "--stdin" },
-          { stdin = table.concat(files, "\0") },
-          vim.schedule_wrap(function(res)
-            local ignored = {}
-            for p in (res.stdout or ""):gmatch("([^%z]+)") do
-              ignored[vim.fs.normalize(p)] = true
-            end
-            open(ignored)
-          end)
-        )
-      end,
-      desc = "Buffers (clean)",
-    },
-    -- toggle explorer without loosing focus
     {
       ToggleExplorerBind,
       "<cmd>ExplorerToggleNoFocus<cr>",
     },
-    -- grep word bounded
-    {
-      "<leader>sW",
-      function()
-        local word
-        if vim.fn.mode():match("[vV\22]") then
-          vim.cmd('noau normal! "vy"')
-          word = vim.fn.getreg("v")
-        else
-          word = vim.fn.expand("<cword>")
-        end
-        word = vim.fn.escape(word, "\\/.*$^~[]")
-        Snacks.picker.grep_word({
-          title = "Grep bounded word",
-          _root_title = "Grep bounded word",
-          regex = true,
-          search = "\\b" .. word .. "\\b",
-          args = {},
-        })
-      end,
-      desc = "Selection or word (bounds)",
-      mode = { "n", "x" },
-    },
-    -- smart from imode
-    {
-      "<c-t>",
-      function()
-        local has_blink_cmp, blink_cmp = pcall(require, "blink.cmp")
-        if has_blink_cmp and blink_cmp.is_visible() then
-          blink_cmp.hide()
-        end
-        Snacks.picker.smart()
-      end,
-      mode = { "i" },
-    },
-    -- Explorer
+
     {
       "<leader>e",
       function()
@@ -175,7 +107,10 @@ return {
       desc = "Reveal file in explorer",
     },
 
-    -- Words
+    --
+    -- Words:
+    --
+
     {
       "]r",
       function()
@@ -188,6 +123,7 @@ return {
       end,
       desc = "Next Snacks Word",
     },
+
     {
       "[r",
       function()
@@ -200,110 +136,43 @@ return {
       end,
       desc = "Previous Snacks Word",
     },
-    -- Custom pickers
-    -- Grep quickfix files
+
+    --
+    -- Custom pickers:
+    --
+
     {
-      "<leader>c/",
-      function()
-        local grep_qfix = require("modules.snacks.picker.grep-quickfix-files")
-        grep_qfix.grep_qf_files()
-      end,
-      desc = "Grep Quickfix Files",
+      "<leader>sW",
+      custom_picker("grep-bounded-word"),
+      desc = "Selection or word (bounds)",
+      mode = { "n", "x" },
     },
-    -- git branches with branch: prefix, for ez checkout
+    { "<c-t>", custom_picker("smart-from-insert"), mode = { "i" } },
+    { "<leader>,", custom_picker("buffers-clean"), desc = "Buffers (clean)" },
+    { "<leader>c/", custom_picker("grep-quickfix-files"), desc = "Grep Quickfix Files" },
+    { "<leader>gm", custom_picker("checkout-branch"), desc = "Checkout Branch" },
+    { "<leader>g.", custom_picker("git-status-cwd"), desc = "Git Status (cwd)" },
+    { "<leader>ge", custom_picker("git-status-all"), desc = "Git Status (+submodules files)" },
+    { "<leader>sl", custom_picker("log-files"), desc = "Find .log files / log dirs" },
+    { "<leader>sm", custom_picker("user-marks"), desc = "Marks" },
+    { "<leader>sG", custom_picker("grep-default"), desc = "Grep (default)" },
     {
-      "<leader>gm",
-      function()
-        Snacks.picker.git_branches({
-          on_show = function(picker)
-            picker.input:set("branch:")
-          end,
-        })
-      end,
-      desc = "Checkout Branch",
+      "<leader>sw",
+      custom_picker("grep-word"),
+      desc = "Visual selection or word",
+      mode = { "n", "x" },
     },
-
-    -- git status scoped to cwd
+    { "<leader>sC", custom_picker("config-files"), desc = "Find Config File" },
     {
-      "<leader>g.",
-      function()
-        local cwd = vim.fs.normalize(vim.uv.cwd())
-        Snacks.picker.git_status({
-          transform = function(item)
-            local abs = vim.fs.normalize(item.cwd .. "/" .. item.file)
-            return vim.startswith(abs, cwd .. "/")
-          end,
-        })
-      end,
-      desc = "Git Status (cwd)",
+      '<leader>"',
+      custom_picker("files-from-selection"),
+      mode = "x",
+      desc = "Find Files (selection)",
     },
+    { "<leader>sT", custom_picker("todo-fix"), desc = "Todo/Fix/Fixme" },
+    { "gR", custom_picker("references-with-current"), desc = "References (include current)" },
 
-    -- git status including submodules files
-    {
-      "<leader>ge",
-      function()
-        Snacks.picker.git_status_all()
-      end,
-      desc = "Git Status (+submodules)",
-    },
-
-    -- log type files
-    {
-      "<leader>sl",
-      function()
-        Snacks.picker.files({
-          title = "Log files",
-          ignored = true,
-          transform = function(item)
-            local f = item.file:gsub("\\", "/"):lower()
-            f = "/" .. f
-            return f:match("%.log$") ~= nil
-              or f:find("/logs/", 1, true) ~= nil
-              or f:find("/log/", 1, true) ~= nil
-          end,
-        })
-      end,
-      desc = "Find .log files / log dirs",
-    },
-
-    -- marks with only user marks a-z / A-Z. Exclude automated marks
-    {
-      "<leader>sm",
-      function()
-        local auto = {}
-        for _, m in pairs(_G.Automated_marks) do
-          auto[m.key] = true
-        end
-
-        Snacks.picker.marks({
-          transform = function(item)
-            local m = item.label
-            return m ~= nil and m:match("^%a$") ~= nil and not auto[m]
-          end,
-
-          actions = {
-            delete_mark = function(picker)
-              local del_mark = require("scripts.ux.delete-mark").del_mark
-              for _, item in ipairs(picker:selected({ fallback = true })) do
-                del_mark(item.label, item.buf or picker.input.filter.current_buf)
-              end
-              picker.list:set_selected()
-              picker:find()
-            end,
-          },
-
-          win = {
-            input = { keys = { ["<m-d>"] = { "delete_mark", mode = { "n", "i" } } } },
-            list = { keys = { ["<m-d>"] = "delete_mark" } },
-          },
-        })
-      end,
-      desc = "Marks",
-    },
    -- stylua: ignore start
-
-    -- Default grepping (without the finder overriden by egrepify)
-    { "<leader>sG", function() Snacks.picker.grep({ finder = "grep", }) end, desc = "Grep (default)", },
 
     -- Notifier
     {"<leader>nn", function() Snacks.notifier.show_history() end, desc = "Notifier History"},
@@ -312,10 +181,7 @@ return {
     { "<leader><space>", function() Snacks.picker.smart() end, desc = "Smart Find Files" },
     { "<leader>;", function() Snacks.picker.buffers() end, desc = "All Buffers" },
     { "<leader>/", function() Snacks.picker.grep() end, desc = "Grep" },
-    -- { "<leader>%", function() Snacks.picker.grep() end, desc = "Grep" }, -- duplicate for enthium layout
     { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
-    { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
-    -- { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Buffers" },
     -- { "<leader>fg", function() Snacks.picker.git_files() end, desc = "Find Git Files" },
     -- { "<leader>fp", function() Snacks.picker.projects() end, desc = "Projects" },
     { "<leader>gL", function() Snacks.picker.git_log_line() end, desc = "Pick Log Line" },
@@ -327,28 +193,13 @@ return {
     { "<leader>gd", function() Snacks.picker.git_diff() end, desc = "Pick Diff (Hunks)" },
     { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
     { "<leader>s,", function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
-    { "<leader>sw", function() Snacks.picker.grep_word({
-      title = "Grep word",
-      _root_title = "Grep word",
-      regex = false,
-      args = {},
-      show_empty = true,
-    }) end, desc = "Visual selection or word", mode = { "n", "x" } },
     { '<leader>s"', function() Snacks.picker.registers() end, desc = "Registers" },
     { '<leader>s/', function() Snacks.picker.search_history() end, desc = "Search History" },
     { "<leader>sa", function() Snacks.picker.autocmds() end, desc = "Autocmds" },
-    { "<leader>sC", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"),
-      title = "Config Files" }) end, desc = "Find Config File", },
     { "<leader>sc", function() Snacks.picker.commands() end, desc = "Commands" },
     { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>sD", function() Snacks.picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
     { "<leader>\"", function() Snacks.picker.files() end, desc = "Find Files" },
-    {
-      "<leader>\"",
-      function() Snacks.picker.files({ pattern = Snacks.picker.util.visual().text }) end,
-      mode = "x",
-      desc = "Find Files (selection)",
-    },
     { "<leader>sh", function() Snacks.picker.help() end, desc = "Help Pages" },
     { "<leader>sH", function() Snacks.picker.highlights() end, desc = "Highlights" },
     { "<leader>si", function() Snacks.picker.icons() end, desc = "Icons" },
@@ -363,8 +214,6 @@ return {
     { "<leader>sr", function() Snacks.picker.recent() end, desc = "Recent" },
     { "<leader>s.", function() Snacks.picker.resume() end, desc = "Resume" },
     { "<leader>st", function() Snacks.picker.todo_comments() end, desc = "Todo comments" },
-    { "<leader>sT", function () Snacks.picker.todo_comments({
-      keywords = { "TODO", "FIX", "FIXME" } }) end, desc = "Todo/Fix/Fixme" },
     { "<leader>su", function() Snacks.picker.undo() end, desc = "Undo History" },
     { "<leader>uS", function() Snacks.picker.colorschemes() end, desc = "Colorschemes" },
     { "zp", function() Snacks.picker.spelling() end, desc = "Spelling Picker" },
@@ -372,8 +221,6 @@ return {
     { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition" },
     { "gD", function() Snacks.picker.lsp_declarations() end, desc = "Goto Declaration" },
     { "gr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References" },
-    { "gR", function() Snacks.picker.lsp_references({ include_current = true }) end,
-    desc = "References (include current)"},
     { "gI", function() Snacks.picker.lsp_implementations() end, desc = "Goto Implementation" },
     { "gy", function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition" },
     { "<leader>sf", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols in [F]ile" },
