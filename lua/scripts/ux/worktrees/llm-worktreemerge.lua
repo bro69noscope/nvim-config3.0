@@ -1986,9 +1986,14 @@ function M.restore_staging_after_review(opts)
               return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
             end
 
-            local msg = opts.only_saved
-                and "Unstaged everything, then staged only your staging from before the review pull" .. "\nTo get the replaced staging back: git read-tree " .. index
-              or "Added your staging from before the review pull to what is staged now"
+            local msg = "Added your staging from before the review pull to what is staged now"
+            if opts.only_saved then
+              msg = table.concat({
+                "Unstaged everything, then staged only your staging from before the review pull",
+                "To get the replaced staging back: git read-tree " .. index,
+              }, "\n")
+            end
+
             notify(msg)
           end)
         end)
