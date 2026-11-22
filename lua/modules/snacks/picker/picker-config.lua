@@ -1,4 +1,5 @@
 local M = {}
+
 M.path_inserts = require("modules.snacks.picker.actions.insert-paths")
 M.yank_entries = require("modules.snacks.picker.actions.yank-entries")
 M.setup_picker_keys = require("modules.snacks.picker.keys.setup-picker-keys")
@@ -118,9 +119,6 @@ return {
     insert_relative_path = function(picker)
       M.path_inserts.insert_relative_path(picker)
     end,
-    insert_python_import_path = function(picker)
-      M.path_inserts.insert_python_import_path(picker)
-    end,
     clip_full_path = function(picker)
       M.yank_entries.clip_full_path(picker)
     end,
@@ -160,59 +158,61 @@ return {
       picker:find()
     end,
   },
+
+  -- NOTE: Keep each desc at 16 chars max. The snacks help window shows only 16 chars.
   win = {
     input = {
       keys = {
-        ["-"] = { "insert_relative_path" },
-        ["="] = { "insert_absolute_path" },
-        -- ["<bs>"] = { "insert_python_import_path",  }, NOTE: idk about keeping this
-        ["+"] = { "clip_full_path" },
-        ["gy"] = { "yank_filename" },
+        -- Path inserts and yanks
+        ["-"] = { "insert_relative_path", desc = "Insert rel path" },
+        ["="] = { "insert_absolute_path", desc = "Insert abs path" },
+        ["+"] = { "clip_full_path", desc = "Clip full path" },
+        ["gy"] = { "yank_filename", desc = "Yank fname" },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
-        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
-        ["O"] = { { "pick_win", "jump" } },
+        ["gF"] = { "grep_full_filename", desc = "Grep fname+.ext" },
+        ["O"] = { { "pick_win", "jump" }, desc = "Pick win + jump" },
 
-        ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
-        ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
+        ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" }, desc = "Preview up" },
+        ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" }, desc = "Preview down" },
 
-        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
-        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" } },
-        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
-        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
-        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
-        ["<a-s>"] = { "flash", mode = { "n", "i" } },
-        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_default", mode = { "n", "i" }, desc = "Grapple default" },
+        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" }, desc = "Grapple review" },
+        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" }, desc = "Toggle hidden" },
+        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" }, desc = "Toggle ignored" },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" }, desc = "Append to qf" },
+        ["<a-s>"] = { "flash", mode = { "n", "i" }, desc = "Flash" },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" }, desc = "Yank entry" },
 
-        ["<F4>"] = { "scope_to_git", mode = { "n", "i" } },
-        ["<F5>"] = { "scope_to_cwd", mode = { "n", "i" } },
-        ["<F6>"] = { "scope_to_all", mode = { "n", "i" } },
+        ["<F4>"] = { "scope_to_git", mode = { "n", "i" }, desc = "Scope: git root" },
+        ["<F5>"] = { "scope_to_cwd", mode = { "n", "i" }, desc = "Scope: cwd" },
+        ["<F6>"] = { "scope_to_all", mode = { "n", "i" }, desc = "Scope: all" },
 
-        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
-        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_preview", mode = { "i", "n" }, desc = "Focus preview" },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" }, desc = "Focus list" },
       },
     },
     list = {
       keys = {
-        ["+"] = { "clip_full_path" },
-        ["gy"] = { "yank_filename" },
+        ["+"] = { "clip_full_path", desc = "Clip full path" },
+        ["gy"] = { "yank_filename", desc = "Yank fname" },
         ["gf"] = { "grep_filename", desc = "Grep fname" },
-        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
-        ["O"] = { { "pick_win", "jump" } },
+        ["gF"] = { "grep_full_filename", desc = "Grep fname+.ext" },
+        ["O"] = { { "pick_win", "jump" }, desc = "Pick win + jump" },
 
-        ["<a-g>"] = { "grapple_default", mode = { "n", "i" } },
-        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" } },
-        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" } },
-        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" } },
-        ["<a-q>"] = { "qflist_append", mode = { "n", "i" } },
-        ["<a-y>"] = { "yank_entry", mode = { "n", "i" } },
+        ["<a-g>"] = { "grapple_default", mode = { "n", "i" }, desc = "Grapple default" },
+        ["<a-s-g>"] = { "grapple_review", mode = { "n", "i" }, desc = "Grapple review" },
+        ["<a-h>"] = { "custom_toggle_hidden", mode = { "n", "i" }, desc = "Toggle hidden" },
+        ["<a-i>"] = { "custom_toggle_ignored", mode = { "n", "i" }, desc = "Toggle ignored" },
+        ["<a-q>"] = { "qflist_append", mode = { "n", "i" }, desc = "Append to qf" },
+        ["<a-y>"] = { "yank_entry", mode = { "n", "i" }, desc = "Yank entry" },
 
-        [RightWindowBind] = { "focus_preview", mode = { "i", "n" } },
-        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_preview", mode = { "i", "n" }, desc = "Focus preview" },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" }, desc = "Focus list" },
       },
     },
     preview = {
       keys = {
-        [LeftWindowBind] = { "focus_list", mode = { "i", "n" } },
+        [LeftWindowBind] = { "focus_list", mode = { "i", "n" }, desc = "Focus list" },
       },
     },
   },
