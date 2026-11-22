@@ -30,7 +30,7 @@ return {
       },
     })
 
-    -- Bind right to accept word if visible in insert mode ( originally was "<M-l>" but changed after my own override of "<M-l>" with "Right" from ahk )
+    -- Bind right to accept word if visible in insert mode ( originally was "<m-l>" but changed after my own override of "<m-l>" with "Right" from ahk )
     vim.keymap.set("i", "<Right>", function()
       if require("copilot.suggestion").is_visible() then
         require("copilot.suggestion").accept_word()

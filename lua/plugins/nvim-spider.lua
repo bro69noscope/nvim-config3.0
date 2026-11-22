@@ -12,8 +12,8 @@ return {
     { "b", "<cmd>lua require('spider').motion('b')<CR>", mode = { "n", "o", "x" } },
     { "ge", "<cmd>lua require('spider').motion('ge')<CR>", mode = { "n", "o", "x" } },
     -- alt+w/e/b: standard vim motions
-    { "<M-w>", "w", mode = { "n", "o", "x" }, remap = false },
-    { "<M-e>", "e", mode = { "n", "o", "x" }, remap = false },
-    { "<M-b>", "b", mode = { "n", "o", "x" }, remap = false },
+    { "<m-w>", "w", mode = { "n", "o", "x" }, remap = false },
+    { "<m-e>", "e", mode = { "n", "o", "x" }, remap = false },
+    { "<m-b>", "b", mode = { "n", "o", "x" }, remap = false },
   },
 }

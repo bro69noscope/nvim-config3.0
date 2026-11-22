@@ -100,7 +100,7 @@ return {
     },
 
     {
-      "<M-r>",
+      "<m-r>",
       function()
         require("modules.snacks.picker.explorer.force-reveal").reveal_current()
       end,

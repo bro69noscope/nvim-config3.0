@@ -134,7 +134,7 @@ M.open = function(opts)
   end)
 end
 
-map("n", "<M-R>", function()
+map("n", "<m-R>", function()
   if not snacks_available() then
     return
   end

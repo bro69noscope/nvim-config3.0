@@ -170,7 +170,7 @@ function M.start_lazygit(opts)
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    "<M-e>",
+    "<m-e>",
     string.format(
       [[<Cmd>lua require('scripts.ux.lazygit-terminal').lazygit_edit(%d)<CR>]],
       current_buffer
@@ -179,7 +179,7 @@ function M.start_lazygit(opts)
   )
 
   -- Quit lazygit and apply its cwd to nvim
-  vim.keymap.set("t", "<M-q>", function()
+  vim.keymap.set("t", "<m-q>", function()
     lazygit_term.apply_cwd = true
     vim.fn.chansend(vim.b[float_term.buf].terminal_job_id, "q")
   end, { buffer = float_term.buf, silent = true, desc = "Lazygit quit + cd" })
@@ -187,7 +187,7 @@ function M.start_lazygit(opts)
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    "<M-c>",
+    "<m-c>",
     [[<C-\><c-n><Cmd>lua RunTinygitSmartCommit()<CR>]],
     { noremap = true, silent = true }
   )
@@ -195,7 +195,7 @@ function M.start_lazygit(opts)
   vim.api.nvim_buf_set_keymap(
     float_term.buf,
     "t",
-    "<M-a>",
+    "<m-a>",
     [[<C-\><c-n><Cmd>lua RunTinygitAmendOnlyMessage()<CR>]],
     { noremap = true, silent = true }
   )
