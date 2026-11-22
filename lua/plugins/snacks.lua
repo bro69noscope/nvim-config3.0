@@ -22,8 +22,8 @@ return {
   end,
   opts = {
     styles = {
-      -- window of Snacks.notifier.show_history() (default 0.6 x 0.6)
       notification_history = { width = 0.8, height = 0.85 },
+      notification = { wo = { wrap = true } },
     },
     terminal = {
       win = {
