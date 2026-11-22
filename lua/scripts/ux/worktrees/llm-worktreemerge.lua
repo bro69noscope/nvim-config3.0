@@ -9,6 +9,7 @@ local BACKUP_KEEP = 20
 local PULLED = "refs/wt-pulled/"
 local BACKUP_PREFIX = "refs/wt-backup/"
 local BACKUP_NAME = "^" .. vim.pesc(BACKUP_PREFIX) .. "%d%d%d%d%d%d%d%d%-%d%d%d%d%d%d%-%d%d%d$"
+local LLM_BRANCH_PREFIX = "llm/"
 
 ---@class Worktree
 ---@field path string
@@ -412,7 +413,7 @@ end
 ---@param target Worktree
 ---@return boolean
 local function is_for_target(llm, target)
-  local branch = (llm.branch or ""):gsub("^cc/", "")
+  local branch = (llm.branch or ""):gsub("^" .. LLM_BRANCH_PREFIX, "")
   return target.branch ~= nil and vim.startswith(branch, target.branch)
 end
 
