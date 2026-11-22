@@ -420,7 +420,7 @@ end
 local last_picked = {}
 
 local LAST_ICON = "● "
-local LAST_KEY = "<c-l>"
+local LAST_KEY = "<m-l>"
 local backdrop = require("scripts.ui.create-backdrop-window")
 
 ---@param llm_wts Worktree[]
