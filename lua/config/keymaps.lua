@@ -429,6 +429,11 @@ map("n", "<leader>iG", function()
   })
 end, { desc = "Restore pre-review staging", icon = llm_icon })
 
+-- After a review pull: keep the pulled code unstaged, put our staging from before the pull back
+map("n", "<leader>ic", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").confirm_review()
+end, { desc = "Accept reviewed code, unstaged", icon = llm_icon })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()

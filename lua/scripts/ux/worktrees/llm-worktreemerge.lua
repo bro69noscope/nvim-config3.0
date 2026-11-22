@@ -2003,6 +2003,37 @@ function M.restore_staging_after_review(opts)
   end)
 end
 
+--- After a review pull: accept and keep the pulled code unstaged.
+function M.confirm_review()
+  if busy() then
+    return
+  end
+
+  with_target(function(_, target)
+    read_undo(target, function(point)
+      if not point.review then
+        return notify("The last pull was not a review pull", vim.log.levels.WARN)
+      end
+
+      local what = "Confirming the review"
+
+      must({ "write-tree" }, target.path, what, function(index)
+        restore_staging(target, point.parents[2], function(r)
+          if r.code ~= 0 then
+            return notify(what .. " failed:\n" .. vim.trim(r.stderr or ""), vim.log.levels.ERROR)
+          end
+
+          notify(table.concat({
+            "Kept the pulled code unstaged, and put the staging from before the pull back",
+            "To get the replaced staging, right from before the confirm, back:",
+            "git read-tree " .. index,
+          }, "\n"))
+        end)
+      end)
+    end)
+  end)
+end
+
 -- Stage every unstaged changes in current worktree that the LLM worktree does not have.
 function M.stage_unshared_hunks()
   if busy() then
