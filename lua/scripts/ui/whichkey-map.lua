@@ -16,6 +16,7 @@ M.map = function(mode, lhs, rhs, options)
       desc = options.desc,
       icon = icon,
       mode = mode,
+      buffer = options.buffer,
     }
 
     wk.add({ wk_spec })

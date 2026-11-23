@@ -58,7 +58,7 @@ return {
       { "<leader>d", group = "Debug", icon = { icon = "🪲" } },
       { "<leader>c", group = "QuickFix/Code Actions" },
       { "gH", group = "Peek Definitions", icon = { icon = "👁️" } },
-      { "gm", group = "Marks", icon = { icon = "✅" } },
+      { "gm", group = "Marks/Markdown", icon = { icon = "✔️" } },
 
       -- hierarchical groups
       -- Utilities
