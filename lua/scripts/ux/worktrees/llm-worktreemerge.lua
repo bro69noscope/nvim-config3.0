@@ -694,6 +694,7 @@ local function undo_message(m)
   return table.concat(lines, "\n")
 end
 
+--- Parse the commit message created by `save_undo`
 ---@param text string
 ---@return UndoMessage? nil when text is not an undo point message
 local function parse_undo_message(text)
@@ -1168,7 +1169,7 @@ end
 ---@param target Worktree
 ---@param cb fun(point: UndoPoint)
 local function read_undo(target, cb)
-  local undo = undo_ref(target, "pull")
+  local undo = undo_ref(target, "pull") -- the ref was created by `save_undo`
   local fmt = "--format=%(parent)%0a%(contents)"
   git({ "for-each-ref", fmt, undo }, target.path, function(l)
     if l.code ~= 0 then
