@@ -434,6 +434,11 @@ map("n", "<leader>ic", function()
   require("scripts.ux.worktrees.llm-worktreemerge").confirm_review()
 end, { desc = "Accept reviewed code, unstaged", icon = llm_icon })
 
+-- After committing during a pull: move the pull onto the new HEAD, so <leader>iu/ib/ia/ic work
+map("n", "<leader>im", function()
+  require("scripts.ux.worktrees.llm-worktreemerge").catch_up_pull()
+end, { desc = "Move LLM pull onto HEAD", icon = llm_icon })
+
 -- Overwrite the LLM worktree with main's state (main wins; its edits are backed up)
 map("n", "<leader>is", function()
   require("scripts.ux.worktrees.llm-worktreemerge").overwrite_llm_worktree()

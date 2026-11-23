@@ -1163,12 +1163,11 @@ end
 ---@field ref string ref of the undo point commit, its tree is the target files before the pull
 ---@field parents CommitSha[] HEAD at the pull, then the staging commit if any
 
---- Read target's undo point: the state target was in before its most recent pull, until an undo or
---- a send_review deletes it. Refuses when HEAD moved since the pull, as the saved files are
---- relative to that commit.
+--- Read target's undo point: this is the state target was in before its most recent pull. That is,
+--- until an undo or a `send_review` deletes it.
 ---@param target Worktree
----@param cb fun(point: UndoPoint)
-local function read_undo(target, cb)
+---@param cb fun(point: UndoPoint, head: CommitSha) head: target's HEAD now
+local function load_undo(target, cb)
   local undo = undo_ref(target, "pull") -- the ref was created by `save_undo`
   local fmt = "--format=%(parent)%0a%(contents)"
   git({ "for-each-ref", fmt, undo }, target.path, function(l)
@@ -1195,19 +1194,133 @@ local function read_undo(target, cb)
 
     local what = "rev-parse HEAD in " .. label(target)
     must({ "rev-parse", "HEAD" }, target.path, what, function(h)
-      if h ~= parents[1] then
-        local msg = "HEAD moved since the pull, not undoing. Files before it:"
-          .. " git checkout %s -- ."
-        return notify(msg:format(undo), vim.log.levels.WARN)
-      end
-
       cb({
         ref = undo,
         parents = parents,
         branch = m.branch,
         pulled = m.pulled,
         review = m.review,
-      })
+      }, h)
+    end)
+  end)
+end
+
+---@param target Worktree
+---@param cb fun(point: UndoPoint)
+local function read_undo(target, cb)
+  load_undo(target, function(point, head)
+    if head ~= point.parents[1] then
+      local msg = "HEAD moved since the pull, not undoing. catch_up_pull moves the pull onto HEAD."
+        .. " Files before the pull: git checkout %s -- ."
+      return notify(msg:format(point.ref), vim.log.levels.WARN)
+    end
+
+    cb(point)
+  end)
+end
+
+--- Apply the changes of tree since base on top of head
+---@param target Worktree
+---@param base CommitSha
+---@param head CommitSha
+---@param tree string tree-ish
+---@param x? "ours" resolve conflicts with the side of head
+---@param cb fun(tree: TreeSha?, err: string?)
+local function rebase_tree(target, base, head, tree, x, cb)
+  local args = { "merge-tree", "--write-tree", "--name-only" }
+  if x then
+    vim.list_extend(args, { "-X", x })
+  end
+
+  vim.list_extend(args, { "--merge-base=" .. base .. "^{tree}", head .. "^{tree}", tree })
+
+  git(args, target.path, function(m)
+    local lines = vim.split(m.stdout or "", "\n", { plain = true })
+
+    if m.code == 0 then
+      return cb(lines[1])
+    end
+
+    if m.code ~= 1 then
+      return cb(nil, vim.trim(m.stderr or ""))
+    end
+
+    local files = {}
+    for i = 2, #lines do
+      if lines[i] == "" then
+        break
+      end
+      table.insert(files, lines[i])
+    end
+
+    cb(nil, "conflicts with HEAD in:\n" .. table.concat(files, "\n"))
+  end)
+end
+
+--- After commits on top of the HEAD of the last pull: move its undo point onto the new HEAD, so
+--- undo_pull, send_review, stage_review and confirm_review work again.
+function M.catch_up_pull()
+  if busy() then
+    return
+  end
+
+  with_target(function(_, target)
+    load_undo(target, function(point, head)
+      local old = point.parents[1]
+      if head == old then
+        return notify("The last pull is already on HEAD")
+      end
+
+      local what = "Moving the pull onto HEAD"
+
+      local function rebase(name, tree, x, next)
+        if not tree then
+          return next(nil)
+        end
+
+        rebase_tree(target, old, head, tree, x, function(t, err)
+          if not t then
+            local msg = "Could not move %s onto HEAD, nothing changed: %s"
+            return notify(msg:format(name, err), vim.log.levels.ERROR)
+          end
+
+          next(t)
+        end)
+      end
+
+      local staging = point.parents[2] and point.parents[2] .. "^{tree}"
+
+      rebase("the files before the pull", point.ref .. "^{tree}", nil, function(files_tree)
+        rebase("the review result", point.review, nil, function(review)
+          rebase("the staging before the pull", staging, "ours", function(staged)
+            local msg = undo_message({
+              branch = point.branch,
+              pulled = point.pulled,
+              review = review,
+            })
+
+            local function save(parents)
+              local args = vim.list_extend({ "commit-tree", files_tree, "-p", head }, parents)
+              vim.list_extend(args, { "-m", msg })
+
+              must(args, target.path, what, function(new)
+                must({ "update-ref", point.ref, new }, target.path, what, function()
+                  notify("Moved the last pull of " .. point.branch .. " onto HEAD")
+                end)
+              end)
+            end
+
+            if not staged then
+              return save({})
+            end
+
+            local wrap = { "commit-tree", staged, "-p", head, "-m", "worktreemerge staging" }
+            must(wrap, target.path, what, function(s)
+              save({ "-p", s })
+            end)
+          end)
+        end)
+      end)
     end)
   end)
 end
