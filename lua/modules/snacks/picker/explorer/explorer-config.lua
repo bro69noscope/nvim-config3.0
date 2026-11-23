@@ -79,18 +79,18 @@ return {
   toggles = {
     no_follow_file = "NF",
   },
+
+  -- NOTE: Keep each desc at 16 chars max. The snacks help window shows only 16 chars.
   win = {
     list = {
       keys = {
-        ["gf"] = { "grep_filename", desc = "Grep fname" },
-        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["gd"] = { "grep_in_dir", desc = "Grep in dir" },
-        ["gD"] = { "grep_in_dir_default", desc = "Grep in dir (default)" },
-        ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
+        ["gD"] = { "grep_in_dir_default", desc = "Grep dir default" },
+        ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar imports" },
         ["g."] = { "set_cwd_here", desc = "Set cwd to dir" },
         ["go"] = { "open_with_system", desc = "Open with system" },
-        ["X"] = { "expand_recursive", desc = "Expand recursively" },
-        ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
+        ["X"] = { "expand_recursive", desc = "Expand recursive" },
+        ["fd"] = { "search_files_in_dir", desc = "Files in dir" },
         ["<BS>"] = false,
         [DownWindowBind] = false,
         [UpWindowBind] = false,
@@ -99,7 +99,7 @@ return {
           function()
             vim.cmd("wincmd p")
           end,
-          desc = "Exit to prev window",
+          desc = "Exit to prev win",
         },
         ["<m-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
         ["<c-t>"] = { "tab" },
@@ -107,19 +107,17 @@ return {
     },
     input = {
       keys = {
-        ["gf"] = { "grep_filename", desc = "Grep fname" },
-        ["gF"] = { "grep_full_filename", desc = "Grep fname + .ext" },
         ["gd"] = { "grep_in_dir", desc = "Grep in dir" },
-        ["gD"] = { "grep_in_dir_default", desc = "Grep in dir (default)" },
-        ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar python imports" },
-        ["fd"] = { "search_files_in_dir", desc = "Search files in dir" },
+        ["gD"] = { "grep_in_dir_default", desc = "Grep dir default" },
+        ["gr"] = { "grug_far_refactor_python_imports", desc = "Grugfar imports" },
+        ["fd"] = { "search_files_in_dir", desc = "Files in dir" },
         ["<esc>"] = {
           function()
             vim.cmd("wincmd p")
           end,
-          desc = "Exit to prev window",
+          desc = "Exit to prev win",
         },
-        [RightWindowBind] = { "focus_right_win", desc = "Focus right window", mode = { "i", "n" } },
+        [RightWindowBind] = { "focus_right_win", desc = "Focus right win", mode = { "i", "n" } },
         ["<m-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
       },
     },
