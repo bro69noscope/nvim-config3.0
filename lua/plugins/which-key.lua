@@ -49,6 +49,10 @@ return {
       { "gU", desc = "UPPERCASE", icon = { icon = "🔠" }, mode = { "n", "v" } },
       { "gu", desc = "lowercase", icon = { icon = "🔡" }, mode = { "n", "v" } },
 
+      -- Change list (shorter preset descs)
+      { "g,", desc = "Newer change list position" },
+      { "g;", desc = "Older change list position" },
+
       -- Standalone groups
       { "<leader>t", group = "Terminal", icon = { icon = "", color = "blue" } },
       { "<leader>o", group = "Open..", icon = { icon = "", color = "yellow" } },
