@@ -4,6 +4,7 @@ require("modules.snacks.picker.explorer.fix-input-clear-onsave")
 local open_with_flags = require("modules.snacks.picker.explorer.open-with-flags")
 local grep_actions = require("modules.snacks.picker.actions.grep-actions")
 local explorer_actions = require("modules.snacks.picker.explorer.actions.actions")
+local open_image = require("modules.snacks.picker.actions.open-image")
 
 -- Default width is 40. Smaller value helps with wezterm in OS scale 150% 1080p with 100 char ll.
 -- On neovide, we have a bit more space.
@@ -45,12 +46,27 @@ local focus_right_win = function()
 end
 
 return {
+  config = function(opts)
+    opts = require("snacks.picker.source.explorer").setup(opts)
+    local explorer_confirm = opts.actions.confirm
+
+    opts.actions.confirm = function(picker, item, action)
+      if open_image.try_open(item) then
+        return
+      end
+      return explorer_confirm(picker, item, action)
+    end
+
+    return opts
+  end,
+
   layout = {
     layout = {
       width = explorer_width,
       min_width = explorer_width,
     },
   },
+
   actions = {
     -- fundamentals
     focus_right_win = focus_right_win,

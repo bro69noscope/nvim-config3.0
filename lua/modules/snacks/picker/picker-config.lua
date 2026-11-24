@@ -17,6 +17,7 @@ M.persist_flags = require("modules.snacks.picker.persist-flags")
 M.grep_actions = require("modules.snacks.picker.actions.grep-actions")
 M.git_status_all = require("modules.snacks.picker.sources.git-status-all")
 M.rescope_picker = require("modules.snacks.picker.actions.rescope-picker").rescope
+M.open_image = require("modules.snacks.picker.actions.open-image")
 
 local shared_deps = {
   case_aware_grep = M.case_aware_grep,
@@ -141,6 +142,12 @@ return {
       M.grapple_replace(picker, GrappleReviewScope, true, true)
     end,
     flash = M.setup_flash,
+    confirm = function(picker, item, action)
+      if M.open_image.try_open(item) then
+        return
+      end
+      Snacks.picker.actions.confirm(picker, item, action)
+    end,
     custom_toggle_hidden = function(picker)
       if not picker or not picker.opts then
         return
