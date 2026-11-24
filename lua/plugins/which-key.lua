@@ -5,8 +5,8 @@ return {
   opts = {
     preset = "modern",
     keys = {
-      scroll_down = "<c-d>",
-      scroll_up = "<c-u>",
+      scroll_down = "<PageDown>",
+      scroll_up = "<PageUp>",
     },
     delay = 200, -- delay in milliseconds
     spec = {
