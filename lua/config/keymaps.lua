@@ -1,9 +1,26 @@
 local map = require("scripts.ui.whichkey-map").map
 
--- important remap to work with glove80 special layout
--- treat {} like [] for mirrored bracket navigation
-map({ "n", "x", "o" }, "{", "[", { remap = true })
-map({ "n", "x", "o" }, "}", "]", { remap = true })
+-- Important remap to work with glove80 special layout.
+-- We treat {} like [] in order to have mirrored bracket navigation.
+vim.opt.langmap:append({ "{[", "}]" })
+local langmap = vim.o.langmap
+local langmap_group = vim.api.nvim_create_augroup("langmap_terminal", { clear = true })
+
+-- Disable langmap in terminal mode, so that we can type {}
+vim.api.nvim_create_autocmd("TermEnter", {
+  group = langmap_group,
+  callback = function()
+    vim.o.langmap = ""
+  end,
+})
+
+vim.api.nvim_create_autocmd("TermLeave", {
+  group = langmap_group,
+  callback = function()
+    vim.o.langmap = langmap
+  end,
+})
+
 -- remap () to {} for paragraph navigation
 map({ "n", "x", "o" }, "(", "{zz")
 map({ "n", "x", "o" }, ")", "}zz")
