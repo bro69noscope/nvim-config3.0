@@ -624,51 +624,51 @@ end, { desc = "Close all other buffers", icon = "❌" })
 
 -- Pipe git diffs to clipboard
 local pipe_git_diff = require("scripts.ux.pipe-git-diff-to-clip")
-map("n", "<leader>g<leader>f", function()
+map("n", "<leader>g|f", function()
   pipe_git_diff.file_diff()
 end, {
   silent = true,
-  desc = "Copy file git diff",
+  desc = "Clip file git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
-map("n", "<leader>g<leader>F", function()
+map("n", "<leader>g|F", function()
   pipe_git_diff.file_diff({ staged = true })
 end, {
   silent = true,
-  desc = "Copy file diff (incl. staged)",
+  desc = "Clip file diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
-map("n", "<leader>g<leader>d", function()
+map("n", "<leader>g|d", function()
   pipe_git_diff.cwd_diff()
 end, {
   silent = true,
-  desc = "Copy cwd git diff",
+  desc = "Clip cwd git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
-map("n", "<leader>g<leader>D", function()
+map("n", "<leader>g|D", function()
   pipe_git_diff.cwd_diff({ staged = true })
 end, {
   silent = true,
-  desc = "Copy cwd diff (incl. staged)",
+  desc = "Clip cwd diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
-map("n", "<leader>g<leader>q", function()
+map("n", "<leader>g|q", function()
   pipe_git_diff.qf_list()
 end, {
   silent = true,
-  desc = "Copy quickfix git diff",
+  desc = "Clip quickfix git diff",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 
-map("n", "<leader>g<leader>Q", function()
+map("n", "<leader>g|Q", function()
   pipe_git_diff.qf_list({ staged = true })
 end, {
   silent = true,
-  desc = "Copy qf diff (incl. staged)",
+  desc = "Clip qf diff (incl. staged)",
   icon = { icon = "", hl = "DevIconGitLogo" },
 })
 

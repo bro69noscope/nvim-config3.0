@@ -24,6 +24,8 @@ return {
         mode = { "n", "v" },
       },
       { "<leader>gh", group = "Hunks", mode = { "n", "v" } },
+      { "<leader>g|", group = "Pipe diffs to clip", mode = { "n" } },
+      { "<leader><space>", group = "More git ...", mode = { "n" } },
 
       -- Refactor
       { "<leader>r", group = "Refactor", mode = { "n", "v" } },

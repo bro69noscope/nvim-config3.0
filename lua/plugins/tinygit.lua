@@ -20,7 +20,7 @@ return {
       desc = "Push",
     },
     {
-      "<leader>g<Space>P",
+      "<leader>g<c-p>",
       function()
         require("tinygit").push({ forceWithLease = true })
       end,
@@ -37,12 +37,12 @@ return {
       desc = "Amend last commit noEdit",
     },
     {
-      "<leader>g<Space>/",
+      "<leader>g/",
       "<cmd>Tinygit fileHistory<cr>",
       desc = "Grep history",
     },
     {
-      "<leader>g<Space>u",
+      "<leader>g<c-u>",
       "<cmd>Tinygit undoLastCommitOrAmend<cr>",
       desc = "Undo last commit or amend",
     },
