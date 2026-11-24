@@ -19,3 +19,10 @@ map(
   checkbox.operator("g@"),
   { buffer = 0, expr = true, desc = "Toggle checkboxes", icon = "" }
 )
+
+map(
+  "n",
+  "<leader>mo",
+  require("lang.markdown.obsidian.obsidian").open_current_file,
+  { buffer = 0, desc = "Open file in Obsidian" }
+)
