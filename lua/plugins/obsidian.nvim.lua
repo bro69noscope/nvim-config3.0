@@ -17,22 +17,27 @@ return {
         local map = require("scripts.ui.whichkey-map").map
         local buf = note.bufnr
 
-        map("n", "gmn", vim.lsp.buf.rename, { buffer = buf, desc = "Rename note", icon = "✏️" })
         map(
           "n",
-          "gmr",
+          "<leader>mn",
+          vim.lsp.buf.rename,
+          { buffer = buf, desc = "Rename note", icon = "✏️" }
+        )
+        map(
+          "n",
+          "<leader>mr",
           vim.lsp.buf.references,
           { buffer = buf, desc = "Note references", icon = "🔗" }
         )
         map(
           "n",
-          "gmh",
+          "<leader>mh",
           vim.lsp.buf.document_symbol,
           { buffer = buf, desc = "Note headings", icon = "📑" }
         )
         map(
           "n",
-          "gma",
+          "<leader>ma",
           vim.lsp.buf.code_action,
           { buffer = buf, desc = "Note actions", icon = "💡" }
         )

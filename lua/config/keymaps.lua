@@ -332,7 +332,7 @@ map("n", "<leader>yP", function()
 end, { desc = "Clip buffer absolute path", icon = "" })
 
 -- Delete marks with gmd
-map("n", "gmd", function()
+map("n", "<leader>md", function()
   require("scripts.ux.delete-mark").delete_mark()
 end, { desc = "Delete mark(s)", icon = { icon = "❌", color = "red" } })
 
