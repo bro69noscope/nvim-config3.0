@@ -4,6 +4,7 @@ return {
   enabled = true,
   keys = {
     { "<leader>god", "<cmd>DiffviewOpen<cr>", desc = "DiffView" },
+    { "<leader>goD", "<cmd>DiffviewOpen -C.<cr>", desc = "DiffView (cwd repo)" },
     { "<leader>goh", mode = { "n" }, "<cmd>DiffviewFileHistory<cr>", desc = "File history" },
     { "<leader>goh", mode = { "v" }, ":DiffviewFileHistory<cr>", desc = "Lines history" },
     { "<leader>got", "<cmd>DiffviewFileHistory %<cr>", desc = "This file history" },
