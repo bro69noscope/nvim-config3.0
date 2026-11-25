@@ -98,19 +98,19 @@ M.convert_path_separators = function()
   vim.keymap.set("n", "1", function()
     apply_transform(function(line)
       return line:gsub("\\", "/")
-    end, "Converted \\ to /")
+    end, "Converted `\\` to `/`")
   end, opts)
 
   vim.keymap.set("n", "2", function()
     apply_transform(function(line)
       return line:gsub("/", "\\")
-    end, "Converted / to \\")
+    end, "Converted `/` to `\\`")
   end, opts)
 
   vim.keymap.set("n", "3", function()
     apply_transform(function(line)
       return line:gsub("\\", "\\\\")
-    end, "Converted \\ to \\\\")
+    end, "Converted `\\` to `\\\\`")
   end, opts)
 
   vim.keymap.set("n", "4", function()
@@ -133,12 +133,13 @@ M.convert_path_separators = function()
   -- CR to copy result and close
   vim.keymap.set("n", "<CR>", function()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    vim.fn.setreg('"', table.concat(lines, "\n"))
+    local reg = Scratch_registers[2]
+    vim.fn.setreg(reg, table.concat(lines, "\n"))
     vim.api.nvim_win_close(win, true)
-    local msg = 'Result copied to "" register'
+    local msg = 'Result copied to "' .. reg .. " register"
     if selection and selection.replace_fn then
       selection.replace_fn(lines)
-      msg = 'Selection replaced, result also in "" register'
+      msg = 'Selection replaced, result also in "' .. reg .. " register"
     end
     vim.notify(msg, vim.log.levels.INFO, { title = "Path Separator Converter" })
   end, opts)
