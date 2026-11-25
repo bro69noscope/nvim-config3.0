@@ -88,13 +88,13 @@ M.convert_path_separators = function()
       text(" -> "),
       code("/"),
       text(", 2: "),
-      code("/"),
-      text(" -> "),
-      code("\\"),
-      text(", 3: "),
       code("\\"),
       text(" -> "),
       code("\\\\"),
+      text(", 3: "),
+      code("/"),
+      text(" -> "),
+      code("\\"),
       text(", 4: custom "),
     },
     title_pos = "center",
@@ -123,13 +123,13 @@ M.convert_path_separators = function()
     end, "Converted `\\` to `/`")
   end, opts)
 
-  vim.keymap.set("n", "2", function()
+  vim.keymap.set("n", "3", function()
     apply_transform(function(line)
       return line:gsub("/", "\\")
     end, "Converted `/` to `\\`")
   end, opts)
 
-  vim.keymap.set("n", "3", function()
+  vim.keymap.set("n", "2", function()
     apply_transform(function(line)
       return line:gsub("\\", "\\\\")
     end, "Converted `\\` to `\\\\`")
