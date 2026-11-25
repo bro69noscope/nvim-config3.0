@@ -66,6 +66,14 @@ M.convert_path_separators = function()
   -- Create a small floating window
   local width = math.min(75, vim.o.columns - 4)
   local height = 3
+
+  -- title chunks: plain text, or separators highlighted like markdown code spans
+  local function text(s)
+    return { s, "FloatTitle" }
+  end
+  local function code(s)
+    return { s, "@markup.raw.markdown_inline" }
+  end
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
@@ -74,7 +82,21 @@ M.convert_path_separators = function()
     row = (vim.o.lines - height) / 2,
     style = "minimal",
     border = "rounded",
-    title = " Path Separator Converter, 1: from \\ to /, 2: from / to \\, 3: from \\ to \\\\ , 4: custom ",
+    title = {
+      text(" Path Separator Converter, 1: "),
+      code("\\"),
+      text(" -> "),
+      code("/"),
+      text(", 2: "),
+      code("/"),
+      text(" -> "),
+      code("\\"),
+      text(", 3: "),
+      code("\\"),
+      text(" -> "),
+      code("\\\\"),
+      text(", 4: custom "),
+    },
     title_pos = "center",
   })
 
