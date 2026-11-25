@@ -183,12 +183,24 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   group = explorer_group,
   once = true,
   callback = function()
+    -- True for `nvim file`: the file is read before VimEnter.
+    local launched_with_file = vim.v.vim_did_enter == 0 and vim.fn.argc() > 0
+
     vim.defer_fn(function()
       local win_width = vim.api.nvim_win_get_width(0)
       local ft = vim.bo.filetype
       if ft ~= "qf" and ft ~= "dbui" and win_width >= 140 then
         vim.api.nvim_clear_autocmds({ group = explorer_group })
-        require("scripts.ui.open-file-explorer").open_main_explorer()
+        local ui = require("scripts.ui.open-file-explorer")
+        ui.open_main_explorer()
+
+        -- HACK: ugly fix to weird ui duplication bug with snacks explorer when doing `nvim file`
+        if launched_with_file then
+          vim.defer_fn(function()
+            ui.open_main_explorer()
+            ui.open_main_explorer()
+          end, 10)
+        end
       end
     end, 10)
   end,
