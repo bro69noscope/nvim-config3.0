@@ -225,27 +225,15 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Move to the window in `dir`. Use wezterm-move where it is enabled (same condition as its plugin
--- spec), so that at the nvim edge the cursor goes on to the WezTerm pane.
-local function term_move(dir)
-  return function()
-    if OnWindows and not OnNeovide then
-      require("wezterm-move").move(dir)
-    else
-      vim.cmd.wincmd(dir)
-    end
-  end
-end
-
 -- Terminal keymaps
 vim.api.nvim_create_autocmd("TermOpen", {
   group = vim.api.nvim_create_augroup("GlobalTermKeymaps", { clear = true }),
   callback = function(args)
     local opts = { buffer = args.buf }
-    vim.keymap.set("t", LeftWindowBind, term_move("h"), opts)
-    vim.keymap.set("t", DownWindowBind, term_move("j"), opts)
-    vim.keymap.set("t", UpWindowBind, term_move("k"), opts)
-    vim.keymap.set("t", RightWindowBind, term_move("l"), opts)
+    vim.keymap.set("t", LeftWindowBind, WindowMove("h"), opts)
+    vim.keymap.set("t", DownWindowBind, WindowMove("j"), opts)
+    vim.keymap.set("t", UpWindowBind, WindowMove("k"), opts)
+    vim.keymap.set("t", RightWindowBind, WindowMove("l"), opts)
     vim.keymap.set("t", "<C-Up>", [[<Cmd>resize +2<CR>]], opts)
     vim.keymap.set("t", "<C-Down>", [[<Cmd>resize -2<CR>]], opts)
     vim.keymap.set("t", "<C-Left>", [[<Cmd>vertical resize -2<CR>]], opts)

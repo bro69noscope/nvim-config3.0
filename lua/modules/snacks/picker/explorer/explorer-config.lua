@@ -36,11 +36,11 @@ end
 local focus_right_win = function()
   -- Avoids having to go right twice from the input window
   vim.cmd("stopinsert")
-  vim.cmd("wincmd l")
+  WindowMove("l")()
   -- if we are still in the Snacks picker list, go right again
   vim.schedule(function()
     if vim.bo.filetype == "snacks_picker_list" then
-      vim.cmd("wincmd l")
+      WindowMove("l")()
     end
   end)
 end
@@ -108,9 +108,10 @@ return {
         ["X"] = { "expand_recursive", desc = "Expand recursive" },
         ["fd"] = { "search_files_in_dir", desc = "Files in dir" },
         ["<BS>"] = false,
-        [DownWindowBind] = false,
-        [UpWindowBind] = false,
-        [RightWindowBind] = false,
+        [LeftWindowBind] = { WindowMove("h"), desc = "Move to left win" },
+        [DownWindowBind] = { WindowMove("j"), desc = "Move to down win" },
+        [UpWindowBind] = { WindowMove("k"), desc = "Move to up win" },
+        [RightWindowBind] = { WindowMove("l"), desc = "Move to right win" },
         ["<esc>"] = {
           function()
             vim.cmd("wincmd p")
@@ -133,6 +134,9 @@ return {
           end,
           desc = "Exit to prev win",
         },
+        [LeftWindowBind] = { WindowMove("h"), desc = "Move to left win" },
+        [DownWindowBind] = { WindowMove("j"), desc = "Move to down win" },
+        [UpWindowBind] = { WindowMove("k"), desc = "Move to up win" },
         [RightWindowBind] = { "focus_right_win", desc = "Focus right win", mode = { "i", "n" } },
         ["<m-a>"] = { "toggle_no_follow", desc = "Toggle no-follow" },
       },
