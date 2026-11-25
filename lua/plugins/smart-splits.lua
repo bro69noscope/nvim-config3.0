@@ -1,9 +1,9 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
-    enabled = false and not OnWindows or OnNeovide, -- We don't use it on Windows (a bit slow, for
-    -- wezterm at least, we have an alternative plugin). We do use it on Neovide due to the absence
-    -- of wezterm tabs here.
+    -- We don't use it on Windows (a bit slow, for wezterm at least, we have an alternative plugin). We
+    -- do use it on Neovide due to the absence of wezterm tabs here.
+    enabled = false and not OnWindows or OnNeovide,
     lazy = false,
     opts = {
       at_edge = "stop",
