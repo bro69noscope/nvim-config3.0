@@ -499,9 +499,9 @@ map("n", "<leader>rs", function()
 end, { desc = "Gen symbol refactor template" })
 
 -- Open custom log file in new tab
-map("n", "<leader>ol", function()
+map("n", "<leader>oL", function()
   require("config.custom-logging").open_log_file()
-end, { desc = "Open custom log file", icon = "📄" })
+end, { desc = "Open nvim config log file", icon = "📄" })
 
 -- Open new tab
 map("n", "<leader>ot", "<cmd>tabnew<cr>", { desc = "new tab" })
