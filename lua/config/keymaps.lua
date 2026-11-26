@@ -361,6 +361,11 @@ map("n", "<leader>gu", gitunstage.unstage_file, { desc = "Git unstage file" })
 map("n", "<leader>gU", gitunstage.unstage_all, { desc = "Git unstage all" })
 map("n", "<leader>g<m-u>", gitunstage.restore, { desc = "Git undo unstage" })
 
+-- Git add
+local gitadd = require("scripts.ux.git.gitadd")
+map("n", "<leader>g<m-a>", gitadd.add_file, { desc = "Git add file" })
+map("n", "<leader>g<m-s-a>", gitadd.add_all, { desc = "Git add all" })
+
 -- Jump to / live-diff the same file in another worktree (same line, picker if several)
 map("n", "<leader>gj", function()
   require("scripts.ux.worktrees.worktree-jump").jump()
