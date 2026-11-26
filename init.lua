@@ -7,7 +7,7 @@ Logger.init()
 Logger.set_level("DEBUG")
 RepeatablePairs.setup()
 
-require("config.global-settings")
+require("config.globals")
 require("config.os-config")
 require("config.options")
 require("config.lazy")

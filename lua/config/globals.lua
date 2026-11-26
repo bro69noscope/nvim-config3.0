@@ -1,0 +1,5 @@
+require("config.global.settings")
+require("config.global.keymaps")
+require("config.global.functions")
+require("config.global.variables")
+require("config.global.reserved")
