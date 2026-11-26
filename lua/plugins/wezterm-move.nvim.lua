@@ -1,6 +1,7 @@
 return {
   -- "letieu/wezterm-move.nvim",
-  "bro69noscope/wezterm-move.nvim", -- forked for custom functionality
+  -- forked: personal custom functionality. Works along `../wezterm/nvim/wezterm-move/wezmove.lua`
+  "bro69noscope/wezterm-move.nvim",
   enabled = true and OnWindows and not OnNeovide, -- Better fitted for Windows. Hangs on neovide when
   -- at the edge.
   keys = {
