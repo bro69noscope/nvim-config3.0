@@ -85,14 +85,11 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Set user var "in_windows_nvim" to "1" in WezTerm via OSC 1337 when entering Neovim on windows.
--- Those vars are used in my wezterm config file to define dynamic pane navigation keybinds, as to
--- use C-hjkl everywhere. On Linux, we run tmux for multiplexing so this is not used.
 if OnWindows then
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
       local function set_in_windows_nvim(b64_val)
-        io.write(string.format("\x1b]1337;SetUserVar=in_Windows_nvim=%s\x07", b64_val))
+        io.write(string.format("\x1b]1337;SetUserVar=%s=%s\x07", in_Windows_nvim, b64_val))
         io.flush()
       end
 
