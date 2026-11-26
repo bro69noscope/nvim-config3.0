@@ -1,10 +1,11 @@
 return {
-  -- "letieu/wezterm-move.nvim",
-  -- forked: personal custom functionality. Works along `../wezterm/nvim/wezterm-move/wezmove.lua`
   "bro69noscope/wezterm-move.nvim",
-  enabled = true and OnWindows and not OnNeovide, -- Better fitted for Windows. Hangs on neovide when
-  -- at the edge.
+  -- Better fitted for Windows. Hangs on neovide when at the edge.
+  enabled = true and OnWindows and not OnNeovide,
+  lazy = false, -- the plugin must set the WezTerm user var at startup
+  opts = { log = true },
   keys = {
+    { "<leader>olw", "<cmd>WeztermMoveLog<cr>", desc = "Open wezterm-move log" },
     {
       LeftWindowBind,
       function()
