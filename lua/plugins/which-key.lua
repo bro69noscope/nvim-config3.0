@@ -53,7 +53,7 @@ return {
       { "g,", desc = "Newer change list position" },
       { "g;", desc = "Older change list position" },
 
-      -- Standalone groups
+      -- Generic Groups
       { "<leader>t", group = "Terminal", icon = { icon = "", color = "blue" } },
       { "<leader>o", group = "Open..", icon = { icon = "", color = "yellow" } },
       { "<leader>q", group = "Quit/Session", mode = { "n", "v" } },
@@ -66,11 +66,17 @@ return {
       { "gH", group = "Peek Definitions", icon = { icon = "👁️" } },
       { "<leader>m", group = "Marks/Markdown", icon = { icon = "✔️" } },
 
-      -- hierarchical groups
+      -- Hierarchical Groups:
+
+      -- Open...
+      -- Logs
+      { "<leader>ol", group = "Logs..", icon = { icon = "", color = "yellow" } },
+
       -- Utilities
       { "<Leader>u", group = "Utilities", icon = { icon = "🛠️" } },
       { "<Leader>ur", group = "Replace file extension", icon = { icon = "" } },
 
+      -- Linediff / LSP
       { "<leader>l", group = "Line diffs/LSP", icon = { icon = "󰈙 󰒒", color = "blue" } },
       -- Linediff
       {
@@ -113,15 +119,13 @@ return {
       -- bugfix unbounded keys
       { "]M", hidden = true },
       { "[M", hidden = true },
-
-      -- Unused but considered:
-      -- { "<leader>N", desc = "Toggle No Neck Pain", icon = { icon = "☕", color = "blue" } },
     },
   },
   config = function(_, opts)
     local wk = require("which-key")
     wk.setup(opts)
-    wk.add({ { "gx", desc = "Open file with system app", mode = { "n", "v" } } }) -- shorter desc for URL opening (fixes single column display)
+    -- use a shorter desc for system opening
+    wk.add({ { "gx", desc = "Open file with system app", mode = { "n", "v" } } })
   end,
   keys = {
     {
